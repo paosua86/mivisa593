@@ -1,0 +1,3 @@
+# Documentos internos de estrategia y copy. NO se publican.
+*.md
+!README.md
