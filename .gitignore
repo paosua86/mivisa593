@@ -1,3 +1,7 @@
 # Documentos internos de estrategia y copy. NO se publican.
-*.md
+docs/
+!CLAUDE.md
 !README.md
+
+# Referencias originales del cliente
+referencias/
