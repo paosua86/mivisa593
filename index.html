@@ -211,25 +211,22 @@ footer strong{color:var(--tinta)}
 
 <section class="linea" id="destinos">
   <div class="env">
-    <h2>¿A dónde quieres viajar?</h2>
+    <h2>¿Cuál es tu país destino?</h2>
     <p class="nota" style="margin-bottom:1.6em">Cada país pide cosas distintas. Elige el tuyo y te llevamos al formulario correcto.</p>
 
     <a class="destino" href="empezar/?destino=usa">
       <div class="pais"><span class="bandera">🇺🇸</span> Estados Unidos</div>
       <p class="tipo">Visa de turismo B1/B2</p>
-      <span class="desde">Asesoría desde $47</span>
     </a>
 
     <a class="destino" href="empezar/?destino=canada">
       <div class="pais"><span class="bandera">🇨🇦</span> Canadá</div>
       <p class="tipo">Visa de visitante</p>
-      <span class="desde">Asesoría desde $75</span>
     </a>
 
     <div class="destino" style="cursor:default">
       <div class="pais"><span class="bandera">🇪🇺</span> Europa</div>
       <p class="tipo">Visa Schengen · elige el país al que viajas</p>
-      <span class="desde">Asesoría $145</span>
       <div class="paises">
         <a href="empezar/?destino=schengen&amp;pais=espana">España</a>
         <a href="empezar/?destino=schengen&amp;pais=italia">Italia</a>
@@ -244,7 +241,7 @@ footer strong{color:var(--tinta)}
       <p class="nota" style="margin:16px 0 0">Si vas a varios países de Europa en el mismo viaje, la solicitud va al país donde pases más noches. Si no lo tienes claro, elige “Otro país” y lo vemos juntos.</p>
     </div>
 
-    <p class="nota" style="margin-top:1.4em">¿Todavía no decides el destino? <a href="empezar/">Empieza igual</a>. Las primeras preguntas son las mismas para los tres.</p>
+    <p class="nota" style="margin-top:1.4em">¿Todavía no decides el país destino? <a href="empezar/">Empieza igual</a>. Las primeras preguntas son las mismas para los tres.</p>
   </div>
 </section>
 
@@ -256,11 +253,11 @@ footer strong{color:var(--tinta)}
     <ol class="pasos">
       <li><h3>Llenas el formulario de inicio</h3><p>Aquí mismo, en esta página. Preguntas simples sobre tu situación: si has viajado, en qué trabajas, tu familia. Toma dos minutos y es gratis.</p></li>
       <li><h3>Te llega tu resultado y cómo funciona todo</h3><p>Te mandamos por WhatsApp y al correo cómo está tu caso: si estás en buen momento para aplicar o qué te falta. Junto con la explicación completa del proceso, sin letra chiquita.</p></li>
-      <li><h3>Hablamos de tu caso</h3><p>Una llamada real, con la persona que va a llevar tu proceso. Resolvemos tus dudas y decidimos juntos si vale la pena seguir ahora o esperar.</p></li>
+      <li><h3>Hablamos de tu caso</h3><p>Te llamamos o te escribimos por WhatsApp, con la persona que va a llevar tu proceso. Resolvemos tus dudas y decidimos juntos si vale la pena seguir ahora o esperar.</p></li>
       <li><h3>Confirmas el servicio y armamos tu expediente</h3><p>Si decides seguir, se confirma el servicio con el pago por PayPhone y de una vez llenas el formulario completo de tu destino, con los datos específicos que pide ese consulado.</p></li>
       <li><h3>Revisamos tu información juntos y preparamos documentos</h3><p>Repasamos cada dato contigo, corregimos lo que haga falta y armamos la documentación que pida tu visa. Nada se envía sin que tú lo hayas visto.</p></li>
       <li><h3>Pagas el arancel consular</h3><p>Ese va directo al consulado, no a nosotros. Te acompañamos para que lo pagues bien y no pierdas ese dinero por un error.</p></li>
-      <li><h3>Llamada de preparación para tu entrevista</h3><p>Repasamos qué te van a preguntar, qué responder y qué no decir, según tu destino y tu caso concreto. Llegas tranquilo.</p></li>
+      <li><h3>Llamada por Zoom para preparar tu entrevista</h3><p>Nos conectamos por Zoom y repasamos qué te van a preguntar, qué responder y qué no decir, según tu destino y tu caso concreto. Llegas tranquilo.</p></li>
       <li><h3>Vas a tu cita o entregas tus papeles</h3><p>Según lo que pida tu destino. Ese día ya sabes exactamente qué esperar.</p></li>
       <li><h3>Nos cuentas cómo te fue</h3><p>Nos sentamos a ver cómo salió todo. Si te fue bien, celebramos. Si no, revisamos qué pasó y qué hacer para el siguiente intento.</p></li>
     </ol>
@@ -271,46 +268,73 @@ footer strong{color:var(--tinta)}
   <div class="env">
     <h2>Qué hacemos exactamente por ti</h2>
 
-    <div class="tabs" role="tablist" aria-label="Destino">
-      <button role="tab" aria-selected="true"  aria-controls="p-usa" id="t-usa">Estados Unidos y Canadá</button>
-      <button role="tab" aria-selected="false" aria-controls="p-sch" id="t-sch">Europa (Schengen)</button>
+    <div class="tabs" role="tablist" aria-label="País destino">
+      <button role="tab" aria-selected="true"  aria-controls="p-usa" id="t-usa">Estados Unidos</button>
+      <button role="tab" aria-selected="false" aria-controls="p-can" id="t-can">Canadá</button>
+      <button role="tab" aria-selected="false" aria-controls="p-sch" id="t-sch">Europa</button>
     </div>
 
     <div class="panel" id="p-usa" role="tabpanel" aria-labelledby="t-usa">
+      <h3>Lo que incluye</h3>
       <ul class="check">
         <li>Perfilamiento de tu caso: dónde estás fuerte y dónde no.</li>
-        <li>Llenado y revisión de tu formulario oficial, dato por dato. Tú ves y apruebas cada cosa que se pone.</li>
+        <li>Llenado y revisión del formulario DS-160, dato por dato. Tú ves y apruebas cada cosa que se pone.</li>
         <li>Creación de tu perfil y gestión de la cita consular.</li>
+        <li>Asesoría por Zoom, para que veamos tu caso juntos aunque no estés en Quito.</li>
         <li>Preparación y simulacro de entrevista, con las preguntas típicas y las que aplican a tu caso.</li>
         <li>Lista de documentos hecha a tu medida, no una lista genérica bajada de internet.</li>
+        <li>Si hoy no calificas, te decimos qué mejorar y en cuánto tiempo tu caso se vuelve viable.</li>
+      </ul>
+      <h3 style="margin-top:28px">Lo que no incluye</h3>
+      <ul class="equis">
+        <li>El arancel consular de $185. Va directo al consulado.</li>
+        <li>Traducciones de documentos.</li>
+        <li>Trámite o renovación de pasaporte.</li>
+      </ul>
+    </div>
+
+    <div class="panel" id="p-can" role="tabpanel" aria-labelledby="t-can" hidden>
+      <h3>Lo que incluye</h3>
+      <ul class="check">
+        <li>Perfilamiento de tu caso: dónde estás fuerte y dónde no.</li>
+        <li>Llenado y revisión de los formularios de la solicitud, dato por dato.</li>
+        <li>Creación de tu perfil y gestión de la cita.</li>
+        <li>Asesoría por Zoom, para que veamos tu caso juntos aunque no estés en Quito.</li>
+        <li>Preparación para la entrega de documentos y la cita de biometría.</li>
+        <li>Lista de documentos hecha a tu medida, incluida la de menores de edad si viajan contigo.</li>
+        <li>Si hoy no calificas, te decimos qué mejorar y en cuánto tiempo tu caso se vuelve viable.</li>
+      </ul>
+      <h3 style="margin-top:28px">Lo que no incluye</h3>
+      <ul class="equis">
+        <li>Las tasas del gobierno canadiense y el costo de la biometría.</li>
+        <li>Traducciones de documentos.</li>
+        <li>Trámite o renovación de pasaporte.</li>
       </ul>
     </div>
 
     <div class="panel" id="p-sch" role="tabpanel" aria-labelledby="t-sch" hidden>
+      <h3>Lo que incluye</h3>
       <ul class="check">
         <li>Asesoría en el agendamiento de la cita consular.</li>
         <li>Llenado y revisión de los formularios correspondientes.</li>
         <li>Asistencia en la recopilación y organización de los documentos requeridos.</li>
-        <li>Gestión de la reserva de vuelo (sin emisión).</li>
+        <li>Asesoría por Zoom, para que veamos tu caso juntos aunque no estés en Quito.</li>
+        <li>Gestión de la reserva de vuelo, sin emisión.</li>
         <li>Organización de la reserva de alojamiento.</li>
         <li>Elaboración del itinerario de actividades y propósito del viaje.</li>
+        <li>Si hoy no calificas, te decimos qué mejorar y en cuánto tiempo tu caso se vuelve viable.</li>
+      </ul>
+      <h3 style="margin-top:28px">Lo que no incluye</h3>
+      <ul class="equis">
+        <li>La tasa consular.</li>
+        <li>El fee de VFS, que se paga al agendar en línea con tarjeta.</li>
+        <li>La tasa de cita VIP, si necesitas agendar con urgencia.</li>
+        <li>El seguro de viaje, con cobertura mínima de 30.000 euros.</li>
+        <li>Traducciones de documentos.</li>
+        <li>Trámite o renovación de pasaporte.</li>
       </ul>
     </div>
 
-    <div class="tarjeta" style="margin-top:20px">
-      <h3>En todos los casos</h3>
-      <p style="margin:0">Si hoy no calificas, te decimos qué mejorar y en cuánto tiempo tu caso se vuelve viable.</p>
-    </div>
-
-    <h3 style="margin-top:34px">Lo que no incluye</h3>
-    <p class="nota" style="margin-bottom:1em">Claro desde el principio, para que no haya sorpresas.</p>
-    <ul class="equis">
-      <li>Aranceles y tasas consulares. Van directo al consulado.</li>
-      <li>Fee de VFS en el caso de Europa, que se paga al agendar en línea con tarjeta.</li>
-      <li>Seguros de viaje.</li>
-      <li>Traducciones de documentos.</li>
-      <li>Trámite de pasaporte.</li>
-    </ul>
   </div>
 </section>
 
@@ -322,8 +346,8 @@ footer strong{color:var(--tinta)}
     <div class="precio">
       <h3><span class="bandera">🇺🇸</span> Estados Unidos</h3>
       <p class="tipo">Visa de turismo B1/B2 · valores por persona</p>
-      <div class="fila"><span>Asesoría, primera vez</span><b>$47</b></div>
-      <div class="fila"><span>Asesoría, renovación</span><b>$40</b></div>
+      <div class="fila"><span>Asesoría, primera vez</span><b>$65</b></div>
+      <div class="fila"><span>Asesoría, renovación</span><b>$55</b></div>
       <div class="fila consular"><span>Arancel consular (va al consulado)</span><b>$185</b></div>
       <p class="nota" style="margin:14px 0 0">El arancel se paga con tarjeta en la plataforma del consulado, o en efectivo en el Banco de Guayaquil.</p>
     </div>
@@ -339,11 +363,11 @@ footer strong{color:var(--tinta)}
     <div class="precio">
       <h3><span class="bandera">🇪🇺</span> Europa</h3>
       <p class="tipo">Visa Schengen · valores por persona</p>
-      <div class="fila"><span>Asesoría</span><b>$145</b></div>
+      <div class="fila"><span>Asesoría</span><b>$155</b></div>
       <div class="fila consular"><span>Tasa consular, fee de VFS y seguro de viaje</span><b>aparte</b></div>
     </div>
 
-    <p class="nota">Pago por PayPhone. Se emite factura.</p>
+    <p class="nota">Puedes pagar por <strong>transferencia bancaria</strong> o con <strong>tarjeta de crédito</strong> (PayPhone). Se emite factura.</p>
   </div>
 </section>
 
@@ -369,13 +393,24 @@ footer strong{color:var(--tinta)}
         <li>Cédula por los dos lados.</li>
         <li>Visa americana, si la tienes.</li>
         <li>Acta de matrimonio, si aplica.</li>
-        <li>Foto digital, en el caso de menores de edad.</li>
+        <li>Respaldos bancarios: certificado del banco y movimientos de los últimos meses.</li>
+        <li>Para menores de edad se pide documentación adicional, que te detallamos según tu caso.</li>
       </ul>
     </div>
 
     <div class="tarjeta">
       <h3><span class="bandera">🇪🇺</span> Europa</h3>
-      <p style="margin:0">Te armamos la lista según el país al que vayas, porque cada consulado pide lo suyo.</p>
+      <ul class="check" style="margin-bottom:0">
+        <li>Foto tipo pasaporte de 3.5 x 4.5 cm, fondo blanco.</li>
+        <li>Foto de la página de tu pasaporte donde salen tus datos.</li>
+        <li>Foto de tu visa anterior, si tienes.</li>
+        <li>Respaldos bancarios: certificado del banco y movimientos de los últimos 6 meses.</li>
+        <li>Certificados laborales.</li>
+        <li>Roles de pago.</li>
+        <li>Certificado de estudios, en el caso de estudiantes.</li>
+        <li>Documentos de propiedades a tu nombre, si tienes: impuesto predial, escritura o matrícula vehicular.</li>
+      </ul>
+      <p class="nota" style="margin:14px 0 0">Cada consulado pide lo suyo, así que la lista final te la armamos según el país al que vayas.</p>
     </div>
 
     <p class="nota">Todo se manda desde el celular. No necesitas Excel, ni escáner, ni saber de computadoras.</p>
@@ -442,6 +477,7 @@ footer strong{color:var(--tinta)}
   <div class="env">
     <p><strong>Mi Visa593</strong> · David Ubilluz · Quito, Ecuador</p>
     <p>Servicio privado e independiente de preparación y asesoría para solicitudes de visa de turismo. No estamos afiliados ni representamos a ningún gobierno, consulado o embajada. No garantizamos la aprobación de ninguna visa: la decisión es exclusiva de la autoridad consular. Los formularios oficiales son completados y certificados por el propio solicitante.</p>
+    <p class="nota"><a href="terminos.html">Términos y condiciones</a> · <a href="privacidad.html">Política de privacidad</a></p>
     <p class="nota">© <span id="anio">2026</span> Mi Visa593</p>
   </div>
 </footer>

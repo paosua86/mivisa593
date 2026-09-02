@@ -126,6 +126,7 @@ footer{background:var(--papel-2);padding:22px 20px 34px;font-size:.8rem;color:va
 
 <footer>
   Tus datos se usan solo para revisar tu caso. No los compartimos con nadie.<br>
+  <a href="../terminos.html">Términos</a> · <a href="../privacidad.html">Privacidad</a><br>
   Mi Visa593 · David Ubilluz · Quito, Ecuador
 </footer>
 
@@ -140,19 +141,26 @@ footer{background:var(--papel-2);padding:22px 20px 34px;font-size:.8rem;color:va
 var WHATSAPP = "593998961214";
 var CLAVE_GUARDADO = "mivisa593_precalificacion";
 
+/* Dónde se graban los casos completos.
+   Pega aquí la URL de la app web de Google Apps Script.
+   Instrucciones en herramientas/apps-script-guardar-casos.gs
+   Si se deja vacío, el formulario funciona igual pero no guarda nada. */
+var ENDPOINT_GUARDADO = "https://script.google.com/macros/s/AKfycbxB8bkBNzeRVzkzk7QSH-iZ5itcAUm33VRfX2lSaLLb_gzMmhZfU7RHGf_rOob1e2hL/exec";
+
 /* Cada pregunta:
    id        clave con la que se guarda la respuesta
    titulo    lo que se lee grande
    ayuda     línea explicativa opcional
    opciones  [{v: valor, t: texto, s: subtexto, p: puntos,
                bandera: "texto",   // punto flojo serio, se muestra siempre
-               flojo:   "texto"}]  // punto flojo leve, solo si el caso no es verde
+               flojo:   "texto",   // punto flojo leve, solo si el caso no es verde
+               fuerte:  "texto"}]  // punto a favor, va en el resumen de David
    si        función(r) -> true si esta pregunta aplica al caso   */
 
 var PREGUNTAS = [
   {
     id: "destino",
-    titulo: "¿A dónde quieres viajar?",
+    titulo: "¿Cuál es tu país destino?",
     opciones: [
       {v:"usa",      t:"Estados Unidos",  s:"Visa de turismo B1/B2"},
       {v:"canada",   t:"Canadá",          s:"Visa de visitante"},
@@ -165,7 +173,7 @@ var PREGUNTAS = [
     titulo: "¿Ya habías pedido esta visa antes?",
     opciones: [
       {v:"nunca",    t:"No, es mi primera vez", p:0},
-      {v:"aprobada", t:"Sí, y me la dieron",    s:"Sería una renovación", p:3},
+      {v:"aprobada", t:"Sí, y me la dieron",    s:"Sería una renovación", p:3, fuerte:"Ya tuvo la visa antes: es una renovación"},
       {v:"negada",   t:"Sí, y me la negaron",   p:0}
     ]
   },
@@ -185,7 +193,7 @@ var PREGUNTAS = [
     titulo: "Desde que te la negaron, ¿cambió algo importante en tu vida?",
     ayuda: "Un trabajo nuevo, un viaje a otro país, un hijo, una casa, más ingresos.",
     opciones: [
-      {v:"si", t:"Sí, varias cosas cambiaron",  p:2},
+      {v:"si", t:"Sí, varias cosas cambiaron",  p:2, fuerte:"Su situación cambió desde la negación anterior"},
       {v:"algo", t:"Alguna cosa, no mucho",     p:0, flojo:"Cambió poco desde la negación anterior"},
       {v:"no", t:"No, sigo igual",              p:-2, bandera:"Negación reciente sin cambios en el perfil"}
     ]
@@ -197,7 +205,7 @@ var PREGUNTAS = [
     opciones: [
       {v:"nunca",  t:"No, nunca he salido del país", p:-2, bandera:"Sin viajes internacionales previos"},
       {v:"latam",  t:"Sí, a países de Latinoamérica", s:"Colombia, Perú, Panamá, México…", p:0, flojo:"Solo has viajado dentro de Latinoamérica"},
-      {v:"fuerte", t:"Sí, a Estados Unidos, Canadá, Europa o Asia", p:3}
+      {v:"fuerte", t:"Sí, a Estados Unidos, Canadá, Europa o Asia", p:3, fuerte:"Ha viajado a Estados Unidos, Canadá, Europa o Asia"}
     ]
   },
   {
@@ -218,7 +226,7 @@ var PREGUNTAS = [
     opciones: [
       {v:"menos6", t:"Menos de 6 meses",   p:-2, bandera:"Muy poco tiempo en la actividad actual"},
       {v:"6a24",   t:"Entre 6 meses y 2 años", p:1, flojo:"Poco tiempo en tu actividad actual"},
-      {v:"mas2",   t:"Más de 2 años",      p:2}
+      {v:"mas2",   t:"Más de 2 años",      p:2, fuerte:"Más de 2 años en su actividad actual"}
     ]
   },
   {
@@ -226,7 +234,7 @@ var PREGUNTAS = [
     titulo: "¿Puedes demostrar tus ingresos o ahorros con papeles?",
     ayuda: "Rol de pagos, certificado del banco, movimientos bancarios, declaración de impuestos.",
     opciones: [
-      {v:"si",   t:"Sí, sin problema", p:2},
+      {v:"si",   t:"Sí, sin problema", p:2, fuerte:"Puede demostrar ingresos con papeles"},
       {v:"algo", t:"Algo, pero no todo", s:"Parte de mis ingresos no están respaldados", p:0, flojo:"Parte de tus ingresos no se puede respaldar con papeles"},
       {v:"no",   t:"No, me sería difícil", p:-2, bandera:"Ingresos difíciles de demostrar"}
     ]
@@ -235,7 +243,7 @@ var PREGUNTAS = [
     id: "dependientes",
     titulo: "¿Tienes hijos o personas que dependan de ti aquí en Ecuador?",
     opciones: [
-      {v:"si", t:"Sí", p:2},
+      {v:"si", t:"Sí", p:2, fuerte:"Tiene hijos o dependientes en Ecuador"},
       {v:"no", t:"No", p:0, flojo:"Sin hijos ni dependientes en Ecuador"}
     ]
   },
@@ -243,7 +251,7 @@ var PREGUNTAS = [
     id: "pareja",
     titulo: "¿Tienes pareja o cónyuge?",
     opciones: [
-      {v:"si_queda", t:"Sí, y se queda en Ecuador", p:1},
+      {v:"si_queda", t:"Sí, y se queda en Ecuador", p:1, fuerte:"Su pareja se queda en Ecuador"},
       {v:"si_viaja", t:"Sí, y viaja conmigo", p:0},
       {v:"no",       t:"No tengo pareja", p:0}
     ]
@@ -253,7 +261,7 @@ var PREGUNTAS = [
     titulo: "¿Tienes casa, terreno, vehículo o negocio a tu nombre?",
     ayuda: "No es obligatorio tenerlos. Solo suma si los tienes.",
     opciones: [
-      {v:"si", t:"Sí, alguno de esos", p:2},
+      {v:"si", t:"Sí, alguno de esos", p:2, fuerte:"Tiene bienes a su nombre"},
       {v:"no", t:"No, ninguno", p:0, flojo:"Sin bienes a tu nombre"}
     ]
   },
@@ -261,7 +269,7 @@ var PREGUNTAS = [
     id: "pasaporte",
     titulo: "¿Cómo está tu pasaporte?",
     opciones: [
-      {v:"vigente", t:"Vigente, le queda más de un año", p:1},
+      {v:"vigente", t:"Vigente, le queda más de un año", p:1, fuerte:"Pasaporte vigente con buen margen"},
       {v:"pronto",  t:"Vigente, pero vence pronto", s:"En menos de 6 meses", p:0, bandera:"Pasaporte próximo a vencer: hay que renovarlo primero"},
       {v:"no",      t:"No tengo pasaporte todavía", p:0, bandera:"Sin pasaporte: es el primer trámite a resolver"}
     ]
@@ -441,6 +449,7 @@ function calcular(){
   var puntos = 0;
   banderas = [];
   var flojos = [];
+  var fuertes = [];
   PREGUNTAS.forEach(function(q){
     if (!aplica(q)) return;
     var v = respuestas[q.id];
@@ -450,6 +459,7 @@ function calcular(){
     if (typeof op.p === "number") puntos += op.p;
     if (op.bandera) banderas.push(op.bandera);
     if (op.flojo) flojos.push(op.flojo);
+    if (op.fuerte) fuertes.push(op.fuerte);
   });
 
   var semaforo = puntos >= 6 ? "verde" : (puntos >= 2 ? "ambar" : "rojo");
@@ -468,7 +478,7 @@ function calcular(){
   /* En verde solo se muestran los puntos serios; en ámbar y rojo, todos. */
   var mostrar = semaforo === "verde" ? banderas : banderas.concat(flojos);
 
-  return {puntos:puntos, semaforo:semaforo, banderas:banderas, flojos:flojos, mostrar:mostrar};
+  return {puntos:puntos, semaforo:semaforo, banderas:banderas, flojos:flojos, fuertes:fuertes, mostrar:mostrar};
 }
 
 /* ---------- pantalla de contacto ---------- */
@@ -490,7 +500,7 @@ function pintarContacto(){
         '<input type="email" id="c-mail" autocomplete="email" placeholder="ana@correo.com">' +
       '</label>' +
       '<label class="consent"><input type="checkbox" id="c-ok">' +
-        '<span>Autorizo a Mi Visa593 a usar estos datos para revisar mi caso y contactarme. Puedo pedir que los borren cuando quiera.</span>' +
+        '<span>Autorizo a Mi Visa593 a usar estos datos para revisar mi caso y contactarme. Puedo pedir que los borren cuando quiera. He leído los <a href="../terminos.html" target="_blank">términos</a> y la <a href="../privacidad.html" target="_blank">política de privacidad</a>.</span>' +
       '</label>' +
       '<button class="btn" type="button" id="ver" disabled>Ver el resultado de mi caso</button>' +
       '<div class="pie-nav"><button class="atras" type="button" id="atras">← Volver a la anterior</button></div>' +
@@ -531,34 +541,64 @@ function pintarContacto(){
 /* ---------- resultado ---------- */
 function resumenParaDavid(r){
   var l = [];
-  l.push("Caso nuevo desde la página");
+  l.push("*Caso nuevo · Mi Visa593*");
   l.push("");
-  l.push("Nombre: " + respuestas.nombre);
-  l.push("WhatsApp: " + respuestas.telefono);
-  if (respuestas.correo) l.push("Correo: " + respuestas.correo);
-  l.push("Destino: " + (NOMBRE_DESTINO[respuestas.destino] || respuestas.destino));
-  if (respuestas.pais_schengen) l.push("País Schengen: " + respuestas.pais_schengen);
-  l.push("Personas: " + (respuestas.personas || "1"));
-  l.push("");
-  l.push("Semáforo: " + r.semaforo.toUpperCase() + " (" + r.puntos + " puntos)");
-  l.push("");
-  PREGUNTAS.forEach(function(q){
-    if (!aplica(q)) return;
-    var v = respuestas[q.id];
-    if (v === undefined) return;
-    var op = q.opciones.filter(function(o){ return String(o.v) === String(v); })[0];
-    if (op) l.push("- " + q.titulo + " " + op.t);
-  });
+  l.push(respuestas.nombre);
+  l.push("País destino: " + (NOMBRE_DESTINO[respuestas.destino] || respuestas.destino) +
+         (respuestas.personas && respuestas.personas !== "1" ? " · " + respuestas.personas + " personas" : ""));
+  l.push("Semáforo: " + ({verde:"VERDE", ambar:"ÁMBAR", rojo:"ROJO"})[r.semaforo]);
+  if (r.fuertes.length){
+    l.push("");
+    l.push("A favor:");
+    r.fuertes.forEach(function(b){ l.push("• " + b); });
+  }
   if (r.mostrar.length){
     l.push("");
-    l.push("Puntos flojos:");
-    r.mostrar.forEach(function(b){ l.push("- " + b); });
+    l.push("En contra:");
+    r.mostrar.forEach(function(b){ l.push("• " + b); });
   }
-  return l.join("\n");
+  l.push("");
+  l.push("El detalle completo está en la hoja de casos.");
+  return l.join(String.fromCharCode(10));
+}
+
+/* Manda el caso completo a la hoja de cálculo.
+   Va en segundo plano: si falla, el usuario no se entera y el flujo sigue. */
+function guardarEnHoja(r){
+  if (!ENDPOINT_GUARDADO) return;
+  var fila = {
+    fecha: new Date().toISOString(),
+    nombre: respuestas.nombre || "",
+    telefono: respuestas.telefono || "",
+    correo: respuestas.correo || "",
+    destino: NOMBRE_DESTINO[respuestas.destino] || respuestas.destino || "",
+    pais_schengen: respuestas.pais_schengen || "",
+    personas: respuestas.personas || "",
+    semaforo: r.semaforo,
+    puntos: r.puntos,
+    a_favor: r.fuertes.join(" | "),
+    en_contra: r.mostrar.join(" | "),
+    consentimiento: respuestas.consentimiento ? "Sí" : "No"
+  };
+  PREGUNTAS.forEach(function(q){
+    var v = respuestas[q.id];
+    if (v === undefined) { fila[q.id] = ""; return; }
+    var op = q.opciones.filter(function(o){ return String(o.v) === String(v); })[0];
+    fila[q.id] = op ? op.t : v;
+  });
+  try {
+    fetch(ENDPOINT_GUARDADO, {
+      method: "POST",
+      mode: "no-cors",
+      headers: {"Content-Type": "text/plain;charset=utf-8"},
+      body: JSON.stringify(fila)
+    })["catch"](function(){});
+  } catch(e){}
 }
 
 function pintarResultado(){
   var r = calcular();
+  guardarEnHoja(r);
   var textoWa = encodeURIComponent(resumenParaDavid(r));
   var enlaceWa = "https://wa.me/" + WHATSAPP + "?text=" + textoWa;
   var html = "";
