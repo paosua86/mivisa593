@@ -188,6 +188,26 @@ function carpetaDelCaso(datos) {
  */
 function doGet(e) {
   var codigo = e && e.parameter ? String(e.parameter.caso || "").toUpperCase() : "";
+
+  // Diagnostico: ?prueba=drive comprueba si el script puede usar Drive.
+  if (e && e.parameter && e.parameter.prueba === "drive") {
+    var r = {};
+    try {
+      var it = DriveApp.getFoldersByName("Casos Mi Visa593");
+      r.carpetaExiste = it.hasNext();
+      var f = it.hasNext() ? it.next() : DriveApp.createFolder("Casos Mi Visa593");
+      r.carpetaUrl = f.getUrl();
+      var archivo = DriveApp.createFile(Utilities.newBlob("prueba", "text/plain", "prueba-drive.txt"));
+      r.archivoUrl = archivo.getUrl();
+      archivo.setTrashed(true);
+      r.ok = true;
+    } catch (err) {
+      r.ok = false;
+      r.error = String(err);
+    }
+    return responder(r);
+  }
+
   if (!codigo) {
     return responder({ ok: true, mensaje: "Endpoint de Mi Visa593 activo" });
   }
