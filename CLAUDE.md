@@ -90,6 +90,11 @@ pedirlo ni proponerlo. La dirección y el nombre sí van; el RUC no.
 hacer commit y push a `main` directamente. El workflow de GitHub Pages
 lo despliega solo. No preguntar "¿lo subo?" cada vez.
 
+**La URL de Apps Script va pública en el código de la página.** Decisión
+tomada a propósito para avanzar. El Worker de Cloudflare que la esconde
+está escrito en `herramientas/cloudflare-worker-casos.js` por si algún
+día se quiere; no volver a proponerlo.
+
 **Datos de contacto públicos ya fijados:** David Ubilluz · Pachacútec
 s/n, Quito, Pichincha 170802 · WhatsApp +593 99 896 1214. No volver a
 pedirlos.
