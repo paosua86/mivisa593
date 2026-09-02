@@ -1,0 +1,872 @@
+<!doctype html>
+<html lang="es-EC">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tu expediente — Mi Visa593</title>
+<meta name="theme-color" content="#0f3d38">
+<meta name="robots" content="noindex">
+<style>
+:root{
+  --tinta:#14201e;--tinta-suave:#4a5a56;--papel:#fbf8f3;--papel-2:#f3ede3;
+  --verde:#0f3d38;--verde-claro:#e6efec;--naranja:#c2571f;--borde:#e0d8cb;
+  --ok:#2f6d4f;--ambar:#8a5a12;--ambar-fondo:#fbf2e0;--radio:14px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--papel);color:var(--tinta);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  font-size:19px;line-height:1.55;-webkit-font-smoothing:antialiased;
+  min-height:100vh;display:flex;flex-direction:column;
+}
+h1,h2{line-height:1.22;margin:0 0 .5em;letter-spacing:-.02em;font-weight:700}
+h1{font-size:1.6rem}
+h2{font-size:1.2rem}
+p{margin:0 0 1em}
+a{color:var(--verde)}
+
+.cab{background:var(--verde);color:#fff;padding:14px 20px;display:flex;align-items:center;gap:14px}
+.cab .marca{font-weight:700;font-size:.95rem}
+.cab .paso{margin-left:auto;font-size:.82rem;color:#a9c6c0}
+.barra{height:5px;background:var(--papel-2)}
+.barra span{display:block;height:100%;background:var(--naranja);width:0;transition:width .3s ease}
+.env{max-width:560px;margin:0 auto;padding:28px 20px 44px;width:100%;flex:1}
+
+.ayuda{color:var(--tinta-suave);font-size:.97rem;margin:-.3em 0 1.5em}
+.seccion{animation:entra .2s ease}
+@keyframes entra{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* campos */
+label.campo{display:block;margin-bottom:18px;font-weight:600;font-size:.98rem}
+label.campo .opt{font-weight:400;color:var(--tinta-suave);font-size:.88rem}
+label.campo input,label.campo select,label.campo textarea{
+  display:block;width:100%;font:inherit;font-size:1.02rem;font-weight:400;margin-top:7px;
+  padding:14px 15px;border:2px solid var(--borde);border-radius:var(--radio);
+  background:#fff;color:var(--tinta);
+}
+label.campo textarea{min-height:88px;resize:vertical}
+label.campo input:focus,label.campo select:focus,label.campo textarea:focus{outline:none;border-color:var(--verde)}
+label.campo small{display:block;font-weight:400;color:var(--tinta-suave);font-size:.85rem;margin-top:5px}
+
+.ops{display:grid;gap:10px;margin-bottom:20px}
+.op{
+  display:flex;align-items:center;gap:13px;width:100%;text-align:left;
+  font:inherit;font-size:1rem;font-weight:600;color:var(--tinta);
+  background:#fff;border:2px solid var(--borde);border-radius:var(--radio);
+  padding:15px 17px;cursor:pointer;
+}
+.op:hover{border-color:var(--verde)}
+.op[aria-pressed="true"]{border-color:var(--verde);background:var(--verde-claro)}
+.op .marca-op{flex:0 0 22px;height:22px;border-radius:50%;border:2px solid var(--borde)}
+.op[aria-pressed="true"] .marca-op{border-color:var(--verde);background:var(--verde);box-shadow:inset 0 0 0 3px var(--verde-claro)}
+.op small{display:block;font-weight:400;color:var(--tinta-suave);font-size:.86rem;margin-top:2px}
+
+/* botones */
+.btn{
+  display:block;width:100%;text-align:center;text-decoration:none;font:inherit;
+  background:var(--naranja);color:#fff;font-weight:700;font-size:1.03rem;
+  padding:17px 22px;border-radius:var(--radio);border:0;cursor:pointer;
+  box-shadow:0 2px 0 #8f3f14;
+}
+.btn:active{transform:translateY(2px);box-shadow:0 0 0 #8f3f14}
+.btn[disabled]{opacity:.45;pointer-events:none}
+.btn-2{background:transparent;color:var(--verde);border:2px solid var(--verde);box-shadow:none;margin-top:10px}
+.btn-wa{background:#1f9c53;box-shadow:0 2px 0 #16713b}
+.atras{
+  background:none;border:0;font:inherit;font-size:.94rem;color:var(--tinta-suave);
+  cursor:pointer;padding:14px 4px;display:inline-flex;align-items:center;gap:7px;
+}
+.micro{font-size:.88rem;color:var(--tinta-suave);text-align:center;margin:12px 0 0}
+
+/* tarjetas y bloques */
+.tarjeta{background:#fff;border:1px solid var(--borde);border-radius:var(--radio);padding:20px;margin-bottom:14px}
+.tarjeta h2{font-size:1.05rem}
+.nota{font-size:.9rem;color:var(--tinta-suave)}
+.aviso{background:var(--ambar-fondo);border:1px solid var(--ambar);border-radius:var(--radio);padding:16px 18px;margin-bottom:20px;font-size:.94rem}
+
+/* repetibles */
+.fila-rep{background:#fff;border:1px solid var(--borde);border-radius:var(--radio);padding:16px 18px 4px;margin-bottom:12px;position:relative}
+.fila-rep .quitar{
+  position:absolute;top:10px;right:10px;background:none;border:0;cursor:pointer;
+  color:var(--tinta-suave);font-size:1.4rem;line-height:1;padding:4px 8px;
+}
+.mas{
+  background:none;border:2px dashed var(--borde);color:var(--verde);font:inherit;
+  font-weight:600;font-size:.95rem;width:100%;padding:14px;border-radius:var(--radio);
+  cursor:pointer;margin-bottom:20px;
+}
+.mas:hover{border-color:var(--verde)}
+
+/* personas */
+.persona{
+  display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--borde);
+  border-radius:var(--radio);padding:15px 17px;margin-bottom:10px;font-size:1rem;
+}
+.persona .est{margin-left:auto;font-size:.85rem;font-weight:600}
+.persona .est.listo{color:var(--ok)}
+.persona .est.pend{color:var(--ambar)}
+.persona button{
+  background:var(--verde);color:#fff;border:0;border-radius:999px;font:inherit;
+  font-size:.85rem;font-weight:700;padding:8px 15px;cursor:pointer;margin-left:auto;
+}
+
+/* documentos */
+.doc{background:#fff;border:1px solid var(--borde);border-radius:var(--radio);padding:16px 18px;margin-bottom:10px}
+.doc p{margin:0 0 10px;font-weight:600;font-size:.97rem}
+.doc .estados{display:flex;gap:7px;flex-wrap:wrap}
+.doc .estados button{
+  font:inherit;font-size:.86rem;font-weight:600;padding:8px 13px;border-radius:999px;
+  border:1px solid var(--borde);background:var(--papel);color:var(--tinta-suave);cursor:pointer;
+}
+.doc .estados button[aria-pressed="true"]{background:var(--verde);color:#fff;border-color:var(--verde)}
+
+footer{background:var(--papel-2);padding:22px 20px 34px;font-size:.8rem;color:var(--tinta-suave);text-align:center}
+footer a{color:var(--verde)}
+</style>
+</head>
+<body>
+
+<div class="cab">
+  <span class="marca">Mi Visa593</span>
+  <span class="paso" id="etiqueta-paso"></span>
+</div>
+<div class="barra"><span id="barra"></span></div>
+
+<div class="env" id="app"></div>
+
+<footer>
+  Tus datos se utilizan únicamente para preparar tu solicitud.<br>
+  <a href="../terminos.html">Términos</a> · <a href="../privacidad.html">Privacidad</a><br>
+  Mi Visa593 · David Ubilluz · Quito, Ecuador
+</footer>
+
+<script>
+"use strict";
+
+/* ============================================================
+   CONFIGURACIÓN
+   ============================================================ */
+
+var WHATSAPP = "593998961214";
+var ENDPOINT = "https://script.google.com/macros/s/AKfycbxB8bkBNzeRVzkzk7QSH-iZ5itcAUm33VRfX2lSaLLb_gzMmhZfU7RHGf_rOob1e2hL/exec";
+var CLAVE = "mivisa593_expediente_";
+
+/* Tipos de campo: texto, fecha, tel, correo, numero, larga, opcion */
+
+var SECCIONES_USA = [
+  {
+    id: "personales",
+    titulo: "Tus datos personales",
+    ayuda: "Como aparecen en tu pasaporte, tal cual.",
+    campos: [
+      {id:"nombres",     t:"Nombres completos", tipo:"texto", req:true},
+      {id:"apellidos",   t:"Apellidos completos", tipo:"texto", req:true},
+      {id:"nacimiento",  t:"Fecha de nacimiento", tipo:"fecha", req:true},
+      {id:"lugar_nacimiento", t:"Lugar de nacimiento", tipo:"texto", ayuda:"Ciudad y país", req:true},
+      {id:"cedula",      t:"Número de cédula", tipo:"texto", req:true},
+      {id:"direccion",   t:"Dirección de tu domicilio", tipo:"larga", req:true},
+      {id:"tel_casa",    t:"Teléfono de tu domicilio", tipo:"tel", opcional:true},
+      {id:"celular",     t:"Teléfono celular", tipo:"tel", req:true},
+      {id:"correo",      t:"Correo electrónico", tipo:"correo", req:true},
+      {id:"estado_civil",t:"Estado civil", tipo:"opcion", req:true,
+       opciones:["Soltero/a","Casado/a","Unión libre","Divorciado/a","Viudo/a"]}
+    ]
+  },
+  {
+    id: "conyuge",
+    titulo: "Datos de tu cónyuge",
+    ayuda: "Solo si estás casado, en unión libre o divorciado.",
+    si: function(d){ return ["Casado/a","Unión libre","Divorciado/a"].indexOf(d.personales__estado_civil) !== -1; },
+    campos: [
+      {id:"nombre",       t:"Nombre completo de tu cónyuge", tipo:"texto", req:true},
+      {id:"nacimiento",   t:"Su fecha de nacimiento", tipo:"fecha"},
+      {id:"lugar",        t:"Su ciudad y país de nacimiento", tipo:"texto"},
+      {id:"matrimonio",   t:"Fecha de matrimonio", tipo:"fecha", opcional:true},
+      {id:"divorcio",     t:"Fecha de divorcio", tipo:"fecha", opcional:true}
+    ]
+  },
+  {
+    id: "padres",
+    titulo: "Datos de tus padres",
+    ayuda: "Si alguno falleció, escríbelo en el nombre.",
+    campos: [
+      {id:"madre",           t:"Nombre completo de tu madre", tipo:"texto", req:true},
+      {id:"madre_nacimiento",t:"Su fecha de nacimiento", tipo:"fecha", opcional:true},
+      {id:"padre",           t:"Nombre completo de tu padre", tipo:"texto", req:true},
+      {id:"padre_nacimiento",t:"Su fecha de nacimiento", tipo:"fecha", opcional:true},
+      {id:"en_usa",          t:"¿Alguno se encuentra en Estados Unidos?", tipo:"opcion",
+       opciones:["No","Sí, mi madre","Sí, mi padre","Sí, los dos"], req:true}
+    ]
+  },
+  {
+    id: "secundaria",
+    titulo: "Tus estudios secundarios",
+    campos: [
+      {id:"colegio",  t:"Nombre del colegio", tipo:"texto", req:true},
+      {id:"direccion",t:"Dirección del colegio", tipo:"texto", opcional:true},
+      {id:"ciudad",   t:"Ciudad", tipo:"texto", req:true},
+      {id:"inicio",   t:"Fecha de inicio", tipo:"fecha", opcional:true},
+      {id:"fin",      t:"Fecha de culminación", tipo:"fecha", opcional:true},
+      {id:"titulo",   t:"Título obtenido", tipo:"texto", opcional:true}
+    ]
+  },
+  {
+    id: "universidad",
+    titulo: "Tus estudios superiores",
+    ayuda: "Universidad o instituto. Si no aplica, puedes saltar esta sección.",
+    campos: [
+      {id:"institucion",t:"Nombre de la universidad o instituto", tipo:"texto", opcional:true},
+      {id:"direccion",  t:"Dirección", tipo:"texto", opcional:true},
+      {id:"ciudad",     t:"Ciudad", tipo:"texto", opcional:true},
+      {id:"inicio",     t:"Fecha de inicio", tipo:"fecha", opcional:true},
+      {id:"fin",        t:"Fecha de culminación", tipo:"fecha", opcional:true},
+      {id:"titulo",     t:"Título obtenido", tipo:"texto", opcional:true}
+    ]
+  },
+  {
+    id: "laboral",
+    titulo: "Tu trabajo actual",
+    ayuda: "Si trabajas por tu cuenta, pon el nombre de tu negocio.",
+    campos: [
+      {id:"empresa",  t:"Nombre de la empresa o negocio", tipo:"texto", req:true},
+      {id:"cargo",    t:"Tu cargo", tipo:"texto", req:true},
+      {id:"inicio",   t:"Fecha en que empezaste", tipo:"fecha", req:true},
+      {id:"direccion",t:"Dirección del trabajo", tipo:"larga", req:true},
+      {id:"ciudad",   t:"Ciudad", tipo:"texto", req:true},
+      {id:"telefono", t:"Teléfono del trabajo", tipo:"tel", req:true},
+      {id:"jefe",     t:"Nombre de tu jefe o jefa", tipo:"texto", opcional:true},
+      {id:"funciones",t:"¿Qué haces en tu trabajo?", tipo:"larga", req:true,
+       ayuda:"Al menos cinco tareas, separadas por comas."},
+      {id:"sueldo",   t:"Sueldo mensual aproximado (USD)", tipo:"numero", req:true}
+    ]
+  },
+  {
+    id: "laboral_anterior",
+    titulo: "Tu trabajo anterior",
+    ayuda: "Solo si tuviste otro empleo relevante antes. Si no, salta esta sección.",
+    campos: [
+      {id:"empresa",  t:"Nombre de la empresa", tipo:"texto", opcional:true},
+      {id:"inicio",   t:"Fecha de inicio", tipo:"fecha", opcional:true},
+      {id:"fin",      t:"Fecha de salida", tipo:"fecha", opcional:true},
+      {id:"direccion",t:"Dirección", tipo:"texto", opcional:true},
+      {id:"ciudad",   t:"Ciudad", tipo:"texto", opcional:true},
+      {id:"telefono", t:"Teléfono", tipo:"tel", opcional:true},
+      {id:"jefe",     t:"Nombre de tu jefe o jefa", tipo:"texto", opcional:true},
+      {id:"funciones",t:"¿Qué hacías ahí?", tipo:"larga", opcional:true}
+    ]
+  },
+  {
+    id: "pasaporte",
+    titulo: "Tu pasaporte",
+    campos: [
+      {id:"numero",    t:"Número de pasaporte", tipo:"texto", req:true},
+      {id:"emision",   t:"Fecha de emisión", tipo:"fecha", req:true},
+      {id:"expiracion",t:"Fecha de expiración", tipo:"fecha", req:true},
+      {id:"ciudad",    t:"Ciudad donde lo emitieron", tipo:"texto", req:true}
+    ]
+  },
+  {
+    id: "viajes",
+    titulo: "Viajes a otros países",
+    ayuda: "De los últimos cinco años, sin contar Estados Unidos. Si no has viajado, sigue de largo.",
+    repetible: {
+      etiqueta: "viaje",
+      campos: [
+        {id:"pais",   t:"País visitado", tipo:"texto"},
+        {id:"ingreso",t:"Fecha de ingreso", tipo:"fecha"},
+        {id:"salida", t:"Fecha de salida", tipo:"fecha"},
+        {id:"motivo", t:"Motivo del viaje", tipo:"texto"}
+      ]
+    }
+  },
+  {
+    id: "viajes_usa",
+    titulo: "Viajes a Estados Unidos",
+    ayuda: "Tus últimas entradas. Si nunca has ido, sigue de largo.",
+    repetible: {
+      etiqueta: "entrada",
+      campos: [
+        {id:"ingreso",t:"Fecha de ingreso", tipo:"fecha"},
+        {id:"salida", t:"Fecha de salida", tipo:"fecha"},
+        {id:"motivo", t:"Motivo del viaje", tipo:"texto"}
+      ]
+    }
+  },
+  {
+    id: "redes",
+    titulo: "Tus redes sociales",
+    ayuda: "Escribe tu nombre de usuario, sin el arroba. Solo las que uses.",
+    campos: [
+      {id:"facebook", t:"Facebook", tipo:"texto", opcional:true},
+      {id:"instagram",t:"Instagram", tipo:"texto", opcional:true},
+      {id:"tiktok",   t:"TikTok", tipo:"texto", opcional:true},
+      {id:"x",        t:"X (antes Twitter)", tipo:"texto", opcional:true}
+    ]
+  },
+  {
+    id: "familia_usa",
+    titulo: "Familiares en Estados Unidos",
+    ayuda: "Si no tienes familiares allá, sigue de largo.",
+    repetible: {
+      etiqueta: "familiar",
+      campos: [
+        {id:"nombre",    t:"Nombre completo", tipo:"texto"},
+        {id:"parentesco",t:"Parentesco", tipo:"opcion",
+         opciones:["Padre o madre","Hermano/a","Hijo/a","Cónyuge","Tío/a","Primo/a","Otro"]},
+        {id:"estatus",   t:"Situación migratoria", tipo:"opcion",
+         opciones:["Ciudadano","Residente","Con visa temporal","Sin estatus","No lo sé"]},
+        {id:"ciudad",    t:"Ciudad y estado", tipo:"texto"}
+      ]
+    }
+  }
+];
+
+var DOCUMENTOS_USA = [
+  "Foto digital 5x5, fondo blanco",
+  "Foto de la página de tu pasaporte donde salen tus datos",
+  "Foto de tu visa americana anterior, si tienes",
+  "Foto del otro pasaporte, si tienes doble nacionalidad"
+];
+
+/* ============================================================
+   ESTADO
+   ============================================================ */
+
+var app = document.getElementById("app");
+var barra = document.getElementById("barra");
+var etiquetaPaso = document.getElementById("etiqueta-paso");
+
+var caso = null;          // {codigo, nombre, destino, personas}
+var E = {                 // expediente en construcción
+  titular: "",
+  personas: [],           // [{__nombre:"Ana", datos:{...}, completa:false}]
+  documentos: {},
+  actual: 0,
+  seccion: 0
+};
+
+function codigoDeUrl(){
+  try { return (new URLSearchParams(location.search).get("caso") || "").toUpperCase(); }
+  catch(e){ return ""; }
+}
+var CODIGO = codigoDeUrl();
+
+function clave(){ return CLAVE + CODIGO; }
+function guardar(){
+  try { localStorage.setItem(clave(), JSON.stringify(E)); } catch(e){}
+}
+function recuperar(){
+  try {
+    var g = localStorage.getItem(clave());
+    if (g) E = JSON.parse(g);
+  } catch(e){}
+}
+
+function esc(s){
+  return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+  });
+}
+function ir(html){ app.innerHTML = html; window.scrollTo(0,0); }
+function progreso(hecho, total, etiqueta){
+  barra.style.width = Math.round((hecho/Math.max(total,1))*100) + "%";
+  etiquetaPaso.textContent = etiqueta || "";
+}
+
+/* ============================================================
+   ARRANQUE — cargar el caso
+   ============================================================ */
+
+function arrancar(){
+  if (!CODIGO) {
+    return ir(
+      '<div class="seccion"><h1>Necesitas tu link personal</h1>' +
+      '<p class="ayuda">Esta página se abre con el link que te envía David. Si lo perdiste, escríbele y te lo reenvía.</p>' +
+      '<a class="btn btn-wa" href="https://wa.me/' + WHATSAPP + '?text=' +
+      encodeURIComponent("Hola David, perdí el link de mi expediente y quisiera que me lo reenvíes.") +
+      '">Pedir mi link por WhatsApp</a></div>'
+    );
+  }
+
+  ir('<div class="seccion"><h1>Abriendo tu expediente…</h1><p class="ayuda">Un momento.</p></div>');
+
+  fetch(ENDPOINT + "?caso=" + encodeURIComponent(CODIGO))
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if (!d || !d.ok) throw new Error("no encontrado");
+      caso = d;
+      recuperar();
+      if (E.personas && E.personas.length) pantallaPersonas();
+      else confirmarIdentidad();
+    })
+    .catch(function(){
+      ir(
+        '<div class="seccion"><h1>No pudimos abrir tu expediente</h1>' +
+        '<p class="ayuda">Puede que el link esté incompleto o que haya un problema de conexión. Escríbele a David y lo revisamos.</p>' +
+        '<a class="btn btn-wa" href="https://wa.me/' + WHATSAPP + '?text=' +
+        encodeURIComponent("Hola David, no puedo abrir mi expediente. Mi código es " + CODIGO + ".") +
+        '">Avisar por WhatsApp</a></div>'
+      );
+    });
+}
+
+/* ============================================================
+   1. CONFIRMAR IDENTIDAD
+   ============================================================ */
+
+function confirmarIdentidad(){
+  progreso(0, 10, "Paso 1");
+  ir(
+    '<div class="seccion">' +
+      '<h1>Antes de empezar, confirmemos quién eres</h1>' +
+      '<p class="ayuda">Este es el nombre con el que se registró el caso. Si está mal escrito o no eres tú, corrígelo aquí.</p>' +
+      '<div class="tarjeta">' +
+        '<p class="nota" style="margin:0 0 4px">Nombre registrado</p>' +
+        '<p style="margin:0;font-size:1.15rem;font-weight:700">' + esc(caso.nombre) + '</p>' +
+        '<p class="nota" style="margin:10px 0 0">País destino: ' + esc(caso.destino) + '</p>' +
+      '</div>' +
+      '<div class="ops">' +
+        '<button class="op" type="button" id="si"><span class="marca-op"></span>' +
+          '<span>Sí, soy yo y está bien escrito</span></button>' +
+        '<button class="op" type="button" id="corregir"><span class="marca-op"></span>' +
+          '<span>Soy yo, pero el nombre está mal<small>Lo corriges en la siguiente pantalla</small></span></button>' +
+        '<button class="op" type="button" id="otro"><span class="marca-op"></span>' +
+          '<span>No soy yo<small>Estoy llenando esto por otra persona</small></span></button>' +
+      '</div>' +
+    '</div>'
+  );
+
+  document.getElementById("si").addEventListener("click", function(){
+    E.titular = caso.nombre;
+    guardar();
+    confirmarDestino();
+  });
+  document.getElementById("corregir").addEventListener("click", function(){ corregirNombre(caso.nombre, "Corrige tu nombre"); });
+  document.getElementById("otro").addEventListener("click", function(){ corregirNombre("", "¿A nombre de quién va este expediente?"); });
+}
+
+function corregirNombre(valor, titulo){
+  ir(
+    '<div class="seccion">' +
+      '<h1>' + esc(titulo) + '</h1>' +
+      '<p class="ayuda">Escríbelo tal como aparece en el pasaporte.</p>' +
+      '<label class="campo">Nombre y apellidos' +
+        '<input type="text" id="n" autocomplete="name" value="' + esc(valor) + '">' +
+      '</label>' +
+      '<button class="btn" type="button" id="ok">Continuar</button>' +
+      '<div><button class="atras" type="button" id="atras">← Volver</button></div>' +
+    '</div>'
+  );
+  var n = document.getElementById("n");
+  n.focus();
+  document.getElementById("ok").addEventListener("click", function(){
+    if (n.value.trim().length < 3) { n.focus(); return; }
+    E.titular = n.value.trim();
+    guardar();
+    confirmarDestino();
+  });
+  document.getElementById("atras").addEventListener("click", confirmarIdentidad);
+}
+
+/* ============================================================
+   2. CONFIRMAR EL DESTINO
+   ============================================================ */
+
+function confirmarDestino(){
+  progreso(1, 10, "Paso 2");
+  var esUsa = String(caso.destino || "").toLowerCase().indexOf("estados unidos") !== -1;
+  ir(
+    '<div class="seccion">' +
+      '<h1>¿El destino sigue siendo el mismo?</h1>' +
+      '<p class="ayuda">Cuando llenaste el primer formulario indicaste este país. Si cambió, dínoslo antes de seguir.</p>' +
+      '<div class="tarjeta"><p style="margin:0;font-size:1.15rem;font-weight:700">' + esc(caso.destino) + '</p></div>' +
+      (esUsa ? "" :
+        '<div class="aviso">Por ahora el expediente completo solo está listo para la visa de Estados Unidos. Para tu destino, David te va a pedir la información directamente por WhatsApp.</div>') +
+      '<div class="ops">' +
+        (esUsa ? '<button class="op" type="button" id="si"><span class="marca-op"></span><span>Sí, es correcto</span></button>' : "") +
+        '<button class="op" type="button" id="no"><span class="marca-op"></span><span>' +
+          (esUsa ? "No, cambió mi destino" : "Escribirle a David") + '</span></button>' +
+      '</div>' +
+      '<div><button class="atras" type="button" id="atras">← Volver</button></div>' +
+    '</div>'
+  );
+
+  if (esUsa) {
+    document.getElementById("si").addEventListener("click", function(){
+      if (!E.personas.length) E.personas = [{ nombre: E.titular, datos: {}, completa: false }];
+      guardar();
+      pantallaPersonas();
+    });
+  }
+  document.getElementById("no").addEventListener("click", function(){
+    location.href = "https://wa.me/" + WHATSAPP + "?text=" +
+      encodeURIComponent("Hola David, sobre mi expediente " + CODIGO + ": necesito revisar el país destino antes de llenar la información.");
+  });
+  document.getElementById("atras").addEventListener("click", confirmarIdentidad);
+}
+
+/* ============================================================
+   3. QUIÉNES APLICAN
+   ============================================================ */
+
+function pantallaPersonas(){
+  var listas = E.personas.filter(function(p){ return p.completa; }).length;
+  progreso(2 + listas, 3 + E.personas.length, "Solicitantes");
+
+  var html = '<div class="seccion">' +
+    '<h1>¿Quiénes van a aplicar?</h1>' +
+    '<p class="ayuda">Una ficha por persona. Puedes llenarlas todas tú, en el orden que quieras, y volver cuando necesites.</p>';
+
+  E.personas.forEach(function(p, i){
+    html += '<div class="persona">' +
+      '<span>' + esc(p.nombre || ("Persona " + (i+1))) + '</span>' +
+      (p.completa
+        ? '<span class="est listo">Completa</span>'
+        : '<button type="button" data-i="' + i + '" class="abrir">Llenar</button>') +
+      '</div>';
+    if (p.completa) {
+      html += '<div style="margin:-6px 0 12px"><button class="atras" type="button" data-i="' + i + '">Revisar o corregir</button></div>';
+    }
+  });
+
+  html += '<button class="mas" type="button" id="agregar">+ Agregar otra persona</button>';
+
+  var todasListas = E.personas.length > 0 && E.personas.every(function(p){ return p.completa; });
+  if (todasListas) {
+    html += '<button class="btn" type="button" id="seguir">Continuar a los documentos</button>';
+  }
+  html += '</div>';
+  ir(html);
+
+  [].forEach.call(document.querySelectorAll(".abrir, .atras[data-i]"), function(b){
+    b.addEventListener("click", function(){
+      E.actual = parseInt(b.dataset.i, 10);
+      E.seccion = 0;
+      guardar();
+      pintarSeccion();
+    });
+  });
+  document.getElementById("agregar").addEventListener("click", nuevaPersona);
+  var seguir = document.getElementById("seguir");
+  if (seguir) seguir.addEventListener("click", pantallaDocumentos);
+}
+
+function nuevaPersona(){
+  ir(
+    '<div class="seccion">' +
+      '<h1>¿Cómo se llama?</h1>' +
+      '<p class="ayuda">Nombre y apellidos, como aparecen en su pasaporte.</p>' +
+      '<label class="campo">Nombre y apellidos<input type="text" id="n"></label>' +
+      '<button class="btn" type="button" id="ok">Agregar</button>' +
+      '<div><button class="atras" type="button" id="atras">← Volver</button></div>' +
+    '</div>'
+  );
+  var n = document.getElementById("n");
+  n.focus();
+  document.getElementById("ok").addEventListener("click", function(){
+    if (n.value.trim().length < 3) { n.focus(); return; }
+    E.personas.push({ nombre: n.value.trim(), datos: {}, completa: false });
+    guardar();
+    pantallaPersonas();
+  });
+  document.getElementById("atras").addEventListener("click", pantallaPersonas);
+}
+
+/* ============================================================
+   4. SECCIONES DEL EXPEDIENTE
+   ============================================================ */
+
+function seccionesQueAplican(datos){
+  return SECCIONES_USA.filter(function(s){ return !s.si || s.si(datos); });
+}
+
+function pintarSeccion(){
+  var per = E.personas[E.actual];
+  var secciones = seccionesQueAplican(per.datos);
+  if (E.seccion >= secciones.length) return revisarPersona();
+
+  var s = secciones[E.seccion];
+  progreso(E.seccion, secciones.length, per.nombre + " · " + (E.seccion+1) + " de " + secciones.length);
+
+  var html = '<div class="seccion"><h1>' + esc(s.titulo) + '</h1>';
+  if (s.ayuda) html += '<p class="ayuda">' + esc(s.ayuda) + '</p>';
+
+  if (s.repetible) {
+    html += '<div id="filas"></div>';
+    html += '<button class="mas" type="button" id="mas">+ Agregar ' + esc(s.repetible.etiqueta) + '</button>';
+  } else {
+    s.campos.forEach(function(c){ html += campoHtml(s.id, c, per.datos); });
+  }
+
+  html += '<button class="btn" type="button" id="siguiente">Continuar</button>';
+  html += '<div><button class="atras" type="button" id="atras">← ' +
+          (E.seccion === 0 ? "Volver a la lista" : "Sección anterior") + '</button></div>';
+  html += '</div>';
+  ir(html);
+
+  if (s.repetible) pintarRepetible(s, per);
+
+  document.getElementById("siguiente").addEventListener("click", function(){
+    if (!s.repetible && !recogerCampos(s, per)) return;
+    E.seccion++;
+    guardar();
+    pintarSeccion();
+  });
+  document.getElementById("atras").addEventListener("click", function(){
+    if (!s.repetible) recogerCampos(s, per, true);
+    if (E.seccion === 0) { guardar(); pantallaPersonas(); }
+    else { E.seccion--; guardar(); pintarSeccion(); }
+  });
+}
+
+function campoHtml(seccion, c, datos){
+  var k = seccion + "__" + c.id;
+  var v = datos[k] === undefined ? "" : datos[k];
+  var etiqueta = esc(c.t) + (c.opcional ? ' <span class="opt">(opcional)</span>' : "");
+  var h = '<label class="campo" data-k="' + k + '">' + etiqueta;
+
+  if (c.tipo === "opcion") {
+    h += '<select id="c_' + k + '">';
+    h += '<option value="">Elige una opción</option>';
+    c.opciones.forEach(function(o){
+      h += '<option value="' + esc(o) + '"' + (v === o ? " selected" : "") + '>' + esc(o) + '</option>';
+    });
+    h += '</select>';
+  } else if (c.tipo === "larga") {
+    h += '<textarea id="c_' + k + '">' + esc(v) + '</textarea>';
+  } else {
+    var t = c.tipo === "fecha" ? "date" :
+            c.tipo === "tel" ? "tel" :
+            c.tipo === "correo" ? "email" :
+            c.tipo === "numero" ? "number" : "text";
+    h += '<input type="' + t + '" id="c_' + k + '" value="' + esc(v) + '">';
+  }
+  if (c.ayuda) h += '<small>' + esc(c.ayuda) + '</small>';
+  h += '</label>';
+  return h;
+}
+
+function recogerCampos(s, per, silencioso){
+  var falta = null;
+  s.campos.forEach(function(c){
+    var k = s.id + "__" + c.id;
+    var el = document.getElementById("c_" + k);
+    if (!el) return;
+    var v = el.value.trim();
+    per.datos[k] = v;
+    if (c.req && !v && !falta) falta = el;
+  });
+  if (falta && !silencioso) {
+    falta.focus();
+    falta.style.borderColor = "#8a2f2f";
+    return false;
+  }
+  return true;
+}
+
+function pintarRepetible(s, per){
+  var cont = document.getElementById("filas");
+  var lista = per.datos[s.id + "__lista"] || [];
+
+  function dibujar(){
+    cont.innerHTML = lista.map(function(fila, i){
+      var h = '<div class="fila-rep"><button class="quitar" type="button" data-i="' + i + '" aria-label="Quitar">×</button>';
+      s.repetible.campos.forEach(function(c){
+        var v = fila[c.id] || "";
+        h += '<label class="campo">' + esc(c.t);
+        if (c.tipo === "opcion") {
+          h += '<select data-i="' + i + '" data-c="' + c.id + '"><option value="">Elige</option>' +
+               c.opciones.map(function(o){
+                 return '<option value="' + esc(o) + '"' + (v === o ? " selected" : "") + '>' + esc(o) + '</option>';
+               }).join("") + '</select>';
+        } else {
+          h += '<input type="' + (c.tipo === "fecha" ? "date" : "text") + '" data-i="' + i + '" data-c="' + c.id + '" value="' + esc(v) + '">';
+        }
+        h += '</label>';
+      });
+      return h + '</div>';
+    }).join("");
+
+    [].forEach.call(cont.querySelectorAll("[data-c]"), function(el){
+      el.addEventListener("input", function(){
+        lista[parseInt(el.dataset.i,10)][el.dataset.c] = el.value.trim();
+        per.datos[s.id + "__lista"] = lista;
+        guardar();
+      });
+      el.addEventListener("change", function(){
+        lista[parseInt(el.dataset.i,10)][el.dataset.c] = el.value.trim();
+        per.datos[s.id + "__lista"] = lista;
+        guardar();
+      });
+    });
+    [].forEach.call(cont.querySelectorAll(".quitar"), function(b){
+      b.addEventListener("click", function(){
+        lista.splice(parseInt(b.dataset.i,10), 1);
+        per.datos[s.id + "__lista"] = lista;
+        guardar();
+        dibujar();
+      });
+    });
+  }
+
+  dibujar();
+  document.getElementById("mas").addEventListener("click", function(){
+    lista.push({});
+    per.datos[s.id + "__lista"] = lista;
+    guardar();
+    dibujar();
+  });
+}
+
+/* ============================================================
+   5. REVISIÓN POR PERSONA
+   ============================================================ */
+
+function revisarPersona(){
+  var per = E.personas[E.actual];
+  per.completa = true;
+  guardar();
+  progreso(1, 1, per.nombre);
+  ir(
+    '<div class="seccion">' +
+      '<h1>Listo, ' + esc((per.nombre || "").split(" ")[0]) + '</h1>' +
+      '<p class="ayuda">Su ficha quedó completa. Puedes volver a corregirla cuando quieras desde la lista.</p>' +
+      '<button class="btn" type="button" id="volver">Volver a la lista</button>' +
+      '<button class="btn btn-2" type="button" id="revisar">Revisar lo que llené</button>' +
+    '</div>'
+  );
+  document.getElementById("volver").addEventListener("click", pantallaPersonas);
+  document.getElementById("revisar").addEventListener("click", function(){
+    E.seccion = 0; guardar(); pintarSeccion();
+  });
+}
+
+/* ============================================================
+   6. DOCUMENTOS
+   ============================================================ */
+
+function pantallaDocumentos(){
+  progreso(1, 1, "Documentos");
+  var html = '<div class="seccion">' +
+    '<h1>¿Qué documentos ya tienes?</h1>' +
+    '<p class="ayuda">Solo dinos cómo estás con cada uno. No hace falta subir nada aquí: los envías por WhatsApp cuando David te los pida.</p>';
+
+  DOCUMENTOS_USA.forEach(function(d, i){
+    var v = E.documentos[i] || "";
+    html += '<div class="doc"><p>' + esc(d) + '</p><div class="estados">' +
+      ["Lo tengo","En trámite","No lo tengo","No aplica"].map(function(op){
+        return '<button type="button" data-i="' + i + '" data-v="' + esc(op) + '" aria-pressed="' + (v === op) + '">' + esc(op) + '</button>';
+      }).join("") +
+      '</div></div>';
+  });
+
+  html += '<button class="btn" type="button" id="enviar" disabled>Enviar mi expediente</button>';
+  html += '<p class="micro" id="pista">Marca los cuatro documentos para continuar.</p>';
+  html += '<div><button class="atras" type="button" id="atras">← Volver a la lista</button></div>';
+  html += '</div>';
+  ir(html);
+
+  function revisar(){
+    var listos = DOCUMENTOS_USA.every(function(_, i){ return E.documentos[i]; });
+    document.getElementById("enviar").disabled = !listos;
+    document.getElementById("pista").textContent = listos
+      ? "Al enviar, David recibe tu expediente y sabe qué te falta."
+      : "Marca los cuatro documentos para continuar.";
+  }
+
+  [].forEach.call(document.querySelectorAll(".estados button"), function(b){
+    b.addEventListener("click", function(){
+      var i = b.dataset.i;
+      E.documentos[i] = b.dataset.v;
+      guardar();
+      [].forEach.call(document.querySelectorAll('.estados button[data-i="' + i + '"]'), function(o){
+        o.setAttribute("aria-pressed", o === b);
+      });
+      revisar();
+    });
+  });
+  revisar();
+  document.getElementById("enviar").addEventListener("click", enviar);
+  document.getElementById("atras").addEventListener("click", pantallaPersonas);
+}
+
+/* ============================================================
+   7. ENVÍO
+   ============================================================ */
+
+function enviar(){
+  var btn = document.getElementById("enviar");
+  btn.disabled = true;
+  btn.textContent = "Enviando…";
+
+  var documentos = DOCUMENTOS_USA.map(function(d, i){
+    return { nombre: d, estado: E.documentos[i] || "Sin marcar" };
+  });
+
+  var carga = {
+    tipo: "expediente",
+    codigo: CODIGO,
+    titular: E.titular,
+    destinoNombre: caso.destino,
+    personas: E.personas.map(function(p){
+      var o = { nombre_ficha: p.nombre };
+      Object.keys(p.datos).forEach(function(k){
+        var v = p.datos[k];
+        o[k] = (v && typeof v === "object") ? JSON.stringify(v) : v;
+      });
+      return o;
+    }),
+    documentos: documentos
+  };
+
+  fetch(ENDPOINT, {
+    method: "POST",
+    mode: "no-cors",
+    headers: {"Content-Type": "text/plain;charset=utf-8"},
+    body: JSON.stringify(carga)
+  })["catch"](function(){});
+
+  setTimeout(function(){ pantallaFinal(documentos); }, 1200);
+}
+
+function pantallaFinal(documentos){
+  var faltan = documentos.filter(function(d){
+    return d.estado === "No lo tengo" || d.estado === "En trámite";
+  });
+
+  var linea = "Hola David, terminé mi expediente " + CODIGO + ". " +
+    E.personas.length + (E.personas.length === 1 ? " persona." : " personas.");
+  if (faltan.length) {
+    linea += " Me falta: " + faltan.map(function(d){ return d.nombre + " (" + d.estado.toLowerCase() + ")"; }).join(", ") + ".";
+  } else {
+    linea += " Tengo todos los documentos listos.";
+  }
+
+  var html = '<div class="seccion">' +
+    '<h1>Expediente enviado</h1>' +
+    '<p class="ayuda">David ya tiene tu información. Avísale por WhatsApp para que la revise cuanto antes.</p>' +
+    '<div class="tarjeta">' +
+      '<p class="nota" style="margin:0 0 4px">Código de tu caso</p>' +
+      '<p style="margin:0;font-size:1.3rem;font-weight:700;letter-spacing:.06em">' + esc(CODIGO) + '</p>' +
+    '</div>';
+
+  if (faltan.length) {
+    html += '<div class="aviso"><strong>Lo que todavía falta:</strong><br>' +
+      faltan.map(function(d){ return esc(d.nombre) + " — " + esc(d.estado.toLowerCase()); }).join("<br>") +
+      '</div>';
+  }
+
+  html += '<a class="btn btn-wa" href="https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent(linea) + '">Avisarle a David</a>' +
+    '<p class="micro">Se abre WhatsApp con el mensaje ya redactado.</p>' +
+    '<p class="micro" style="margin-top:24px"><a href="../">Volver a la página</a></p>' +
+    '</div>';
+
+  ir(html);
+  progreso(1, 1, "Enviado");
+}
+
+arrancar();
+</script>
+</body>
+</html>

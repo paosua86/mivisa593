@@ -69,6 +69,12 @@ function doPost(e) {
     }
     var datos = JSON.parse(e.postData.contents);
 
+    // El expediente entra por otro camino: escribe en su propia hoja
+    // y genera el documento del caso.
+    if (datos.tipo === "expediente") {
+      return guardarExpediente(datos);
+    }
+
     for (var i = 0; i < OBLIGATORIOS.length; i++) {
       var c = OBLIGATORIOS[i];
       if (!datos[c] || typeof datos[c] !== "string") {
@@ -123,7 +129,7 @@ function doPost(e) {
   }
 }
 
-/** Genera un codigo de 4 caracteres que no exista ya en la hoja. */
+/** Genera un codigo de 6 caracteres que no exista ya en la hoja. */
 function codigoNuevo(hoja) {
   var usados = {};
   var ultimaFila = hoja.getLastRow();
@@ -135,7 +141,7 @@ function codigoNuevo(hoja) {
   }
   for (var intento = 0; intento < 50; intento++) {
     var c = "";
-    for (var i = 0; i < 4; i++) {
+    for (var i = 0; i < 6; i++) {
       c += ALFABETO.charAt(Math.floor(Math.random() * ALFABETO.length));
     }
     if (!usados[c]) return c;
@@ -175,9 +181,177 @@ function carpetaDelCaso(datos) {
   }
 }
 
-/** Para comprobar en el navegador que la app web esta viva. */
-function doGet() {
-  return responder({ ok: true, mensaje: "Endpoint de Mi Visa593 activo" });
+/**
+ * Con ?caso=CODIGO devuelve lo minimo para abrir el expediente:
+ * el nombre con el que se registro y el pais destino. Nada mas.
+ * Sin parametros, solo confirma que la app web esta viva.
+ */
+function doGet(e) {
+  var codigo = e && e.parameter ? String(e.parameter.caso || "").toUpperCase() : "";
+  if (!codigo) {
+    return responder({ ok: true, mensaje: "Endpoint de Mi Visa593 activo" });
+  }
+  try {
+    var hoja = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+    var ultima = hoja.getLastRow();
+    if (ultima < 2) return responder({ ok: false, error: "Caso no encontrado" });
+
+    var colCodigo   = indiceColumna("codigo");
+    var colNombre   = indiceColumna("nombre");
+    var colDestino  = indiceColumna("destino");
+    var colPersonas = indiceColumna("personas");
+
+    var valores = hoja.getRange(2, 1, ultima - 1, COLUMNAS.length).getValues();
+    for (var i = valores.length - 1; i >= 0; i--) {
+      if (String(valores[i][colCodigo - 1]).toUpperCase() === codigo) {
+        return responder({
+          ok: true,
+          codigo: codigo,
+          nombre: valores[i][colNombre - 1],
+          destino: valores[i][colDestino - 1],
+          personas: valores[i][colPersonas - 1]
+        });
+      }
+    }
+    return responder({ ok: false, error: "Caso no encontrado" });
+  } catch (err) {
+    return responder({ ok: false, error: String(err) });
+  }
+}
+
+/**
+ * Guarda el expediente completo: una fila por persona en la hoja
+ * "Expedientes" y un documento ordenado en la carpeta del caso.
+ */
+function guardarExpediente(datos) {
+  var codigo = String(datos.codigo || "").toUpperCase();
+  if (!codigo) return responder({ ok: false, error: "Falta el codigo del caso" });
+  if (!datos.personas || !datos.personas.length) {
+    return responder({ ok: false, error: "El expediente no trae personas" });
+  }
+
+  var libro = SpreadsheetApp.getActiveSpreadsheet();
+  var hoja = libro.getSheetByName("Expedientes");
+  if (!hoja) hoja = libro.insertSheet("Expedientes");
+
+  var fecha = Utilities.formatDate(new Date(), "America/Guayaquil", "dd/MM/yyyy HH:mm");
+
+  // Los encabezados salen de los campos de la primera persona,
+  // asi la hoja se adapta sola si el formulario cambia.
+  var claves = ["fecha", "codigo", "persona"];
+  datos.personas.forEach(function (per) {
+    Object.keys(per).forEach(function (k) {
+      if (claves.indexOf(k) === -1) claves.push(k);
+    });
+  });
+
+  if (hoja.getLastRow() === 0) {
+    hoja.appendRow(claves);
+    hoja.getRange(1, 1, 1, claves.length)
+        .setFontWeight("bold").setBackground("#0f3d38").setFontColor("#ffffff");
+    hoja.setFrozenRows(1);
+  }
+
+  datos.personas.forEach(function (per, n) {
+    per.fecha = fecha;
+    per.codigo = codigo;
+    per.persona = String(n + 1) + " de " + datos.personas.length;
+    hoja.appendRow(claves.map(function (k) {
+      var v = per[k];
+      return v === undefined || v === null ? "" : v;
+    }));
+  });
+
+  var urlDoc = "";
+  try {
+    urlDoc = documentoDelCaso(codigo, datos);
+  } catch (err) {
+    urlDoc = "";
+  }
+
+  return responder({ ok: true, codigo: codigo, documento: urlDoc });
+}
+
+/** Arma un documento de Google con todo el expediente, listo para trabajar. */
+function documentoDelCaso(codigo, datos) {
+  var doc = DocumentApp.create("Expediente " + codigo + " - " + (datos.titular || ""));
+  var cuerpo = doc.getBody();
+
+  cuerpo.appendParagraph("Expediente " + codigo)
+        .setHeading(DocumentApp.ParagraphHeading.TITLE);
+  cuerpo.appendParagraph(
+    (datos.destinoNombre || "") + "  ·  " + datos.personas.length + " solicitante(s)  ·  " +
+    Utilities.formatDate(new Date(), "America/Guayaquil", "dd/MM/yyyy HH:mm")
+  );
+
+  datos.personas.forEach(function (per, n) {
+    cuerpo.appendParagraph((per.nombres || "") + " " + (per.apellidos || "") || ("Persona " + (n + 1)))
+          .setHeading(DocumentApp.ParagraphHeading.HEADING1);
+
+    var seccionActual = "";
+    Object.keys(per).forEach(function (k) {
+      if (k === "fecha" || k === "codigo" || k === "persona") return;
+      var v = per[k];
+      if (v === "" || v === undefined || v === null) return;
+
+      var partes = k.split("__");
+      if (partes.length === 2 && partes[0] !== seccionActual) {
+        seccionActual = partes[0];
+        cuerpo.appendParagraph(etiquetaSeccion(seccionActual))
+              .setHeading(DocumentApp.ParagraphHeading.HEADING2);
+      }
+      var nombreCampo = partes.length === 2 ? partes[1] : k;
+      cuerpo.appendParagraph(nombreCampo.replace(/_/g, " ") + ": " + v);
+    });
+  });
+
+  if (datos.documentos && datos.documentos.length) {
+    cuerpo.appendParagraph("Documentos")
+          .setHeading(DocumentApp.ParagraphHeading.HEADING1);
+    datos.documentos.forEach(function (d) {
+      cuerpo.appendListItem(d.nombre + " — " + d.estado)
+            .setGlyphType(DocumentApp.GlyphType.BULLET);
+    });
+  }
+
+  doc.saveAndClose();
+
+  // Mover el documento a la carpeta del caso, si existe.
+  try {
+    var archivo = DriveApp.getFileById(doc.getId());
+    var raiz = DriveApp.getFoldersByName("Casos Mi Visa593");
+    if (raiz.hasNext()) {
+      var carpetas = raiz.next().getFolders();
+      while (carpetas.hasNext()) {
+        var c = carpetas.next();
+        if (c.getName().indexOf(codigo) === 0) {
+          c.addFile(archivo);
+          DriveApp.getRootFolder().removeFile(archivo);
+          break;
+        }
+      }
+    }
+  } catch (err) { /* si no se puede mover, el documento igual existe */ }
+
+  return doc.getUrl();
+}
+
+function etiquetaSeccion(clave) {
+  var mapa = {
+    personales: "Datos personales",
+    conyuge: "Cónyuge",
+    padres: "Padres",
+    secundaria: "Estudios secundarios",
+    universidad: "Estudios superiores",
+    laboral_anterior: "Situación laboral anterior",
+    laboral: "Situación laboral actual",
+    pasaporte: "Pasaporte",
+    viajes: "Viajes a otros países",
+    viajes_usa: "Viajes a Estados Unidos",
+    redes: "Redes sociales",
+    familia_usa: "Familiares en Estados Unidos"
+  };
+  return mapa[clave] || clave.replace(/_/g, " ");
 }
 
 function responder(obj) {
