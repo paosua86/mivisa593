@@ -2,64 +2,49 @@
  * Mi Visa593 — Guardar casos del formulario en una hoja de cálculo
  * ================================================================
  *
- * CÓMO INSTALARLO (10 minutos, una sola vez)
+ * Recibe cada caso de mivisaec.com/empezar/, lo guarda como una fila,
+ * le asigna un código único y arma los links listos para copiar.
  *
- *  1. Con la cuenta de Google de David, entra a https://sheets.new
- *     y crea una hoja nueva. Ponle de nombre "Casos Mi Visa593".
+ * INSTALACIÓN (una sola vez)
+ *  1. Hoja nueva en https://sheets.new, nómbrala "Casos Mi Visa593".
+ *  2. Extensiones → Apps Script. Borra todo y pega este archivo.
+ *  3. Implementar → Nueva implementación → Aplicación web.
+ *       Ejecutar como: Yo
+ *       Quién tiene acceso: Cualquier persona   <-- IMPORTANTE
+ *  4. Copia la URL que termina en /exec y pégala en empezar/index.html,
+ *     en ENDPOINT_GUARDADO.
  *
- *  2. En esa hoja: menú Extensiones → Apps Script.
- *
- *  3. Borra todo lo que salga en el editor y pega este archivo completo.
- *
- *  4. Guarda (el ícono del disquete) y ponle nombre al proyecto.
- *
- *  5. Arriba a la derecha: botón azul "Implementar" → "Nueva implementación".
- *     - Junto a "Seleccionar tipo" (el engranaje) elige "Aplicación web".
- *     - Descripción: "Formulario Mi Visa593"
- *     - Ejecutar como: "Yo"
- *     - Quién tiene acceso: "Cualquier persona"   <-- IMPORTANTE
- *     - Implementar.
- *
- *  6. Google te va a pedir permisos. Acepta. Si sale la pantalla
- *     "Google no ha verificado esta aplicación", dale a
- *     "Configuración avanzada" → "Ir a (nombre del proyecto)".
- *     Es tu propio script, no hay riesgo.
- *
- *  7. Copia la "URL de la aplicación web". Termina en /exec
- *
- *  8. Pega esa URL en empezar/index.html, en la línea:
- *        var ENDPOINT_GUARDADO = "";
- *     Debe quedar así:
- *        var ENDPOINT_GUARDADO = "https://script.google.com/macros/s/.../exec";
- *
- *  9. Sube el cambio a GitHub y listo. Cada caso nuevo cae como una
- *     fila en la hoja.
- *
- * SI DESPUÉS CAMBIAS ESTE SCRIPT: hay que volver a "Implementar" →
- * "Gestionar implementaciones" → editar → "Nueva versión". Si creas una
- * implementación nueva en lugar de una versión nueva, la URL cambia.
+ * AL ACTUALIZAR ESTE ARCHIVO: Implementar → Gestionar implementaciones
+ * → editar (lápiz) → Versión: Nueva versión → Implementar.
+ * Así la URL NO cambia.
  */
 
-/** Orden de las columnas en la hoja. Para añadir una, agrégala aquí. */
+var SITIO = "https://mivisaec.com";
+
+/** Orden de las columnas. Para añadir una, agrégala aquí. */
 var COLUMNAS = [
   ["fecha",           "Fecha"],
+  ["codigo",          "Código"],
   ["nombre",          "Nombre"],
   ["telefono",        "WhatsApp"],
   ["correo",          "Correo"],
   ["destino",         "País destino"],
-  ["pais_schengen",   "País Schengen"],
+  ["link_pago",       "Link de pago"],
+  ["link_expediente", "Link del expediente"],
+  ["carpeta",         "Carpeta de documentos"],
   ["personas",        "Personas"],
   ["semaforo",        "Semáforo"],
   ["puntos",          "Puntos"],
   ["a_favor",         "A favor"],
   ["en_contra",       "En contra"],
+  ["pais_schengen",   "País Schengen"],
   ["aplico_antes",    "¿Aplicó antes?"],
   ["cuando_negada",   "¿Hace cuánto la negaron?"],
   ["cambio_algo",     "¿Cambió algo?"],
   ["viajes",          "Viajes previos"],
   ["trabajo",         "Situación laboral"],
   ["antiguedad",      "Antigüedad"],
-  ["ingresos",        "Demuestra ingresos"],
+  ["ingresos",        "Acredita ingresos"],
   ["dependientes",    "Dependientes"],
   ["pareja",          "Pareja"],
   ["bienes",          "Bienes"],
@@ -72,12 +57,15 @@ var COLUMNAS = [
 var OBLIGATORIOS = ["nombre", "telefono", "destino", "semaforo"];
 var SEMAFOROS = ["verde", "ambar", "rojo"];
 
+/* Sin caracteres que se confundan al dictarlos: nada de O/0, I/1, L. */
+var ALFABETO = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+
 function doPost(e) {
   var lock = LockService.getScriptLock();
   lock.waitLock(30000);
   try {
     if (!e || !e.postData || e.postData.contents.length > 8000) {
-      return responder({ ok: false, error: "Envío inválido" });
+      return responder({ ok: false, error: "Envio invalido" });
     }
     var datos = JSON.parse(e.postData.contents);
 
@@ -88,8 +76,9 @@ function doPost(e) {
       }
     }
     if (SEMAFOROS.indexOf(String(datos.semaforo).toLowerCase()) === -1) {
-      return responder({ ok: false, error: "Semáforo inválido" });
+      return responder({ ok: false, error: "Semaforo invalido" });
     }
+
     var hoja = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
 
     // Encabezados, solo la primera vez
@@ -106,20 +95,27 @@ function doPost(e) {
     // para no depender del reloj del visitante.
     datos.fecha = Utilities.formatDate(new Date(), "America/Guayaquil", "dd/MM/yyyy HH:mm");
 
+    // Codigo unico del caso y links ya armados, para que David
+    // solo copie una celda y nunca tenga que escribirlos.
+    datos.codigo = codigoNuevo(hoja);
+    datos.link_expediente = SITIO + "/expediente/?caso=" + datos.codigo;
+    datos.link_pago = SITIO + "/pago/?v=" + servicio(datos);
+    datos.carpeta = carpetaDelCaso(datos);
+
     var fila = COLUMNAS.map(function (c) {
       var v = datos[c[0]];
       return v === undefined || v === null ? "" : v;
     });
     hoja.appendRow(fila);
 
-    // Pintar la fila según el semáforo, para verlo de un vistazo
+    // Pintar la fila segun el semaforo, para verlo de un vistazo
     var colores = { verde: "#e8f2ec", ambar: "#fbf2e0", rojo: "#f8ecec" };
     var color = colores[String(datos.semaforo).toLowerCase()];
     if (color) {
       hoja.getRange(hoja.getLastRow(), 1, 1, COLUMNAS.length).setBackground(color);
     }
 
-    return responder({ ok: true });
+    return responder({ ok: true, codigo: datos.codigo });
   } catch (err) {
     return responder({ ok: false, error: String(err) });
   } finally {
@@ -127,7 +123,59 @@ function doPost(e) {
   }
 }
 
-/** Para comprobar en el navegador que la app web está viva. */
+/** Genera un codigo de 4 caracteres que no exista ya en la hoja. */
+function codigoNuevo(hoja) {
+  var usados = {};
+  var ultimaFila = hoja.getLastRow();
+  var col = indiceColumna("codigo");
+  if (ultimaFila > 1 && col > 0) {
+    hoja.getRange(2, col, ultimaFila - 1, 1).getValues().forEach(function (f) {
+      if (f[0]) usados[String(f[0])] = true;
+    });
+  }
+  for (var intento = 0; intento < 50; intento++) {
+    var c = "";
+    for (var i = 0; i < 4; i++) {
+      c += ALFABETO.charAt(Math.floor(Math.random() * ALFABETO.length));
+    }
+    if (!usados[c]) return c;
+  }
+  return "X" + String(ultimaFila);
+}
+
+function indiceColumna(clave) {
+  for (var i = 0; i < COLUMNAS.length; i++) {
+    if (COLUMNAS[i][0] === clave) return i + 1;
+  }
+  return 0;
+}
+
+/** Devuelve el identificador del servicio, para el link de pago. */
+function servicio(datos) {
+  var d = String(datos.destino || "").toLowerCase();
+  var renovacion = String(datos.aplico_antes || "").toLowerCase().indexOf("dieron") !== -1;
+  if (d.indexOf("estados unidos") !== -1) return renovacion ? "usa-renovacion" : "usa-primera";
+  if (d.indexOf("canad") !== -1)          return renovacion ? "canada-renovacion" : "canada-primera";
+  if (d.indexOf("europa") !== -1 || d.indexOf("schengen") !== -1) return "schengen";
+  return "";
+}
+
+/**
+ * Crea la carpeta del caso en Drive, dentro de "Casos Mi Visa593",
+ * y devuelve su enlace. Ahi van a caer los documentos del expediente.
+ */
+function carpetaDelCaso(datos) {
+  try {
+    var busca = DriveApp.getFoldersByName("Casos Mi Visa593");
+    var raiz = busca.hasNext() ? busca.next() : DriveApp.createFolder("Casos Mi Visa593");
+    var carpeta = raiz.createFolder(datos.codigo + " - " + datos.nombre);
+    return carpeta.getUrl();
+  } catch (err) {
+    return "";
+  }
+}
+
+/** Para comprobar en el navegador que la app web esta viva. */
 function doGet() {
   return responder({ ok: true, mensaje: "Endpoint de Mi Visa593 activo" });
 }
