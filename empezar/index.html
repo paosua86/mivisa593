@@ -142,8 +142,9 @@ var WHATSAPP = "593998961214";
 var CLAVE_GUARDADO = "mivisa593_precalificacion";
 
 /* Dónde se graban los casos completos.
-   Pega aquí la URL de la app web de Google Apps Script.
-   Instrucciones en herramientas/apps-script-guardar-casos.gs
+   Puede ser la URL de Apps Script (queda visible en el código fuente)
+   o la del Worker de Cloudflare, que la esconde. Ver
+   herramientas/cloudflare-worker-casos.js
    Si se deja vacío, el formulario funciona igual pero no guarda nada. */
 var ENDPOINT_GUARDADO = "https://script.google.com/macros/s/AKfycbxB8bkBNzeRVzkzk7QSH-iZ5itcAUm33VRfX2lSaLLb_gzMmhZfU7RHGf_rOob1e2hL/exec";
 
@@ -586,10 +587,14 @@ function guardarEnHoja(r){
     var op = q.opciones.filter(function(o){ return String(o.v) === String(v); })[0];
     fila[q.id] = op ? op.t : v;
   });
+  /* Contra Apps Script hay que ir en no-cors (Google no manda cabeceras
+     CORS y el navegador bloquearía la lectura). Contra el Worker de
+     Cloudflare sí se puede ir en modo normal y saber si falló. */
+  var directoAGoogle = ENDPOINT_GUARDADO.indexOf("script.google.com") !== -1;
   try {
     fetch(ENDPOINT_GUARDADO, {
       method: "POST",
-      mode: "no-cors",
+      mode: directoAGoogle ? "no-cors" : "cors",
       headers: {"Content-Type": "text/plain;charset=utf-8"},
       body: JSON.stringify(fila)
     })["catch"](function(){});

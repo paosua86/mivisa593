@@ -68,11 +68,28 @@ var COLUMNAS = [
   ["consentimiento",  "Consentimiento"]
 ];
 
+/* Campos que debe traer un caso de verdad, para descartar basura. */
+var OBLIGATORIOS = ["nombre", "telefono", "destino", "semaforo"];
+var SEMAFOROS = ["verde", "ambar", "rojo"];
+
 function doPost(e) {
   var lock = LockService.getScriptLock();
   lock.waitLock(30000);
   try {
+    if (!e || !e.postData || e.postData.contents.length > 8000) {
+      return responder({ ok: false, error: "Envío inválido" });
+    }
     var datos = JSON.parse(e.postData.contents);
+
+    for (var i = 0; i < OBLIGATORIOS.length; i++) {
+      var c = OBLIGATORIOS[i];
+      if (!datos[c] || typeof datos[c] !== "string") {
+        return responder({ ok: false, error: "Falta el campo " + c });
+      }
+    }
+    if (SEMAFOROS.indexOf(String(datos.semaforo).toLowerCase()) === -1) {
+      return responder({ ok: false, error: "Semáforo inválido" });
+    }
     var hoja = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
 
     // Encabezados, solo la primera vez

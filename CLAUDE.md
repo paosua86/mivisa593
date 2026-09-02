@@ -81,6 +81,19 @@ formulario genérico, el proceso es tuyo*.
 "aprobación asegurada", "100% de éxito", ni una cifra exacta de saldo
 bancario presentada como requisito oficial (no lo es).
 
+**NUNCA publicar el RUC ni el número de cédula de David** en la página,
+en las páginas legales ni en ningún sitio público. En Ecuador exponer
+esos números es un riesgo real de suplantación y fraude. No volver a
+pedirlo ni proponerlo. La dirección y el nombre sí van; el RUC no.
+
+**Publicar sin preguntar.** Cuando un cambio esté terminado y probado,
+hacer commit y push a `main` directamente. El workflow de GitHub Pages
+lo despliega solo. No preguntar "¿lo subo?" cada vez.
+
+**Datos de contacto públicos ya fijados:** David Ubilluz · Pachacútec
+s/n, Quito, Pichincha 170802 · WhatsApp +593 99 896 1214. No volver a
+pedirlos.
+
 ---
 
 ## Contexto técnico
