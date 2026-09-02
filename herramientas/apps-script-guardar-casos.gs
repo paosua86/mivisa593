@@ -102,6 +102,10 @@ function doPost(e) {
       hoja.setFrozenRows(1);
     }
 
+    // La fecha la pone el servidor, en hora de Ecuador,
+    // para no depender del reloj del visitante.
+    datos.fecha = Utilities.formatDate(new Date(), "America/Guayaquil", "dd/MM/yyyy HH:mm");
+
     var fila = COLUMNAS.map(function (c) {
       var v = datos[c[0]];
       return v === undefined || v === null ? "" : v;
