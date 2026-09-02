@@ -266,7 +266,7 @@ function guardarExpediente(datos) {
   try {
     urlDoc = documentoDelCaso(codigo, datos);
   } catch (err) {
-    urlDoc = "";
+    urlDoc = "ERROR: " + err;
   }
 
   return responder({ ok: true, codigo: codigo, documento: urlDoc });
