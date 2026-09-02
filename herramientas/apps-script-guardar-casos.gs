@@ -272,68 +272,97 @@ function guardarExpediente(datos) {
   return responder({ ok: true, codigo: codigo, documento: urlDoc });
 }
 
-/** Arma un documento de Google con todo el expediente, listo para trabajar. */
+/**
+ * Arma el documento del caso y lo deja en su carpeta de Drive.
+ * Se crea con DriveApp convirtiendo texto a Documento de Google, para
+ * no necesitar un permiso extra sobre la API de Documentos.
+ */
 function documentoDelCaso(codigo, datos) {
-  var doc = DocumentApp.create("Expediente " + codigo + " - " + (datos.titular || ""));
-  var cuerpo = doc.getBody();
-
-  cuerpo.appendParagraph("Expediente " + codigo)
-        .setHeading(DocumentApp.ParagraphHeading.TITLE);
-  cuerpo.appendParagraph(
-    (datos.destinoNombre || "") + "  ·  " + datos.personas.length + " solicitante(s)  ·  " +
-    Utilities.formatDate(new Date(), "America/Guayaquil", "dd/MM/yyyy HH:mm")
-  );
+  var L = [];
+  L.push("EXPEDIENTE " + codigo);
+  L.push((datos.destinoNombre || "") + "   ·   " + datos.personas.length + " solicitante(s)");
+  L.push("Recibido el " + Utilities.formatDate(new Date(), "America/Guayaquil", "dd/MM/yyyy HH:mm"));
+  L.push("");
 
   datos.personas.forEach(function (per, n) {
-    cuerpo.appendParagraph((per.nombres || "") + " " + (per.apellidos || "") || ("Persona " + (n + 1)))
-          .setHeading(DocumentApp.ParagraphHeading.HEADING1);
+    var titulo = ((per.personales__nombres || "") + " " + (per.personales__apellidos || "")).trim();
+    if (!titulo) titulo = per.nombre_ficha || ("Persona " + (n + 1));
+    L.push("");
+    L.push("==================================================");
+    L.push(titulo.toUpperCase());
+    L.push("==================================================");
 
     var seccionActual = "";
     Object.keys(per).forEach(function (k) {
-      if (k === "fecha" || k === "codigo" || k === "persona") return;
+      if (k === "fecha" || k === "codigo" || k === "persona" || k === "nombre_ficha") return;
       var v = per[k];
-      if (v === "" || v === undefined || v === null) return;
+      if (v === "" || v === undefined || v === null || v === "[]") return;
 
       var partes = k.split("__");
       if (partes.length === 2 && partes[0] !== seccionActual) {
         seccionActual = partes[0];
-        cuerpo.appendParagraph(etiquetaSeccion(seccionActual))
-              .setHeading(DocumentApp.ParagraphHeading.HEADING2);
+        L.push("");
+        L.push("-- " + etiquetaSeccion(seccionActual).toUpperCase() + " --");
       }
-      var nombreCampo = partes.length === 2 ? partes[1] : k;
-      cuerpo.appendParagraph(nombreCampo.replace(/_/g, " ") + ": " + v);
+      var campo = partes.length === 2 ? partes[1] : k;
+      campo = campo.charAt(0).toUpperCase() + campo.slice(1).replace(/_/g, " ");
+
+      if (campo.toLowerCase() === "lista") {
+        L.push(listaLegible(v));
+      } else {
+        L.push(campo + ": " + v);
+      }
     });
   });
 
   if (datos.documentos && datos.documentos.length) {
-    cuerpo.appendParagraph("Documentos")
-          .setHeading(DocumentApp.ParagraphHeading.HEADING1);
+    L.push("");
+    L.push("==================================================");
+    L.push("DOCUMENTOS");
+    L.push("==================================================");
     datos.documentos.forEach(function (d) {
-      cuerpo.appendListItem(d.nombre + " — " + d.estado)
-            .setGlyphType(DocumentApp.GlyphType.BULLET);
+      L.push("[" + d.estado + "]  " + d.nombre);
     });
   }
 
-  doc.saveAndClose();
+  var nombreArchivo = "Expediente " + codigo + " - " + (datos.titular || "");
+  var archivo = DriveApp.createFile(
+    Utilities.newBlob(L.join("\n"), "text/plain", nombreArchivo + ".txt")
+  );
 
-  // Mover el documento a la carpeta del caso, si existe.
+  var creado = archivo;
+
   try {
-    var archivo = DriveApp.getFileById(doc.getId());
     var raiz = DriveApp.getFoldersByName("Casos Mi Visa593");
     if (raiz.hasNext()) {
       var carpetas = raiz.next().getFolders();
       while (carpetas.hasNext()) {
         var c = carpetas.next();
         if (c.getName().indexOf(codigo) === 0) {
-          c.addFile(archivo);
-          DriveApp.getRootFolder().removeFile(archivo);
+          c.addFile(creado);
+          DriveApp.getRootFolder().removeFile(creado);
           break;
         }
       }
     }
-  } catch (err) { /* si no se puede mover, el documento igual existe */ }
+  } catch (err) { /* si no se puede mover, el archivo igual existe */ }
 
-  return doc.getUrl();
+  return creado.getUrl();
+}
+
+/** Convierte la lista JSON de viajes o familiares en algo legible. */
+function listaLegible(v) {
+  try {
+    var arr = typeof v === "string" ? JSON.parse(v) : v;
+    if (!arr || !arr.length) return "";
+    return arr.map(function (o, i) {
+      return "  " + (i + 1) + ") " + Object.keys(o).map(function (k) {
+        return k + ": " + o[k];
+      }).join("  |  ");
+    }).join("\n");
+  } catch (e) {
+    return String(v);
+  }
 }
 
 function etiquetaSeccion(clave) {
