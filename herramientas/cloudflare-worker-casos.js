@@ -43,9 +43,9 @@
  */
 
 const ORIGENES = [
+  "https://mivisaec.com",
+  "https://www.mivisaec.com",
   "https://paosua86.github.io",
-  "https://mivisa593.ec",
-  "https://www.mivisa593.ec",
   "http://127.0.0.1:8899",
   "http://localhost:8899"
 ];
