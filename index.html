@@ -65,17 +65,14 @@ section{padding:52px 0}
 .linea{border-top:1px solid var(--borde)}
 
 /* ---------- cabecera / marca ---------- */
-.cab{background:var(--papel);padding:18px 0;border-bottom:1px solid var(--borde)}
+.cab{background:var(--papel);padding:16px 0;border-bottom:1px solid var(--borde)}
 .cab .env{display:flex;align-items:center}
-.marca{display:inline-flex;align-items:center;gap:12px;text-decoration:none;color:var(--tinta)}
-.marca-icono{flex:0 0 auto;display:block}
-.marca-texto{display:flex;flex-direction:column;line-height:1.05}
-.marca-nombre{font-family:var(--display);font-weight:700;font-size:1.28rem;letter-spacing:-.01em}
-.marca-sub{font-family:var(--sans);font-weight:600;font-size:.6rem;letter-spacing:.17em;text-transform:uppercase;color:var(--tinta-suave);margin-top:4px}
+.marca{display:inline-flex;align-items:center;text-decoration:none}
+.marca-img{height:38px;width:auto;display:block}
 
 /* ---------- hero ---------- */
 .hero{position:relative;overflow:hidden;background:linear-gradient(180deg,var(--papel-2),var(--papel));padding:44px 0 48px}
-.hero-marca-fondo{position:absolute;top:-8%;right:-10%;width:60%;max-width:420px;opacity:.05;pointer-events:none}
+.hero-marca-fondo{position:absolute;top:-6%;right:-6%;width:42%;max-width:280px;height:auto;opacity:.07;pointer-events:none}
 .hero .env{position:relative}
 .etiqueta{display:inline-block;background:var(--brand-tint);color:var(--brand-deep);font-size:.82rem;font-weight:700;padding:6px 14px;border-radius:999px;margin-bottom:20px}
 .hero h1{font-size:2.3rem;margin-bottom:.45em}
@@ -227,31 +224,13 @@ footer strong{color:var(--tinta)}
 <header class="cab">
   <div class="env">
     <a class="marca" href="#inicio" aria-label="Mi Visa593, inicio">
-      <svg class="marca-icono" width="36" height="36" viewBox="0 0 64 64" fill="none" aria-hidden="true">
-        <defs>
-          <linearGradient id="gLogo" x1="8" y1="6" x2="56" y2="58" gradientUnits="userSpaceOnUse">
-            <stop offset="0" style="stop-color:var(--brand-1)"/>
-            <stop offset="1" style="stop-color:var(--brand-2)"/>
-          </linearGradient>
-        </defs>
-        <path d="M18 11 L18 53" stroke="url(#gLogo)" stroke-width="4.5" stroke-linecap="round"/>
-        <path d="M18 11 C32 11 46 15 48 22 C50 28 50 36 48 42 C46 49 32 53 18 53" stroke="url(#gLogo)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M24 39 L40 23 M40 23 L34 41 M40 23 L26 31" stroke="url(#gLogo)" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      <span class="marca-texto">
-        <span class="marca-nombre">MiVisa EC</span>
-        <span class="marca-sub">Asesoría de visas</span>
-      </span>
+      <img class="marca-img" src="imagenes/logo.png" width="935" height="289" alt="Mi Visa593, asesoría de visas">
     </a>
   </div>
 </header>
 
 <header class="hero" id="inicio">
-  <svg class="hero-marca-fondo" viewBox="0 0 64 64" fill="none" aria-hidden="true">
-    <path d="M18 11 L18 53" stroke="var(--brand-deep)" stroke-width="4.5" stroke-linecap="round"/>
-    <path d="M18 11 C32 11 46 15 48 22 C50 28 50 36 48 42 C46 49 32 53 18 53" stroke="var(--brand-deep)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M24 39 L40 23 M40 23 L34 41 M40 23 L26 31" stroke="var(--brand-deep)" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
-  </svg>
+  <img class="hero-marca-fondo" src="imagenes/logo-icono.png" width="209" height="267" alt="" aria-hidden="true">
   <div class="env">
     <span class="etiqueta">Asesoría personalizada · Quito, Ecuador</span>
     <h1>Tu visa no se resuelve llenando un formulario. Se prepara contigo.</h1>
