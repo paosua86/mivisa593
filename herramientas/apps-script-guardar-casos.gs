@@ -290,7 +290,8 @@ function guardarExpediente(datos) {
   });
 
   if (hoja.getLastRow() === 0) {
-    hoja.appendRow(claves);
+    var encabezados = claves.map(function (k) { return etiquetaCampoExpediente(k, datos.etiquetas); });
+    hoja.appendRow(encabezados);
     hoja.getRange(1, 1, 1, claves.length)
         .setFontWeight("bold").setBackground("#0b6478").setFontColor("#ffffff");
     hoja.setFrozenRows(1);
@@ -404,6 +405,26 @@ function listaLegible(v) {
   } catch (e) {
     return String(v);
   }
+}
+
+/**
+ * Convierte una clave interna del expediente (ej. "personales__nombres")
+ * en un encabezado legible para la hoja de calculo, usando el
+ * diccionario de etiquetas que manda el formulario. Si no lo manda
+ * (formularios viejos) o no encuentra la clave, cae en algo razonable.
+ */
+function etiquetaCampoExpediente(k, etiquetas) {
+  var especiales = { fecha: "Fecha", codigo: "Codigo del caso", persona: "Persona", nombre_ficha: "Nombre" };
+  if (especiales[k]) return especiales[k];
+
+  var partes = k.split("__");
+  if (partes.length !== 2) return k;
+
+  var seccion = etiquetaSeccion(partes[0]);
+  if (partes[1] === "lista") return seccion + " — detalle";
+
+  var campo = (etiquetas && etiquetas[k]) || partes[1].replace(/_/g, " ");
+  return seccion + " — " + campo;
 }
 
 function etiquetaSeccion(clave) {

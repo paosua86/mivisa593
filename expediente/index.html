@@ -350,6 +350,19 @@ var DOCUMENTOS_USA = [
   "Foto del otro pasaporte, si tienes doble nacionalidad"
 ];
 
+/** Diccionario clave -> texto de la pregunta, para que la hoja de
+ *  calculo muestre encabezados legibles en vez de claves internas
+ *  como "personales__nombres". Se arma una sola vez a partir de
+ *  SECCIONES_USA, y se manda junto con el expediente. */
+function mapaEtiquetas(){
+  var m = {};
+  SECCIONES_USA.forEach(function(s){
+    if (s.repetible) { m[s.id + "__lista"] = "Detalle (tabla)"; return; }
+    s.campos.forEach(function(c){ m[s.id + "__" + c.id] = c.t; });
+  });
+  return m;
+}
+
 /* ============================================================
    ESTADO
    ============================================================ */
@@ -838,7 +851,8 @@ function enviar(){
       });
       return o;
     }),
-    documentos: documentos
+    documentos: documentos,
+    etiquetas: mapaEtiquetas()
   };
 
   fetch(ENDPOINT, {
