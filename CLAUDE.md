@@ -1,8 +1,15 @@
-# Mi Visa593 — instrucciones del proyecto
+# MiVisa EC — instrucciones del proyecto
 
 Asesoría de visas de turismo en Ecuador. Estados Unidos, Canadá y Schengen.
 Titular del negocio: **David Ubilluz** · Quito · WhatsApp +593 99 896 1214
-Repo: `github.com/paosua86/mivisa593` · TikTok: `@mivisaec`
+Dominio: `mivisaec.com` · Repo: `github.com/paosua86/mivisa593` · TikTok: `@mivisaec`
+
+**El nombre de marca correcto y definitivo es "MiVisa EC".** "Mi Visa593"
+fue un nombre de trabajo usado al inicio del proyecto, antes de tener el
+logo y el dominio; quedó reemplazado en todas las páginas, el pie legal,
+los mensajes de WhatsApp y las herramientas internas. El repositorio de
+GitHub se sigue llamando `mivisa593` (cambiarlo rompería la URL de
+GitHub Pages) — eso no se toca, es solo el nombre técnico del repo.
 
 ---
 
@@ -27,12 +34,16 @@ visas/
 ├── CLAUDE.md              Este archivo
 ├── README.md              Cómo editar y publicar
 ├── index.html             Landing pública (una sola página)
+├── terminos.html          Términos y condiciones
+├── privacidad.html        Política de privacidad
 ├── empezar/               Formulario de precalificación (paso 1)
+├── pago/                  Página de pago por servicio (paso 5)
+├── expediente/            Formulario largo, solo con link personal (paso 4+)
 ├── docs/                  Documentos internos de trabajo
 │   └── estrategia/        Copy, guiones, calendario, mapa de dolor
 ├── referencias/           Originales del cliente (Excel, Word). NO editar.
-├── imagenes/              Gráficos para redes
-└── herramientas/          Scripts de apoyo
+├── imagenes/              Logo (logo.png, logo-icono.png) y gráficos
+└── herramientas/          Apps Script, Worker de Cloudflare
 ```
 
 - **`referencias/` es de solo lectura.** Son los archivos originales de
@@ -53,14 +64,16 @@ visas/
 
 | Destino | Primera vez | Renovación |
 |---|---|---|
-| Estados Unidos (B1/B2) | $47 | $40 |
+| Estados Unidos (B1/B2) | $65 | $55 |
 | Canadá (visitante) | $95 | $75 |
-| Schengen | $145 | — |
+| Schengen | $155 | — |
 
-Arancel consular EE.UU.: $185, en la plataforma del consulado o en
-efectivo en Banco de Guayaquil.
+Arancel consular EE.UU.: $185. Canadá: tasa de visa 100 CAD + biometría
+85 CAD por persona (170 CAD máximo por familia). Todo va directo a la
+autoridad correspondiente, no a David.
 
-**Pagos:** PayPhone. No Stripe (el negocio es solo Ecuador).
+**Pagos:** transferencia bancaria o tarjeta de crédito por PayPhone. No
+Stripe (el negocio es solo Ecuador).
 **Agenda:** Horarios de citas de Google Calendar. No Cal.com.
 **Facturación:** electrónica SRI, pendiente de integrar.
 
@@ -68,10 +81,10 @@ efectivo en Banco de Guayaquil.
 volumen. El precio se revisa más adelante, no ahora.
 
 **El CTA de la landing es el formulario, NO WhatsApp.**
-Es el punto central del proyecto: hoy cada consulta cae en el teléfono
-de David y le consume el día. WhatsApp aparece solo al final de la
-página, como salvavidas para quien no logre llenar el formulario.
-La landing anterior tenía 7 CTAs a WhatsApp; se reemplazó a propósito.
+Es el punto central del proyecto: antes cada consulta caía en el
+teléfono de David y le consumía el día. WhatsApp aparece solo al final
+de la página y en `/pago/`, como paso puntual dentro del flujo, no como
+puerta de entrada general.
 
 **El hero NO gira sobre "nadie garantiza la visa".** Eso queda como nota
 al pie de la sección de honestidad. El ángulo es: *tu caso no es un
@@ -99,6 +112,27 @@ día se quiere; no volver a proponerlo.
 s/n, Quito, Pichincha 170802 · WhatsApp +593 99 896 1214. No volver a
 pedirlos.
 
+**Sistema visual, extraído del logo real de David (`imagenes/logo.png`
+y `logo-icono.png`):**
+- Acento único: degradado turquesa a azul (`--btn-1`/`--brand-2` para
+  superficies con texto blanco, `--brand-deep` para enlaces y texto de
+  marca, `--brand-tint` para fondos claros de insignias). Nada de verde
+  ni naranja: esos colores quedaron atrás con el nombre anterior.
+- Tipografía: **Playfair Display** para h1/h2 y callouts en cursiva,
+  **Public Sans** para todo el cuerpo. El cuerpo nunca lleva serif, por
+  legibilidad con el público mayor y no técnico.
+- El verde/ámbar/rojo del semáforo de precalificación (`--ok`/`--ambar`/
+  `--rojo` en `empezar/index.html`) es semántico, no de marca: se
+  mantiene igual aunque cambie el resto de la paleta.
+- El verde de WhatsApp (`#1f9c53`) en los botones que abren WhatsApp
+  también es semántico (reconocible como "esto abre WhatsApp") y se
+  mantiene igual.
+- Movimiento: entrada escalonada en el hero, revelado suave al hacer
+  scroll, elevación en hover (solo con puntero real). Todo respeta
+  `prefers-reduced-motion`. Nada de scroll-hijack ni parallax.
+- Este sistema debe aplicarse igual en cualquier página nueva que se
+  agregue al sitio.
+
 ---
 
 ## Contexto técnico
@@ -108,10 +142,15 @@ pedirlos.
 - Formularios: una pregunta por pantalla, botones en vez de campos de
   texto libre siempre que se pueda, guardado automático.
 - Sin dependencias externas ni paso de build: HTML/CSS/JS planos,
-  publicables en GitHub Pages tal cual.
+  publicables en GitHub Pages tal cual. Las únicas peticiones externas
+  son las fuentes de Google Fonts (Playfair Display, Public Sans).
 - Datos personales (pasaportes, cédulas, sueldos): aplica la LOPDP
   ecuatoriana. Antes de guardar datos reales hacen falta aviso de
   privacidad, consentimiento explícito, política de retención y cifrado.
+- La carpeta de Drive donde se guardan los casos se llama
+  `Casos MiVisa EC`. El script (`herramientas/apps-script-guardar-casos.gs`)
+  migra sola el nombre antiguo (`Casos Mi Visa593`) si lo encuentra, sin
+  perder los casos ya guardados ahí.
 
 ## Idioma
 

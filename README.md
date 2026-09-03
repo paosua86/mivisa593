@@ -1,7 +1,7 @@
-# Mi Visa593
+# MiVisa EC
 
 Asesoría de visas de turismo en Ecuador · Estados Unidos, Canadá y Schengen.
-David Ubilluz · Quito · WhatsApp +593 99 896 1214
+David Ubilluz · Quito · WhatsApp +593 99 896 1214 · `mivisaec.com`
 
 Sitio estático, sin dependencias ni paso de build. Se publica tal cual.
 
@@ -9,15 +9,26 @@ Sitio estático, sin dependencias ni paso de build. Se publica tal cual.
 
 ```
 index.html        Landing pública
+terminos.html      Términos y condiciones
+privacidad.html    Política de privacidad
 empezar/          Formulario de precalificación (paso 1 del proceso)
+pago/             Página de pago por servicio (paso 5)
+expediente/       Formulario largo, solo con link personal (paso 4+)
 docs/             Documentos internos: copy, estrategia, rediseño de formularios
 referencias/      Originales de David (Excel, Word). Solo lectura.
-imagenes/         Gráficos para redes
-herramientas/     Scripts de apoyo
+imagenes/         Logo (logo.png, logo-icono.png) y gráficos para redes
+herramientas/     Apps Script (guarda los casos) y Worker de Cloudflare
 CLAUDE.md         Reglas del proyecto y decisiones ya tomadas
 ```
 
 `docs/` y `referencias/` están excluidos por `.gitignore`: son internos.
+
+## Sistema visual
+
+Playfair Display (h1/h2 y callouts) + Public Sans (cuerpo). Acento único
+en degradado turquesa-azul, extraído del logo real. El verde/ámbar/rojo
+del semáforo en `empezar/` y el verde de WhatsApp son colores semánticos
+aparte, no cambian con la marca. Detalle completo en `CLAUDE.md`.
 
 ## Ver el sitio en local
 
@@ -43,6 +54,7 @@ de `empezar/index.html`. Cada opción acepta:
 | `si` | función que decide si la pregunta aplica al caso |
 
 Los textos de consejo de cada punto flojo van en el objeto `CONSEJOS`.
+Tabla completa de puntos en `docs/tabla-de-puntos.md`.
 
 ### Semáforo
 
@@ -57,16 +69,30 @@ Dos reglas duras mandan por encima del puntaje:
 - Visa negada hace menos de un año y sin cambios en el perfil → **rojo**.
 - Sin pasaporte → nunca puede salir verde.
 
+## Cómo se guarda cada caso
+
+`empezar/index.html` envía el caso a la URL en `ENDPOINT_GUARDADO`, que
+apunta al Apps Script (`herramientas/apps-script-guardar-casos.gs`). Ese
+script:
+
+- Guarda una fila en la hoja de cálculo de Google, con un código de 6
+  caracteres y los links de pago y expediente ya armados.
+- Crea una carpeta por caso dentro de `Casos MiVisa EC` en Drive.
+- Cuando llega un expediente completo (`expediente/index.html`), lo
+  guarda en la pestaña "Expedientes" y genera un documento de texto
+  ordenado dentro de la carpeta del caso.
+
+Al modificar el `.gs`, hay que volver a implementarlo como **Nueva
+versión** (no nueva implementación) para que la URL no cambie.
+
 ## Publicar
 
-GitHub Pages, rama `main`, carpeta raíz.
+GitHub Pages, rama `main`, carpeta raíz. `CNAME` apunta a `mivisaec.com`.
 
 ## Pendiente
 
-- Guardar los casos en una base de datos. Hoy el resultado se entrega por
-  WhatsApp con el resumen ya escrito.
-- Formulario de expediente completo (paso 4). Ver
-  `docs/formularios-rediseno.md`.
-- Webhook de PayPhone.
+- Webhook o integración directa con PayPhone (hoy el link de pago lo
+  genera David a mano cuando el cliente lo pide por WhatsApp).
 - Facturación electrónica SRI.
-- Aviso de privacidad y política de retención (LOPDP).
+- Subida real de documentos en el expediente (hoy solo se marca el
+  estado de cada uno; las fotos se envían por WhatsApp aparte).

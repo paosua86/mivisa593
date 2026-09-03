@@ -1,12 +1,12 @@
 /**
- * Mi Visa593 — Guardar casos del formulario en una hoja de cálculo
+ * MiVisa EC — Guardar casos del formulario en una hoja de cálculo
  * ================================================================
  *
  * Recibe cada caso de mivisaec.com/empezar/, lo guarda como una fila,
  * le asigna un código único y arma los links listos para copiar.
  *
  * INSTALACIÓN (una sola vez)
- *  1. Hoja nueva en https://sheets.new, nómbrala "Casos Mi Visa593".
+ *  1. Hoja nueva en https://sheets.new, nómbrala "Casos MiVisa EC".
  *  2. Extensiones → Apps Script. Borra todo y pega este archivo.
  *  3. Implementar → Nueva implementación → Aplicación web.
  *       Ejecutar como: Yo
@@ -20,6 +20,15 @@
  */
 
 var SITIO = "https://mivisaec.com";
+
+/* Nombre de la carpeta raíz en Drive donde se guarda cada caso.
+   NOMBRE_CARPETA_ANTERIOR es el nombre con el que se creó al inicio del
+   proyecto (cuando el negocio se llamaba "Mi Visa593" de trabajo). Si esa
+   carpeta existe, se renombra sola la primera vez que corre este script;
+   los casos ya guardados dentro no se mueven ni se pierden, porque Drive
+   identifica las carpetas por su ID, no por su nombre. */
+var NOMBRE_CARPETA = "Casos MiVisa EC";
+var NOMBRE_CARPETA_ANTERIOR = "Casos Mi Visa593";
 
 /** Orden de las columnas. Para añadir una, agrégala aquí. */
 var COLUMNAS = [
@@ -92,7 +101,7 @@ function doPost(e) {
       hoja.appendRow(COLUMNAS.map(function (c) { return c[1]; }));
       hoja.getRange(1, 1, 1, COLUMNAS.length)
           .setFontWeight("bold")
-          .setBackground("#0f3d38")
+          .setBackground("#0b6478")
           .setFontColor("#ffffff");
       hoja.setFrozenRows(1);
     }
@@ -167,14 +176,30 @@ function servicio(datos) {
 }
 
 /**
- * Crea la carpeta del caso en Drive, dentro de "Casos Mi Visa593",
+ * Devuelve la carpeta raíz de Drive donde viven los casos, migrando
+ * sola el nombre antiguo al nuevo la primera vez que la encuentra.
+ */
+function carpetaRaiz() {
+  var actual = DriveApp.getFoldersByName(NOMBRE_CARPETA);
+  if (actual.hasNext()) return actual.next();
+
+  var anterior = DriveApp.getFoldersByName(NOMBRE_CARPETA_ANTERIOR);
+  if (anterior.hasNext()) {
+    var carpeta = anterior.next();
+    carpeta.setName(NOMBRE_CARPETA);
+    return carpeta;
+  }
+
+  return DriveApp.createFolder(NOMBRE_CARPETA);
+}
+
+/**
+ * Crea la carpeta del caso dentro de la carpeta raíz de Drive,
  * y devuelve su enlace. Ahi van a caer los documentos del expediente.
  */
 function carpetaDelCaso(datos) {
   try {
-    var busca = DriveApp.getFoldersByName("Casos Mi Visa593");
-    var raiz = busca.hasNext() ? busca.next() : DriveApp.createFolder("Casos Mi Visa593");
-    var carpeta = raiz.createFolder(datos.codigo + " - " + datos.nombre);
+    var carpeta = carpetaRaiz().createFolder(datos.codigo + " - " + datos.nombre);
     return carpeta.getUrl();
   } catch (err) {
     return "";
@@ -193,10 +218,9 @@ function doGet(e) {
   if (e && e.parameter && e.parameter.prueba === "drive") {
     var r = {};
     try {
-      var it = DriveApp.getFoldersByName("Casos Mi Visa593");
-      r.carpetaExiste = it.hasNext();
-      var f = it.hasNext() ? it.next() : DriveApp.createFolder("Casos Mi Visa593");
-      r.carpetaUrl = f.getUrl();
+      var raiz = carpetaRaiz();
+      r.carpetaExiste = true;
+      r.carpetaUrl = raiz.getUrl();
       var archivo = DriveApp.createFile(Utilities.newBlob("prueba", "text/plain", "prueba-drive.txt"));
       r.archivoUrl = archivo.getUrl();
       archivo.setTrashed(true);
@@ -209,7 +233,7 @@ function doGet(e) {
   }
 
   if (!codigo) {
-    return responder({ ok: true, mensaje: "Endpoint de Mi Visa593 activo" });
+    return responder({ ok: true, mensaje: "Endpoint de MiVisa EC activo" });
   }
   try {
     var hoja = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
@@ -268,7 +292,7 @@ function guardarExpediente(datos) {
   if (hoja.getLastRow() === 0) {
     hoja.appendRow(claves);
     hoja.getRange(1, 1, 1, claves.length)
-        .setFontWeight("bold").setBackground("#0f3d38").setFontColor("#ffffff");
+        .setFontWeight("bold").setBackground("#0b6478").setFontColor("#ffffff");
     hoja.setFrozenRows(1);
   }
 
@@ -353,16 +377,13 @@ function documentoDelCaso(codigo, datos) {
   var creado = archivo;
 
   try {
-    var raiz = DriveApp.getFoldersByName("Casos Mi Visa593");
-    if (raiz.hasNext()) {
-      var carpetas = raiz.next().getFolders();
-      while (carpetas.hasNext()) {
-        var c = carpetas.next();
-        if (c.getName().indexOf(codigo) === 0) {
-          c.addFile(creado);
-          DriveApp.getRootFolder().removeFile(creado);
-          break;
-        }
+    var carpetas = carpetaRaiz().getFolders();
+    while (carpetas.hasNext()) {
+      var c = carpetas.next();
+      if (c.getName().indexOf(codigo) === 0) {
+        c.addFile(creado);
+        DriveApp.getRootFolder().removeFile(creado);
+        break;
       }
     }
   } catch (err) { /* si no se puede mover, el archivo igual existe */ }

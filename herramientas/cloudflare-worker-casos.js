@@ -1,5 +1,5 @@
 /**
- * Mi Visa593 — Intermediario entre el formulario y Google Sheets
+ * MiVisa EC — Intermediario entre el formulario y Google Sheets
  * =============================================================
  *
  * PARA QUÉ SIRVE
@@ -18,7 +18,7 @@
  *  1. Crea una cuenta gratis en https://dash.cloudflare.com
  *
  *  2. En el panel: Compute (Workers) → Create → Start from Hello World
- *     → Deploy. Ponle de nombre "mivisa593-casos".
+ *     → Deploy. Ponle de nombre "mivisaec-casos".
  *
  *  3. Entra al Worker → Edit code. Borra todo y pega este archivo.
  *     Deploy.
@@ -30,7 +30,7 @@
  *     Guarda y vuelve a hacer Deploy.
  *
  *  5. Copia la URL del Worker. Se ve así:
- *       https://mivisa593-casos.TU-SUBDOMINIO.workers.dev
+ *       https://mivisaec-casos.TU-SUBDOMINIO.workers.dev
  *
  *  6. Pega ESA url en empezar/index.html, en ENDPOINT_GUARDADO.
  *     La de Google desaparece del código de la página.
@@ -39,7 +39,7 @@
  *
  * COMPROBAR QUE FUNCIONA
  * Abre la URL del Worker en el navegador. Debe responder:
- *   {"ok":true,"mensaje":"Worker de Mi Visa593 activo"}
+ *   {"ok":true,"mensaje":"Worker de MiVisa EC activo"}
  */
 
 const ORIGENES = [
@@ -71,7 +71,7 @@ export default {
     }
 
     if (request.method === "GET") {
-      return json({ ok: true, mensaje: "Worker de Mi Visa593 activo" }, 200, cors);
+      return json({ ok: true, mensaje: "Worker de MiVisa EC activo" }, 200, cors);
     }
 
     if (request.method !== "POST") {
