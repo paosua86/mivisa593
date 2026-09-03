@@ -5,27 +5,41 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Mi Visa593 — Asesoría de visas de turismo en Ecuador</title>
 <meta name="description" content="Preparamos tu caso para la visa de turismo de Estados Unidos, Canadá o Europa. Revisamos tu información contigo, dato por dato. Y si todavía no calificas, te decimos en qué trabajar.">
-<meta name="theme-color" content="#0f3d38">
+<meta name="theme-color" content="#0b6478">
 <meta property="og:title" content="Mi Visa593 — Tu visa no se resuelve llenando un formulario">
 <meta property="og:description" content="Asesoría de visas de turismo en Ecuador. Revisamos tu caso contigo y te decimos la verdad de tu situación.">
 <meta property="og:locale" content="es_EC">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://mivisaec.com/">
 <link rel="canonical" href="https://mivisaec.com/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Public+Sans:wght@400;500;600;700;800&display=swap">
 <style>
 :root{
   --tinta:#14201e;
   --tinta-suave:#4a5a56;
-  --papel:#fbf8f3;
-  --papel-2:#f3ede3;
-  --verde:#0f3d38;
-  --verde-claro:#e6efec;
-  --naranja:#c2571f;
-  --borde:#e0d8cb;
+  --papel:#f4f5f3;
+  --papel-rgb:244 245 243;
+  --papel-2:#e9ebe8;
+  --borde:#dde1dd;
+
+  /* Marca: extraída del logo (icono degradado turquesa a azul, wordmark en tinta) */
+  --brand-1:#12a79c;      /* teal vivo, solo para el icono decorativo */
+  --brand-2:#2158c9;      /* azul, extremo del degradado */
+  --btn-1:#086b63;        /* teal profundo, seguro con texto blanco */
+  --brand-deep:#0b6478;   /* teal-azul sólido: enlaces, bordes, texto de marca */
+  --brand-tint:#e3f1ef;   /* fondo muy claro para chips e insignias */
+  --brand-shadow:#123a52; /* sombra oscura a juego con la marca */
+  --cierre-1:#0a3a37;
+  --cierre-2:#0b2c5e;
+
   --ok:#2f6d4f;
   --alerta:#8a5a12;
   --radio:14px;
   --ancho:660px;
+  --sans:"Public Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  --display:"Playfair Display",Georgia,"Times New Roman",serif;
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
@@ -33,66 +47,100 @@ body{
   margin:0;
   background:var(--papel);
   color:var(--tinta);
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  font-family:var(--sans);
   font-size:18px;
   line-height:1.62;
   -webkit-font-smoothing:antialiased;
 }
 img{max-width:100%;display:block}
-h1,h2,h3{line-height:1.2;margin:0 0 .5em;letter-spacing:-.02em;font-weight:700}
+h1,h2{font-family:var(--display);line-height:1.14;margin:0 0 .5em;letter-spacing:-.015em;font-weight:700;text-wrap:balance}
+h3{line-height:1.25;margin:0 0 .5em;letter-spacing:-.01em;font-weight:700;font-family:var(--sans)}
 h1{font-size:2.1rem}
 h2{font-size:1.6rem}
-h3{font-size:1.15rem;letter-spacing:-.01em}
+h3{font-size:1.15rem}
 p{margin:0 0 1em}
-a{color:var(--verde)}
+a{color:var(--brand-deep)}
 .env{max-width:var(--ancho);margin:0 auto;padding:0 20px}
 section{padding:52px 0}
 .linea{border-top:1px solid var(--borde)}
 
-.top{background:var(--verde);color:#fff;padding:10px 0;font-size:.78rem;letter-spacing:.05em;text-transform:uppercase;font-weight:600}
-.top .env{text-align:center}
+/* ---------- cabecera / marca ---------- */
+.cab{background:var(--papel);padding:18px 0;border-bottom:1px solid var(--borde)}
+.cab .env{display:flex;align-items:center}
+.marca{display:inline-flex;align-items:center;gap:12px;text-decoration:none;color:var(--tinta)}
+.marca-icono{flex:0 0 auto;display:block}
+.marca-texto{display:flex;flex-direction:column;line-height:1.05}
+.marca-nombre{font-family:var(--display);font-weight:700;font-size:1.28rem;letter-spacing:-.01em}
+.marca-sub{font-family:var(--sans);font-weight:600;font-size:.6rem;letter-spacing:.17em;text-transform:uppercase;color:var(--tinta-suave);margin-top:4px}
 
-.hero{background:linear-gradient(180deg,var(--papel-2),var(--papel));padding:44px 0 48px}
-.etiqueta{display:inline-block;background:var(--verde-claro);color:var(--verde);font-size:.82rem;font-weight:700;padding:6px 14px;border-radius:999px;margin-bottom:20px}
+/* ---------- hero ---------- */
+.hero{position:relative;overflow:hidden;background:linear-gradient(180deg,var(--papel-2),var(--papel));padding:44px 0 48px}
+.hero-marca-fondo{position:absolute;top:-8%;right:-10%;width:60%;max-width:420px;opacity:.05;pointer-events:none}
+.hero .env{position:relative}
+.etiqueta{display:inline-block;background:var(--brand-tint);color:var(--brand-deep);font-size:.82rem;font-weight:700;padding:6px 14px;border-radius:999px;margin-bottom:20px}
 .hero h1{font-size:2.3rem;margin-bottom:.45em}
 .hero .sub{font-size:1.13rem;color:var(--tinta-suave);margin-bottom:1.6em}
 .avales{list-style:none;padding:0;margin:26px 0 0;display:grid;gap:10px;font-size:.95rem;color:var(--tinta-suave)}
 .avales li{display:flex;gap:10px;align-items:flex-start}
-.avales svg{flex:0 0 20px;margin-top:3px}
+.avales svg{flex:0 0 20px;margin-top:3px;color:var(--brand-deep)}
 
+@media (prefers-reduced-motion:no-preference){
+  @keyframes subeYAparece{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  .hero .etiqueta,.hero h1,.hero .sub,.hero .btn,.hero .micro,.hero .avales{
+    animation:subeYAparece .7s cubic-bezier(.16,1,.3,1) both;
+  }
+  .hero .etiqueta{animation-delay:.02s}
+  .hero h1{animation-delay:.09s}
+  .hero .sub{animation-delay:.17s}
+  .hero .btn{animation-delay:.25s}
+  .hero .micro{animation-delay:.31s}
+  .hero .avales{animation-delay:.37s}
+}
+
+/* ---------- botones ---------- */
 .btn{
   display:block;width:100%;text-align:center;text-decoration:none;
-  background:var(--naranja);color:#fff;font-weight:700;font-size:1.08rem;
+  background:linear-gradient(135deg,var(--btn-1),var(--brand-2));color:#fff;font-weight:700;font-size:1.08rem;
   padding:18px 22px;border-radius:var(--radio);border:0;cursor:pointer;
-  box-shadow:0 2px 0 #8f3f14;transition:transform .06s ease,box-shadow .06s ease;
+  box-shadow:0 2px 0 var(--brand-shadow);transition:transform .06s ease,box-shadow .18s ease;
 }
-.btn:active{transform:translateY(2px);box-shadow:0 0 0 #8f3f14}
-.btn-2{background:transparent;color:var(--verde);border:2px solid var(--verde);box-shadow:none;font-size:1rem;padding:15px 22px}
+.btn:active{transform:translateY(2px);box-shadow:0 0 0 var(--brand-shadow)}
+.btn-2{background:transparent;color:var(--brand-deep);border:2px solid var(--brand-deep);box-shadow:none;font-size:1rem;padding:15px 22px}
 .btn-2:active{transform:translateY(1px)}
 .micro{font-size:.9rem;color:var(--tinta-suave);text-align:center;margin:12px 0 0}
+@media (hover:hover){
+  .btn:hover{transform:translateY(-2px);box-shadow:0 4px 0 var(--brand-shadow),0 14px 26px -12px rgba(11,58,55,.45)}
+  .btn-2:hover{border-color:var(--btn-1);color:var(--btn-1)}
+}
 
-.tarjeta{background:#fff;border:1px solid var(--borde);border-radius:var(--radio);padding:22px;margin:0 0 14px}
-.destacado{background:var(--verde);color:#fff;border-radius:var(--radio);padding:24px;font-size:1.2rem;font-weight:700;line-height:1.4;margin:26px 0 0}
+.tarjeta{background:#fff;border:1px solid var(--borde);border-radius:var(--radio);padding:22px;margin:0 0 14px;transition:transform .16s ease,box-shadow .16s ease}
+.destacado{
+  background:linear-gradient(135deg,var(--btn-1),var(--brand-2));color:#fff;border-radius:var(--radio);
+  padding:26px 24px;font-family:var(--display);font-style:italic;font-weight:600;
+  font-size:1.22rem;line-height:1.42;margin:26px 0 0;padding-bottom:calc(26px + .15em);
+}
 .nota{font-size:.92rem;color:var(--tinta-suave)}
+@media (hover:hover){.tarjeta:hover{transform:translateY(-2px);box-shadow:0 14px 30px -18px rgba(11,58,55,.4)}}
 
 .punto{display:flex;gap:16px;margin-bottom:22px}
-.punto .n{flex:0 0 38px;height:38px;border-radius:50%;background:var(--verde-claro);color:var(--verde);font-weight:700;display:grid;place-items:center;font-size:1rem}
+.punto .n{flex:0 0 38px;height:38px;border-radius:50%;background:var(--brand-tint);color:var(--brand-deep);font-weight:700;display:grid;place-items:center;font-size:1rem}
 .punto h3{margin-bottom:.25em}
 .punto p{margin:0;color:var(--tinta-suave);font-size:.98rem}
 
-.destino{display:block;text-decoration:none;color:inherit;background:#fff;border:2px solid var(--borde);border-radius:var(--radio);padding:20px;margin-bottom:12px;transition:border-color .12s ease}
-.destino:hover,.destino:focus-visible{border-color:var(--verde)}
-.destino .pais{font-size:1.3rem;font-weight:700;letter-spacing:-.02em;display:flex;align-items:center;gap:10px}
+.destino{display:block;text-decoration:none;color:inherit;background:#fff;border:2px solid var(--borde);border-radius:var(--radio);padding:20px;margin-bottom:12px;transition:border-color .16s ease,transform .16s ease,box-shadow .16s ease}
+.destino:hover,.destino:focus-visible{border-color:var(--brand-deep)}
+@media (hover:hover){.destino:hover{transform:translateY(-2px);box-shadow:0 14px 30px -18px rgba(11,58,55,.35)}}
+.destino .pais{font-size:1.3rem;font-weight:700;letter-spacing:-.02em;display:flex;align-items:center;gap:10px;font-family:var(--sans)}
 .destino .tipo{color:var(--tinta-suave);font-size:.95rem;margin:2px 0 0}
-.destino .desde{display:inline-block;margin-top:12px;background:var(--verde-claro);color:var(--verde);font-weight:700;font-size:.9rem;padding:4px 12px;border-radius:999px}
+.destino .desde{display:inline-block;margin-top:12px;background:var(--brand-tint);color:var(--brand-deep);font-weight:700;font-size:.9rem;padding:4px 12px;border-radius:999px}
 .bandera{font-size:1.5rem;line-height:1}
 .paises{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
-.paises a{text-decoration:none;background:var(--papel-2);border:1px solid var(--borde);color:var(--tinta);padding:10px 15px;border-radius:999px;font-size:.95rem;font-weight:600}
-.paises a:hover{border-color:var(--verde)}
+.paises a{text-decoration:none;background:var(--papel-2);border:1px solid var(--borde);color:var(--tinta);padding:10px 15px;border-radius:999px;font-size:.95rem;font-weight:600;transition:border-color .16s ease}
+.paises a:hover{border-color:var(--brand-deep)}
 
 ol.pasos{list-style:none;counter-reset:p;padding:0;margin:0}
 ol.pasos li{counter-increment:p;position:relative;padding:0 0 26px 52px}
-ol.pasos li::before{content:counter(p);position:absolute;left:0;top:0;width:34px;height:34px;border-radius:50%;background:var(--verde);color:#fff;display:grid;place-items:center;font-weight:700;font-size:.95rem}
+ol.pasos li::before{content:counter(p);position:absolute;left:0;top:0;width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--btn-1),var(--brand-2));color:#fff;display:grid;place-items:center;font-weight:700;font-size:.95rem}
 ol.pasos li::after{content:"";position:absolute;left:16px;top:38px;bottom:6px;width:2px;background:var(--borde)}
 ol.pasos li:last-child{padding-bottom:0}
 ol.pasos li:last-child::after{display:none}
@@ -106,7 +154,8 @@ ul.equis{list-style:none;padding:0;margin:0}
 ul.equis li{position:relative;padding-left:30px;margin-bottom:9px;color:var(--tinta-suave);font-size:.97rem}
 ul.equis li::before{content:"×";position:absolute;left:6px;top:-1px;color:var(--alerta);font-size:1.3rem;font-weight:700}
 
-.precio{background:#fff;border:1px solid var(--borde);border-radius:var(--radio);padding:20px;margin-bottom:12px}
+.precio{background:#fff;border:1px solid var(--borde);border-radius:var(--radio);padding:20px;margin-bottom:12px;transition:transform .16s ease,box-shadow .16s ease}
+@media (hover:hover){.precio:hover{transform:translateY(-2px);box-shadow:0 14px 30px -18px rgba(11,58,55,.35)}}
 .precio h3{display:flex;align-items:center;gap:10px;margin-bottom:.1em}
 .precio .tipo{color:var(--tinta-suave);font-size:.92rem;margin:0 0 14px}
 .fila{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-top:1px solid var(--papel-2);font-size:1rem}
@@ -123,21 +172,22 @@ ul.equis li::before{content:"×";position:absolute;left:6px;top:-1px;color:var(-
 
 .tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
 .tabs button{font:inherit;font-size:.95rem;font-weight:600;padding:9px 16px;border-radius:999px;border:1px solid var(--borde);background:#fff;color:var(--tinta-suave);cursor:pointer}
-.tabs button[aria-selected="true"]{background:var(--verde);color:#fff;border-color:var(--verde)}
+.tabs button[aria-selected="true"]{background:var(--brand-deep);color:#fff;border-color:var(--brand-deep)}
 .panel[hidden]{display:none}
 
 details{border-bottom:1px solid var(--borde);padding:4px 0}
 details summary{cursor:pointer;list-style:none;padding:15px 34px 15px 0;position:relative;font-weight:600;font-size:1.02rem}
 details summary::-webkit-details-marker{display:none}
-details summary::after{content:"+";position:absolute;right:6px;top:12px;font-size:1.5rem;color:var(--naranja);font-weight:400;line-height:1}
+details summary::after{content:"+";position:absolute;right:6px;top:12px;font-size:1.5rem;color:var(--brand-deep);font-weight:400;line-height:1}
 details[open] summary::after{content:"–"}
 details .cuerpo{padding:0 0 16px;color:var(--tinta-suave);font-size:.99rem}
 details .cuerpo p:last-child{margin-bottom:0}
 
-.cierre{background:var(--verde);color:#fff;padding:52px 0}
+.cierre{background:linear-gradient(160deg,var(--cierre-1),var(--cierre-2));color:#fff;padding:52px 0}
 .cierre h2{color:#fff}
 .cierre p{color:#cfe0dc}
-.cierre .btn{background:#fff;color:var(--verde);box-shadow:0 2px 0 #0000002e}
+.cierre .btn{background:#fff;background-image:none;color:var(--brand-deep);box-shadow:0 2px 0 #0000002e}
+@media (hover:hover){.cierre .btn:hover{box-shadow:0 4px 0 #0000002e,0 14px 26px -12px rgba(0,0,0,.35)}}
 .cierre .micro{color:#a9c6c0}
 .wa{display:block;text-align:center;margin-top:26px;color:#cfe0dc;font-size:.93rem}
 .wa a{color:#fff}
@@ -145,9 +195,19 @@ footer{padding:34px 0 130px;font-size:.85rem;color:var(--tinta-suave);background
 footer p{margin-bottom:.9em}
 footer strong{color:var(--tinta)}
 
-.fija{position:fixed;left:0;right:0;bottom:0;z-index:50;background:rgba(251,248,243,.94);backdrop-filter:blur(8px);border-top:1px solid var(--borde);padding:12px 20px calc(12px + env(safe-area-inset-bottom));transform:translateY(120%);transition:transform .25s ease}
+.fija{position:fixed;left:0;right:0;bottom:0;z-index:50;background:rgb(var(--papel-rgb)/.94);backdrop-filter:blur(8px);border-top:1px solid var(--borde);padding:12px 20px calc(12px + env(safe-area-inset-bottom));transform:translateY(120%);transition:transform .25s ease}
 .fija.ver{transform:translateY(0)}
 .fija .env{padding:0}
+
+/* ---------- revelado al hacer scroll ---------- */
+@media (prefers-reduced-motion:no-preference){
+  [data-reveal]{
+    opacity:0;transform:translateY(18px);
+    transition:opacity .6s cubic-bezier(.16,1,.3,1),transform .6s cubic-bezier(.16,1,.3,1);
+    transition-delay:calc(var(--i,0) * 80ms);
+  }
+  [data-reveal].on{opacity:1;transform:none}
+}
 
 @media (min-width:700px){
   body{font-size:19px}
@@ -159,14 +219,39 @@ footer strong{color:var(--tinta)}
   footer{padding-bottom:40px}
   .fija{display:none}
 }
-@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto;animation:none!important}}
 </style>
 </head>
 <body>
 
-<div class="top"><div class="env">Visas de turismo · Estados Unidos · Canadá · Europa</div></div>
+<header class="cab">
+  <div class="env">
+    <a class="marca" href="#inicio" aria-label="Mi Visa593, inicio">
+      <svg class="marca-icono" width="36" height="36" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="gLogo" x1="8" y1="6" x2="56" y2="58" gradientUnits="userSpaceOnUse">
+            <stop offset="0" style="stop-color:var(--brand-1)"/>
+            <stop offset="1" style="stop-color:var(--brand-2)"/>
+          </linearGradient>
+        </defs>
+        <path d="M18 11 L18 53" stroke="url(#gLogo)" stroke-width="4.5" stroke-linecap="round"/>
+        <path d="M18 11 C32 11 46 15 48 22 C50 28 50 36 48 42 C46 49 32 53 18 53" stroke="url(#gLogo)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M24 39 L40 23 M40 23 L34 41 M40 23 L26 31" stroke="url(#gLogo)" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="marca-texto">
+        <span class="marca-nombre">MiVisa EC</span>
+        <span class="marca-sub">Asesoría de visas</span>
+      </span>
+    </a>
+  </div>
+</header>
 
 <header class="hero" id="inicio">
+  <svg class="hero-marca-fondo" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+    <path d="M18 11 L18 53" stroke="var(--brand-deep)" stroke-width="4.5" stroke-linecap="round"/>
+    <path d="M18 11 C32 11 46 15 48 22 C50 28 50 36 48 42 C46 49 32 53 18 53" stroke="var(--brand-deep)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M24 39 L40 23 M40 23 L34 41 M40 23 L26 31" stroke="var(--brand-deep)" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
   <div class="env">
     <span class="etiqueta">Asesoría personalizada · Quito, Ecuador</span>
     <h1>Tu visa no se resuelve llenando un formulario. Se prepara contigo.</h1>
@@ -176,39 +261,39 @@ footer strong{color:var(--tinta)}
     <p class="micro">Gratis. Unas preguntas simples, 2 minutos.<br>Con eso ya te decimos cómo está tu caso de verdad.</p>
 
     <ul class="avales">
-      <li><svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="9" stroke="#0f3d38" stroke-width="1.5"/><path d="M6 10.2l2.6 2.6L14 7.4" stroke="#0f3d38" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Te atiende una persona, no un call center</li>
-      <li><svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="9" stroke="#0f3d38" stroke-width="1.5"/><path d="M6 10.2l2.6 2.6L14 7.4" stroke="#0f3d38" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Te damos una evaluación honesta de tu caso, aunque no sea la que esperas</li>
-      <li><svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="9" stroke="#0f3d38" stroke-width="1.5"/><path d="M6 10.2l2.6 2.6L14 7.4" stroke="#0f3d38" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Acompañamiento hasta el día de la cita</li>
+      <li><svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.5"/><path d="M6 10.2l2.6 2.6L14 7.4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Te atiende una persona, no un call center</li>
+      <li><svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.5"/><path d="M6 10.2l2.6 2.6L14 7.4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Te damos una evaluación honesta de tu caso, aunque no sea la que esperas</li>
+      <li><svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.5"/><path d="M6 10.2l2.6 2.6L14 7.4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Acompañamiento hasta el día de la cita</li>
     </ul>
   </div>
 </header>
 
 <section class="linea">
   <div class="env">
-    <h2>Lo que pasa cuando alguien “solo te llena los papeles”</h2>
+    <h2 data-reveal>Lo que pasa cuando alguien “solo te llena los papeles”</h2>
     <p>Pagas, te piden los datos por WhatsApp, alguien llena el formulario por ti con información genérica y te manda a la cita.</p>
     <p>Y ahí, frente al oficial, te preguntan algo que nunca revisaste, sobre un dato que tú ni sabías que habían puesto. La entrevista dura dos o tres minutos. No hay tiempo de explicar nada.</p>
     <p>El arancel que pagaste al consulado no se reembolsa.</p>
-    <div class="destacado">Nosotros hacemos lo contrario: el proceso es tuyo. Tú sabes qué dice cada línea de tu solicitud, porque la revisamos juntos.</div>
+    <div class="destacado" data-reveal>Nosotros hacemos lo contrario: el proceso es tuyo. Tú sabes qué dice cada línea de tu solicitud, porque la revisamos juntos.</div>
   </div>
 </section>
 
 <section class="linea">
   <div class="env">
-    <h2>Para una visa de turismo, en el fondo miran tres cosas</h2>
+    <h2 data-reveal>Para una visa de turismo, en el fondo miran tres cosas</h2>
     <p class="nota" style="margin-bottom:2em">Sea Estados Unidos, Canadá o Europa, el examen es el mismo: ¿tienes por qué volver?</p>
 
-    <div class="punto"><div class="n">1</div><div>
+    <div class="punto" data-reveal style="--i:0"><div class="n">1</div><div>
       <h3>Pasaporte vigente</h3>
       <p>Con tiempo suficiente por delante. Si el tuyo está por vencer, eso se resuelve primero.</p>
     </div></div>
 
-    <div class="punto"><div class="n">2</div><div>
+    <div class="punto" data-reveal style="--i:1"><div class="n">2</div><div>
       <h3>Arraigo a Ecuador</h3>
       <p>Razones reales para regresar: tu trabajo, tu negocio, tus estudios, tu familia, bienes a tu nombre. Es el punto que más peso tiene, y el que más se puede trabajar.</p>
     </div></div>
 
-    <div class="punto"><div class="n">3</div><div>
+    <div class="punto" data-reveal style="--i:2"><div class="n">3</div><div>
       <h3>Solvencia económica</h3>
       <p>Que puedas sostener tu viaje sin necesidad de trabajar allá. No existe una cifra establecida por norma: lo que se evalúa es que tus recursos sean coherentes con el viaje que planteas.</p>
     </div></div>
@@ -220,20 +305,20 @@ footer strong{color:var(--tinta)}
 
 <section class="linea" id="destinos">
   <div class="env">
-    <h2>¿Cuál es tu país destino?</h2>
+    <h2 data-reveal>¿Cuál es tu país destino?</h2>
     <p class="nota" style="margin-bottom:1.6em">Cada país pide cosas distintas. Elige el tuyo y te llevamos al formulario correcto.</p>
 
-    <a class="destino" href="empezar/?destino=usa">
+    <a class="destino" href="empezar/?destino=usa" data-reveal style="--i:0">
       <div class="pais"><span class="bandera">🇺🇸</span> Estados Unidos</div>
       <p class="tipo">Visa de turismo B1/B2</p>
     </a>
 
-    <a class="destino" href="empezar/?destino=canada">
+    <a class="destino" href="empezar/?destino=canada" data-reveal style="--i:1">
       <div class="pais"><span class="bandera">🇨🇦</span> Canadá</div>
       <p class="tipo">Visa de visitante</p>
     </a>
 
-    <div class="destino" style="cursor:default">
+    <div class="destino" data-reveal style="cursor:default;--i:2">
       <div class="pais"><span class="bandera">🇪🇺</span> Europa</div>
       <p class="tipo">Visa Schengen · elige el país al que viajas</p>
       <div class="paises">
@@ -256,10 +341,10 @@ footer strong{color:var(--tinta)}
 
 <section class="linea" id="proceso">
   <div class="env">
-    <h2>Así funciona, paso a paso. Sin sorpresas.</h2>
+    <h2 data-reveal>Así funciona, paso a paso. Sin sorpresas.</h2>
     <p class="nota" style="margin-bottom:2em">Para que sepas desde ahora qué va a pasar y qué te toca hacer a ti.</p>
 
-    <ol class="pasos">
+    <ol class="pasos" data-reveal>
       <li><h3>Llenas el formulario de inicio</h3><p>Aquí mismo, en esta página. Preguntas simples sobre tu situación: si has viajado, en qué trabajas, tu familia. Toma dos minutos y es gratis.</p></li>
       <li><h3>Te llega tu resultado y cómo funciona todo</h3><p>Te mandamos por WhatsApp y al correo cómo está tu caso: si estás en buen momento para aplicar o qué te falta. Junto con la explicación completa del proceso, sin condiciones ocultas.</p></li>
       <li><h3>Hablamos de tu caso</h3><p>Te llamamos o te escribimos por WhatsApp, con la persona que va a llevar tu proceso. Resolvemos tus dudas y decidimos juntos si vale la pena seguir ahora o esperar.</p></li>
@@ -275,7 +360,7 @@ footer strong{color:var(--tinta)}
 
 <section class="linea" id="incluye">
   <div class="env">
-    <h2>Qué hacemos exactamente por ti</h2>
+    <h2 data-reveal>Qué hacemos exactamente por ti</h2>
 
     <div class="tabs" role="tablist" aria-label="País destino">
       <button role="tab" aria-selected="true"  aria-controls="p-usa" id="t-usa">Estados Unidos</button>
@@ -349,10 +434,10 @@ footer strong{color:var(--tinta)}
 
 <section class="linea" id="precios">
   <div class="env">
-    <h2>Cuánto cuesta</h2>
+    <h2 data-reveal>Cuánto cuesta</h2>
     <p class="nota" style="margin-bottom:1.6em">Dos cosas separadas: lo que cobramos nosotros por la asesoría, y lo que cobra el consulado. Aquí están las dos.</p>
 
-    <div class="precio">
+    <div class="precio" data-reveal style="--i:0">
       <h3><span class="bandera">🇺🇸</span> Estados Unidos</h3>
       <p class="tipo">Visa de turismo B1/B2 · valores por persona</p>
       <div class="fila"><span>Asesoría, primera vez</span><b>$65</b></div>
@@ -362,7 +447,7 @@ footer strong{color:var(--tinta)}
       <div class="pagos"><a href="https://wa.me/593998961214?text=Hola%20David%2C%20quiero%20el%20link%20de%20pago%20para%20la%20asesor%C3%ADa%20de%20visa%20americana%20B1/B2%2C%20primera%20vez%20%28%2465%29."><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.9-1.3A10 10 0 1012 2zm5.6 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.2.1-1.9-.1a13 13 0 01-6.6-5.8c-.5-.8-.8-1.7-.8-2.6 0-.9.5-1.4.7-1.6.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2 0 .4-.1.5l-.4.5c-.1.2-.3.3-.1.6.5.8 1.1 1.5 1.8 2 .3.2.5.2.7 0l.7-.8c.2-.2.4-.2.6-.1l1.9 1c.2.1.4.2.4.3.1.2.1.7-.1 1.3z"/></svg>Pedir link de pago · $65</a><a href="https://wa.me/593998961214?text=Hola%20David%2C%20quiero%20el%20link%20de%20pago%20para%20la%20asesor%C3%ADa%20de%20visa%20americana%20B1/B2%2C%20renovaci%C3%B3n%20%28%2455%29."><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.9-1.3A10 10 0 1012 2zm5.6 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.2.1-1.9-.1a13 13 0 01-6.6-5.8c-.5-.8-.8-1.7-.8-2.6 0-.9.5-1.4.7-1.6.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2 0 .4-.1.5l-.4.5c-.1.2-.3.3-.1.6.5.8 1.1 1.5 1.8 2 .3.2.5.2.7 0l.7-.8c.2-.2.4-.2.6-.1l1.9 1c.2.1.4.2.4.3.1.2.1.7-.1 1.3z"/></svg>Renovación · $55</a></div>
     </div>
 
-    <div class="precio">
+    <div class="precio" data-reveal style="--i:1">
       <h3><span class="bandera">🇨🇦</span> Canadá</h3>
       <p class="tipo">Visa de visitante · valores por persona</p>
       <div class="fila"><span>Asesoría, primera vez</span><b>$95</b></div>
@@ -374,7 +459,7 @@ footer strong{color:var(--tinta)}
       <div class="pagos"><a href="https://wa.me/593998961214?text=Hola%20David%2C%20quiero%20el%20link%20de%20pago%20para%20la%20asesor%C3%ADa%20de%20visa%20de%20Canad%C3%A1%2C%20primera%20vez%20%28%2495%29."><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.9-1.3A10 10 0 1012 2zm5.6 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.2.1-1.9-.1a13 13 0 01-6.6-5.8c-.5-.8-.8-1.7-.8-2.6 0-.9.5-1.4.7-1.6.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2 0 .4-.1.5l-.4.5c-.1.2-.3.3-.1.6.5.8 1.1 1.5 1.8 2 .3.2.5.2.7 0l.7-.8c.2-.2.4-.2.6-.1l1.9 1c.2.1.4.2.4.3.1.2.1.7-.1 1.3z"/></svg>Pedir link de pago · $95</a><a href="https://wa.me/593998961214?text=Hola%20David%2C%20quiero%20el%20link%20de%20pago%20para%20la%20asesor%C3%ADa%20de%20visa%20de%20Canad%C3%A1%2C%20renovaci%C3%B3n%20%28%2475%29."><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.9-1.3A10 10 0 1012 2zm5.6 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.2.1-1.9-.1a13 13 0 01-6.6-5.8c-.5-.8-.8-1.7-.8-2.6 0-.9.5-1.4.7-1.6.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2 0 .4-.1.5l-.4.5c-.1.2-.3.3-.1.6.5.8 1.1 1.5 1.8 2 .3.2.5.2.7 0l.7-.8c.2-.2.4-.2.6-.1l1.9 1c.2.1.4.2.4.3.1.2.1.7-.1 1.3z"/></svg>Renovación · $75</a></div>
     </div>
 
-    <div class="precio">
+    <div class="precio" data-reveal style="--i:2">
       <h3><span class="bandera">🇪🇺</span> Europa</h3>
       <p class="tipo">Visa Schengen · valores por persona</p>
       <div class="fila"><span>Asesoría</span><b>$155</b></div>
@@ -392,10 +477,10 @@ footer strong{color:var(--tinta)}
 
 <section class="linea" id="documentos">
   <div class="env">
-    <h2>Los documentos que te vamos a pedir</h2>
+    <h2 data-reveal>Los documentos que te vamos a pedir</h2>
     <p class="nota" style="margin-bottom:1.6em">Te acompañamos en la obtención de cada uno. Las fotografías tomadas desde tu teléfono son suficientes.</p>
 
-    <div class="tarjeta">
+    <div class="tarjeta" data-reveal style="--i:0">
       <h3><span class="bandera">🇺🇸</span> Estados Unidos</h3>
       <ul class="check" style="margin-bottom:0">
         <li>Foto digital 5x5, fondo blanco.</li>
@@ -405,7 +490,7 @@ footer strong{color:var(--tinta)}
       </ul>
     </div>
 
-    <div class="tarjeta">
+    <div class="tarjeta" data-reveal style="--i:1">
       <h3><span class="bandera">🇨🇦</span> Canadá</h3>
       <ul class="check" style="margin-bottom:0">
         <li>Foto de la página de datos de tu pasaporte.</li>
@@ -417,7 +502,7 @@ footer strong{color:var(--tinta)}
       </ul>
     </div>
 
-    <div class="tarjeta">
+    <div class="tarjeta" data-reveal style="--i:2">
       <h3><span class="bandera">🇪🇺</span> Europa</h3>
       <ul class="check" style="margin-bottom:0">
         <li>Foto tipo pasaporte de 3.5 x 4.5 cm, fondo blanco.</li>
@@ -438,15 +523,15 @@ footer strong{color:var(--tinta)}
 
 <section class="linea" id="diferencia">
   <div class="env">
-    <h2>Si tu caso no está listo, te lo decimos. Y te decimos qué hacer.</h2>
+    <h2 data-reveal>Si tu caso no está listo, te lo decimos. Y te decimos qué hacer.</h2>
     <p>Hay quienes cobran y tramitan por igual, y permiten que pierdas el arancel consular sin advertirte de nada. Nuestro interés es que viajes, no únicamente que contrates.</p>
     <p>Por eso, cuando revisamos tu perfil pueden pasar tres cosas:</p>
 
-    <div class="tarjeta"><h3>Tu caso está sólido</h3><p style="margin:0">Vamos, y te preparamos bien.</p></div>
-    <div class="tarjeta"><h3>Tu caso tiene puntos flojos</h3><p style="margin:0">Te indicamos cuáles son, para que decidas con información suficiente si prefieres continuar de todos modos.</p></div>
-    <div class="tarjeta"><h3>Todavía no es tu momento</h3><p style="margin:0">Te indicamos qué necesitas fortalecer: antigüedad laboral, un viaje previo a otro país o un mejor respaldo económico. Y en qué plazo conviene volver a presentarte.</p></div>
+    <div class="tarjeta" data-reveal style="--i:0"><h3>Tu caso está sólido</h3><p style="margin:0">Vamos, y te preparamos bien.</p></div>
+    <div class="tarjeta" data-reveal style="--i:1"><h3>Tu caso tiene puntos flojos</h3><p style="margin:0">Te indicamos cuáles son, para que decidas con información suficiente si prefieres continuar de todos modos.</p></div>
+    <div class="tarjeta" data-reveal style="--i:2"><h3>Todavía no es tu momento</h3><p style="margin:0">Te indicamos qué necesitas fortalecer: antigüedad laboral, un viaje previo a otro país o un mejor respaldo económico. Y en qué plazo conviene volver a presentarte.</p></div>
 
-    <div class="destacado">No se trata de una negativa definitiva, sino de un &laquo;todavía no&raquo;. Cuando esos puntos mejoren, tu caso se fortalece de forma notable y te acompañamos con mucha mayor confianza.</div>
+    <div class="destacado" data-reveal>No se trata de una negativa definitiva, sino de un &laquo;todavía no&raquo;. Cuando esos puntos mejoren, tu caso se fortalece de forma notable y te acompañamos con mucha mayor confianza.</div>
 
     <p class="nota" style="margin-top:1.6em">Nadie puede garantizar una visa: la decisión corresponde al oficial consular que atienda tu caso. Desconfía de quien afirme lo contrario. Lo que sí está en nuestras manos es que llegues correctamente preparado.</p>
   </div>
@@ -454,7 +539,7 @@ footer strong{color:var(--tinta)}
 
 <section class="linea" id="preguntas">
   <div class="env">
-    <h2>Preguntas frecuentes</h2>
+    <h2 data-reveal>Preguntas frecuentes</h2>
 
     <details><summary>¿Yo califico?</summary><div class="cuerpo"><p>Para eso es el formulario del inicio. En dos minutos te damos una valoración realista de tu caso, sin exagerar nada.</p></div></details>
 
@@ -483,7 +568,7 @@ footer strong{color:var(--tinta)}
 </section>
 
 <section class="cierre" id="empezar">
-  <div class="env">
+  <div class="env" data-reveal>
     <h2>Empieza por saber cómo está tu caso de verdad</h2>
     <p>Responde unas preguntas breves y te indicamos si tu caso está listo, qué necesita reforzar, o si conviene esperar. Sin costo y sin compromiso.</p>
     <a class="btn" href="empezar/">Cuéntame tu caso</a>
@@ -525,6 +610,22 @@ if ('IntersectionObserver' in window) {
 }
 
 document.getElementById('anio').textContent = new Date().getFullYear();
+
+var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+var revelables = document.querySelectorAll('[data-reveal]');
+if (!reduceMotion && 'IntersectionObserver' in window) {
+  var io = new IntersectionObserver(function(entradas){
+    entradas.forEach(function(entrada){
+      if (entrada.isIntersecting) {
+        entrada.target.classList.add('on');
+        io.unobserve(entrada.target);
+      }
+    });
+  }, {threshold: .14, rootMargin: '0px 0px -8% 0px'});
+  revelables.forEach(function(el){ io.observe(el); });
+} else {
+  revelables.forEach(function(el){ el.classList.add('on'); });
+}
 </script>
 </body>
 </html>
