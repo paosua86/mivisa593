@@ -141,10 +141,16 @@ footer a{color:var(--brand-deep)}
         <div class="banco-fila"><span>Tipo de cuenta</span><b>Ahorros</b></div>
         <div class="banco-fila">
           <span>Número</span>
-          <span class="banco-num"><b id="cuentaNum">2208167919</b><button type="button" class="copiar" id="btnCopiar">Copiar</button></span>
+          <span class="banco-num"><b id="cuentaNum">2208167919</b><button type="button" class="copiar" data-copiar="cuentaNum">Copiar</button></span>
         </div>
-        <div class="banco-fila"><span>Titular</span><b>David Ubilluz</b></div>
-        <div class="banco-fila"><span>Cédula</span><b>1803686656</b></div>
+        <div class="banco-fila">
+          <span>Titular</span>
+          <span class="banco-num"><b id="titularNom">David Ubilluz</b><button type="button" class="copiar" data-copiar="titularNom">Copiar</button></span>
+        </div>
+        <div class="banco-fila">
+          <span>Cédula</span>
+          <span class="banco-num"><b id="cedulaNum">1803686656</b><button type="button" class="copiar" data-copiar="cedulaNum">Copiar</button></span>
+        </div>
       </div>
     </div>
   </div>
@@ -238,16 +244,17 @@ function pintar(){
     }).join("");
 }
 
-document.getElementById("btnCopiar").addEventListener("click", function(){
-  var btn = this;
-  var numero = document.getElementById("cuentaNum").textContent;
-  btn.textContent = "Copiado ✓";
-  setTimeout(function(){ btn.textContent = "Copiar"; }, 1800);
-  try {
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(numero).catch(function(){});
-    }
-  } catch(e){}
+[].forEach.call(document.querySelectorAll(".copiar"), function(btn){
+  btn.addEventListener("click", function(){
+    var valor = document.getElementById(btn.dataset.copiar).textContent;
+    btn.textContent = "Copiado ✓";
+    setTimeout(function(){ btn.textContent = "Copiar"; }, 1800);
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(valor).catch(function(){});
+      }
+    } catch(e){}
+  });
 });
 
 pintar();

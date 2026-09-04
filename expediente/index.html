@@ -105,6 +105,9 @@ label.campo small{display:block;font-weight:400;color:var(--tinta-suave);font-si
 .tarjeta h2{font-size:1.05rem}
 .nota{font-size:.9rem;color:var(--tinta-suave)}
 .aviso{background:var(--ambar-fondo);border:1px solid var(--ambar);border-radius:var(--radio);padding:16px 18px;margin-bottom:20px;font-size:.94rem}
+.animo{background:var(--brand-tint);border-radius:var(--radio);padding:14px 16px;margin-bottom:20px;font-size:.92rem;color:var(--brand-deep);font-weight:600}
+.lista-prep{margin:0;padding-left:20px}
+.lista-prep li{margin-bottom:8px;font-size:.97rem}
 
 /* repetibles */
 .fila-rep{background:#fff;border:1px solid var(--borde);border-radius:var(--radio);padding:16px 18px 4px;margin-bottom:12px;position:relative}
@@ -350,6 +353,16 @@ var DOCUMENTOS_USA = [
   "Foto del otro pasaporte, si tienes doble nacionalidad"
 ];
 
+/* Mensajes de ánimo que aparecen cada pocas secciones mientras se
+ * llena una ficha, para sostener el ritmo y recordar que la
+ * información correcta y completa evita que David tenga que llamar
+ * después a pedir lo que falta. */
+var ANIMOS = [
+  "Vas bien. Cada dato correcto que pones ahora es una llamada menos que David tendrá que hacerte después.",
+  "Ya llevas buen camino. Si no recuerdas algo con exactitud, mejor revisa el documento antes de escribirlo que adivinar.",
+  "Sigue así. Revisa que no quede nada en blanco que puedas completar: eso es lo que más atrasa tu trámite después."
+];
+
 /** Diccionario clave -> texto de la pregunta, para que la hoja de
  *  calculo muestre encabezados legibles en vez de claves internas
  *  como "personales__nombres". Se arma una sola vez a partir de
@@ -530,7 +543,7 @@ function confirmarDestino(){
     document.getElementById("si").addEventListener("click", function(){
       if (!E.personas.length) E.personas = [{ nombre: E.titular, datos: {}, completa: false }];
       guardar();
-      pantallaPersonas();
+      pantallaPreparate();
     });
   }
   document.getElementById("no").addEventListener("click", function(){
@@ -541,7 +554,49 @@ function confirmarDestino(){
 }
 
 /* ============================================================
-   3. QUIÉNES APLICAN
+   3. ANTES DE EMPEZAR
+   ============================================================ */
+
+function pantallaPreparate(){
+  progreso(2, 10, "Antes de empezar");
+  ir(
+    '<div class="seccion">' +
+      '<h1>Antes de empezar</h1>' +
+      '<p class="ayuda">Con esto se llena tu formulario oficial, el mismo que después se presenta ante el consulado. Por eso importa que quede completo y bien escrito — no hace falta que lo hagas rápido, sino correcto.</p>' +
+
+      '<div class="tarjeta">' +
+        '<h2>No tienes que terminarlo hoy</h2>' +
+        '<p class="nota" style="margin:0">Puedes llenar una sección, cerrar esta página y volver cuando quieras: lo que escribas se va guardando solo en tu celular. Nada se envía a David hasta que tú toques «Enviar mi expediente» al final.</p>' +
+      '</div>' +
+
+      '<div class="aviso"><strong>Las fechas, siempre del documento — nunca de memoria.</strong><br>' +
+        'Fechas de tu pasaporte, de tu trabajo, de tus viajes, de tus estudios: revísalas en el documento oficial antes de escribirlas. Un dato mal recordado puede causar un rechazo.' +
+      '</div>' +
+
+      '<div class="tarjeta">' +
+        '<h2>Ten esto a la mano antes de empezar</h2>' +
+        '<ul class="lista-prep">' +
+          '<li>Tu pasaporte y tu cédula</li>' +
+          '<li>Los datos de tu trabajo actual, y del anterior si tuviste</li>' +
+          '<li>Tus estudios: colegio y universidad, con fechas y títulos</li>' +
+          '<li>Los datos de tus padres, y de tu cónyuge si aplica</li>' +
+          '<li>El detalle de tus viajes de los últimos cinco años</li>' +
+          '<li>Tu visa americana anterior, si tienes</li>' +
+        '</ul>' +
+      '</div>' +
+
+      '<p class="ayuda">Si algo no aplica a ti — por ejemplo no tienes cónyuge, o nunca has viajado — simplemente lo saltas.</p>' +
+
+      '<button class="btn" type="button" id="empezar">Empezar</button>' +
+      '<div><button class="atras" type="button" id="atras">← Volver</button></div>' +
+    '</div>'
+  );
+  document.getElementById("empezar").addEventListener("click", pantallaPersonas);
+  document.getElementById("atras").addEventListener("click", confirmarDestino);
+}
+
+/* ============================================================
+   4. QUIÉNES APLICAN
    ============================================================ */
 
 function pantallaPersonas(){
@@ -608,7 +663,7 @@ function nuevaPersona(){
 }
 
 /* ============================================================
-   4. SECCIONES DEL EXPEDIENTE
+   5. SECCIONES DEL EXPEDIENTE
    ============================================================ */
 
 function seccionesQueAplican(datos){
@@ -625,6 +680,10 @@ function pintarSeccion(){
 
   var html = '<div class="seccion"><h1>' + esc(s.titulo) + '</h1>';
   if (s.ayuda) html += '<p class="ayuda">' + esc(s.ayuda) + '</p>';
+  if (E.seccion > 0 && E.seccion % 3 === 0) {
+    var animo = ANIMOS[(Math.floor(E.seccion / 3) - 1) % ANIMOS.length];
+    html += '<div class="animo">' + esc(animo) + '</div>';
+  }
 
   if (s.repetible) {
     html += '<div id="filas"></div>';
@@ -754,7 +813,7 @@ function pintarRepetible(s, per){
 }
 
 /* ============================================================
-   5. REVISIÓN POR PERSONA
+   6. REVISIÓN POR PERSONA
    ============================================================ */
 
 function revisarPersona(){
@@ -777,7 +836,7 @@ function revisarPersona(){
 }
 
 /* ============================================================
-   6. DOCUMENTOS
+   7. DOCUMENTOS
    ============================================================ */
 
 function pantallaDocumentos(){
@@ -826,7 +885,7 @@ function pantallaDocumentos(){
 }
 
 /* ============================================================
-   7. ENVÍO
+   8. ENVÍO
    ============================================================ */
 
 function enviar(){
