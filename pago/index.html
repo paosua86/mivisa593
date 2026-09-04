@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Pagar la asesoría — MiVisa EC</title>
-<meta name="description" content="Valores de la asesoría de MiVisa EC y cómo solicitar tu link de pago.">
+<meta name="description" content="Valores de la asesoría de MiVisa EC, cómo pagar (link o transferencia) y qué enviar para continuar.">
 <meta name="theme-color" content="#0b6478">
 <meta name="robots" content="noindex">
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
@@ -12,7 +12,7 @@
 <link rel="icon" type="image/png" sizes="16x16" href="../imagenes/favicon-16.png">
 <link rel="apple-touch-icon" sizes="180x180" href="../imagenes/apple-touch-icon.png">
 <meta property="og:title" content="Pagar la asesoría — MiVisa EC">
-<meta property="og:description" content="Valores de la asesoría de MiVisa EC y cómo solicitar tu link de pago.">
+<meta property="og:description" content="Valores de la asesoría de MiVisa EC, cómo pagar (link o transferencia) y qué enviar para continuar.">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="es_EC">
 <meta property="og:url" content="https://mivisaec.com/pago/">
@@ -72,6 +72,23 @@ ol{margin:0;padding-left:20px}
 ol li{margin-bottom:9px;font-size:.97rem;color:var(--tinta-suave)}
 .nota{font-size:.9rem;color:var(--tinta-suave)}
 
+.metodos{display:grid;gap:14px;margin:0 0 14px}
+.metodo{background:#fff;border:1px solid var(--borde);border-radius:var(--radio);padding:20px}
+.metodo-tit{font-weight:700;font-size:1.05rem;margin:0 0 4px}
+.metodo > .nota:first-of-type{margin-bottom:14px}
+
+.banco{background:var(--brand-tint);border-radius:10px;padding:2px 16px;margin-top:4px}
+.banco-fila{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid rgba(11,100,120,.16);font-size:.95rem}
+.banco-fila:last-child{border-bottom:0}
+.banco-fila > span:first-child{color:var(--tinta-suave)}
+.banco-fila b{font-weight:700;color:var(--tinta)}
+.banco-num{display:flex;align-items:center;gap:10px}
+.copiar{font:inherit;font-size:.8rem;font-weight:700;color:var(--brand-deep);background:#fff;border:1px solid var(--brand-deep);border-radius:7px;padding:5px 10px;cursor:pointer;white-space:nowrap}
+.copiar:active{transform:translateY(1px)}
+
+.checklist{margin:0 0 16px;padding-left:20px}
+.checklist li{margin-bottom:8px;font-size:.97rem}
+
 .otros{margin-top:34px}
 .otros h2{font-size:1rem;color:var(--tinta-suave);font-weight:600;font-family:var(--sans)}
 .lista{display:grid;gap:8px}
@@ -95,20 +112,52 @@ footer a{color:var(--brand-deep)}
 
 <div class="env">
   <h1>Pagar la asesoría</h1>
-  <p class="nota" id="intro">Elige el servicio que contrataste y pide tu link de pago.</p>
+  <p class="nota" id="intro">Elige el servicio que contrataste. Puedes pagar con el link de pago o por transferencia bancaria.</p>
 
   <div id="destacado"></div>
-  <div id="accion"></div>
 
   <div class="tarjeta">
     <h2>Cómo funciona</h2>
     <ol>
-      <li>Tocas el botón y se abre WhatsApp con tu solicitud ya escrita.</li>
-      <li>David genera el link de pago por el valor exacto y te lo envía.</li>
-      <li>Pagas con tarjeta de crédito por PayPhone, o por transferencia bancaria si lo prefieres.</li>
-      <li>Al confirmarse el pago recibes el link de tu expediente para cargar tus datos y documentos.</li>
+      <li>Eliges cómo pagar: con el link de pago (tarjeta) o por transferencia directa.</li>
+      <li>Pagas por el método que prefieras.</li>
+      <li>Nos envías tus datos para la factura y el comprobante de pago.</li>
+      <li>Al confirmarlo, te mandamos el link para llenar tu expediente completo.</li>
     </ol>
-    <p class="nota" style="margin:14px 0 0">Se emite factura por el valor de la asesoría.</p>
+  </div>
+
+  <div class="metodos">
+    <div class="metodo">
+      <p class="metodo-tit">💳 Con tarjeta de crédito</p>
+      <p class="nota">Pídenos el link y pagas con tarjeta por PayPhone.</p>
+      <div id="accion"></div>
+    </div>
+
+    <div class="metodo">
+      <p class="metodo-tit">🏦 Por transferencia bancaria</p>
+      <p class="nota">Transfiere directo a esta cuenta. Los datos completos son necesarios para que la transferencia llegue desde otros bancos.</p>
+      <div class="banco">
+        <div class="banco-fila"><span>Banco</span><b>Pichincha</b></div>
+        <div class="banco-fila"><span>Tipo de cuenta</span><b>Ahorros</b></div>
+        <div class="banco-fila">
+          <span>Número</span>
+          <span class="banco-num"><b id="cuentaNum">2208167919</b><button type="button" class="copiar" id="btnCopiar">Copiar</button></span>
+        </div>
+        <div class="banco-fila"><span>Titular</span><b>David Ubilluz</b></div>
+        <div class="banco-fila"><span>Cédula</span><b>1803686656</b></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tarjeta">
+    <h2>Para continuar, envía tu comprobante</h2>
+    <p class="nota">Hayas pagado con tarjeta o por transferencia, necesitamos esto para confirmar tu pago y mandarte el siguiente link:</p>
+    <ul class="checklist">
+      <li>Tus datos para la factura: nombre completo, cédula o RUC y correo.</li>
+      <li>El comprobante: la foto de la transferencia, o la captura de pantalla si pagaste con tarjeta.</li>
+    </ul>
+    <a class="btn" id="btnComprobante" href="#">Enviar mis datos y comprobante</a>
+    <p class="micro">Al recibirlo, te enviamos el link para llenar tu expediente completo.</p>
   </div>
 
   <div class="tarjeta">
@@ -158,23 +207,28 @@ function pintar(){
   var destacado = document.getElementById("destacado");
   var accion = document.getElementById("accion");
   var intro = document.getElementById("intro");
+  var btnComprobante = document.getElementById("btnComprobante");
 
   if (s) {
-    intro.textContent = "Este es el valor de tu asesoría. Pide el link y David te lo envía en el momento.";
+    intro.textContent = "Este es el valor de tu asesoría. Elige cómo pagar.";
     destacado.innerHTML =
       '<div class="destacado">' +
         '<p class="servicio">' + esc(s.t) + '</p>' +
         '<p class="valor">$' + s.valor + '</p>' +
         '<p class="detalle">por persona · ' + esc(s.det) + '</p>' +
       '</div>';
-    var msg = "Hola David, quiero el link de pago para " + s.t + " ($" + s.valor + ").";
+    var msgLink = "Hola David, quiero el link de pago para " + s.t + " ($" + s.valor + ").";
     accion.innerHTML =
-      '<a class="btn" href="https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent(msg) + '">Pedir mi link de pago</a>' +
+      '<a class="btn" href="https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent(msgLink) + '">Pedir mi link de pago</a>' +
       '<p class="micro">Se abre WhatsApp con el mensaje ya escrito. Solo tienes que enviarlo.</p>';
+    var msgComprobante = "Hola David, ya pagué " + s.t + " ($" + s.valor + "). Te comparto mis datos para la factura y el comprobante:\n\nNombre completo: \nCédula o RUC: \nCorreo: \n\n(Adjunto el comprobante de la transferencia, o la captura del pago con tarjeta)";
+    btnComprobante.href = "https://wa.me/" + WHATSAPP + "?text=" + encodeURIComponent(msgComprobante);
   } else {
-    intro.textContent = "Elige el servicio que contrataste y pide tu link de pago.";
+    intro.textContent = "Elige el servicio que contrataste. Puedes pagar con el link de pago o por transferencia bancaria.";
     destacado.innerHTML = "";
-    accion.innerHTML = "";
+    accion.innerHTML = '<p class="micro" style="margin:0">Elige tu servicio abajo para pedir el link de pago.</p>';
+    var msgGenerico = "Hola David, ya pagué mi asesoría. Te comparto mis datos para la factura y el comprobante:\n\nNombre completo: \nCédula o RUC: \nCorreo: \n\n(Adjunto el comprobante de la transferencia, o la captura del pago con tarjeta)";
+    btnComprobante.href = "https://wa.me/" + WHATSAPP + "?text=" + encodeURIComponent(msgGenerico);
   }
 
   document.getElementById("otros").innerHTML = SERVICIOS
@@ -183,6 +237,18 @@ function pintar(){
       return '<a href="?v=' + x.v + '">' + esc(x.t) + ' <b>$' + x.valor + '</b></a>';
     }).join("");
 }
+
+document.getElementById("btnCopiar").addEventListener("click", function(){
+  var btn = this;
+  var numero = document.getElementById("cuentaNum").textContent;
+  btn.textContent = "Copiado ✓";
+  setTimeout(function(){ btn.textContent = "Copiar"; }, 1800);
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(numero).catch(function(){});
+    }
+  } catch(e){}
+});
 
 pintar();
 window.addEventListener("popstate", pintar);

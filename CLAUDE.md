@@ -99,6 +99,16 @@ en las páginas legales ni en ningún sitio público. En Ecuador exponer
 esos números es un riesgo real de suplantación y fraude. No volver a
 pedirlo ni proponerlo. La dirección y el nombre sí van; el RUC no.
 
+**Excepción confirmada — `/pago/`:** ahí sí va la cédula de David
+(1803686656) junto a los datos de la transferencia bancaria, porque en
+Ecuador los bancos la piden para validar transferencias interbancarias
+entrantes; sin ella la transferencia no llega. `/pago/` tiene
+`<meta name="robots" content="noindex">` y no se enlaza desde ningún
+lugar público del sitio — el link lo comparte Paola o David directo por
+WhatsApp con cada cliente, no es una página de descubrimiento libre.
+Esta excepción es solo para esa página; el resto del sitio sigue sin
+mostrar el RUC/cédula.
+
 **Publicar sin preguntar.** Cuando un cambio esté terminado y probado,
 hacer commit y push a `main` directamente. El workflow de GitHub Pages
 lo despliega solo. No preguntar "¿lo subo?" cada vez.
