@@ -21,6 +21,12 @@
 
 var SITIO = "https://mivisaec.com";
 
+/* Marca de version. Sirve para comprobar desde fuera que la
+   implementacion en vivo ya tiene los cambios: al abrir la URL /exec
+   sin parametros, la respuesta trae este mismo texto. Subirla cada vez
+   que se cambie este archivo. */
+var VERSION = "2026-09-04-destinos";
+
 /* Nombre de la carpeta raíz en Drive donde se guarda cada caso.
    NOMBRE_CARPETA_ANTERIOR es el nombre con el que se creó al inicio del
    proyecto (cuando el negocio se llamaba "Mi Visa593" de trabajo). Si esa
@@ -233,7 +239,7 @@ function doGet(e) {
   }
 
   if (!codigo) {
-    return responder({ ok: true, mensaje: "Endpoint de MiVisa EC activo" });
+    return responder({ ok: true, mensaje: "Endpoint de MiVisa EC activo", version: VERSION });
   }
   try {
     var hoja = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
