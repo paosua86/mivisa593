@@ -275,13 +275,10 @@ function guardarExpediente(datos) {
   }
 
   var libro = SpreadsheetApp.getActiveSpreadsheet();
-  var hoja = libro.getSheetByName("Expedientes");
-  if (!hoja) hoja = libro.insertSheet("Expedientes");
+  var hoja = hojaDeExpediente(libro, datos.destinoClave);
 
   var fecha = Utilities.formatDate(new Date(), "America/Guayaquil", "dd/MM/yyyy HH:mm");
 
-  // Los encabezados salen de los campos de la primera persona,
-  // asi la hoja se adapta sola si el formulario cambia.
   var claves = ["fecha", "codigo", "persona"];
   datos.personas.forEach(function (per) {
     Object.keys(per).forEach(function (k) {
@@ -289,22 +286,21 @@ function guardarExpediente(datos) {
     });
   });
 
-  if (hoja.getLastRow() === 0) {
-    var encabezados = claves.map(function (k) { return etiquetaCampoExpediente(k, datos.etiquetas); });
-    hoja.appendRow(encabezados);
-    hoja.getRange(1, 1, 1, claves.length)
-        .setFontWeight("bold").setBackground("#0b6478").setFontColor("#ffffff");
-    hoja.setFrozenRows(1);
-  }
+  var indice = columnasDeExpediente(hoja, claves, datos);
+  var ancho = hoja.getLastColumn();
 
   datos.personas.forEach(function (per, n) {
     per.fecha = fecha;
     per.codigo = codigo;
     per.persona = String(n + 1) + " de " + datos.personas.length;
-    hoja.appendRow(claves.map(function (k) {
+
+    var fila = [];
+    for (var i = 0; i < ancho; i++) fila.push("");
+    claves.forEach(function (k) {
       var v = per[k];
-      return v === undefined || v === null ? "" : v;
-    }));
+      fila[indice[k] - 1] = (v === undefined || v === null) ? "" : v;
+    });
+    hoja.appendRow(fila);
   });
 
   var urlDoc = "";
@@ -413,21 +409,81 @@ function listaLegible(v) {
  * diccionario de etiquetas que manda el formulario. Si no lo manda
  * (formularios viejos) o no encuentra la clave, cae en algo razonable.
  */
-function etiquetaCampoExpediente(k, etiquetas) {
+/**
+ * Cada destino tiene su propia hoja, porque las columnas que pide
+ * Estados Unidos, Canada y Europa no son las mismas. Mezclarlas en
+ * una sola hoja desalinea las filas.
+ */
+var HOJAS_EXPEDIENTE = {
+  usa: "Expedientes EE.UU.",
+  canada: "Expedientes Canadá",
+  schengen: "Expedientes Europa"
+};
+
+function hojaDeExpediente(libro, clave) {
+  var nombre = HOJAS_EXPEDIENTE[clave] || "Expedientes";
+  var hoja = libro.getSheetByName(nombre);
+  if (!hoja) hoja = libro.insertSheet(nombre);
+  return hoja;
+}
+
+/**
+ * Devuelve en que columna va cada clave, creando al final las que
+ * falten. La fila 1 lleva el titulo legible y la fila 2, oculta, la
+ * clave interna: gracias a eso la hoja se puede ampliar despues sin
+ * que se desalineen las filas ya guardadas.
+ */
+function columnasDeExpediente(hoja, claves, datos) {
+  function titulo(k) { return etiquetaCampoExpediente(k, datos.etiquetas, datos.secciones); }
+
+  if (hoja.getLastRow() === 0) {
+    hoja.appendRow(claves.map(titulo));
+    hoja.appendRow(claves);
+    hoja.getRange(1, 1, 1, claves.length)
+        .setFontWeight("bold").setBackground("#0b6478").setFontColor("#ffffff");
+    hoja.hideRows(2);
+    hoja.setFrozenRows(2);
+  }
+
+  var ancho = hoja.getLastColumn();
+  var existentes = hoja.getRange(2, 1, 1, ancho).getValues()[0];
+  var indice = {};
+  existentes.forEach(function (k, i) { if (k) indice[String(k)] = i + 1; });
+
+  var nuevas = claves.filter(function (k) { return !indice[k]; });
+  if (nuevas.length) {
+    hoja.getRange(1, ancho + 1, 1, nuevas.length)
+        .setValues([nuevas.map(titulo)])
+        .setFontWeight("bold").setBackground("#0b6478").setFontColor("#ffffff");
+    hoja.getRange(2, ancho + 1, 1, nuevas.length).setValues([nuevas]);
+    nuevas.forEach(function (k, i) { indice[k] = ancho + 1 + i; });
+  }
+
+  return indice;
+}
+
+function etiquetaCampoExpediente(k, etiquetas, secciones) {
   var especiales = { fecha: "Fecha", codigo: "Codigo del caso", persona: "Persona", nombre_ficha: "Nombre" };
   if (especiales[k]) return especiales[k];
 
   var partes = k.split("__");
   if (partes.length !== 2) return k;
 
-  var seccion = etiquetaSeccion(partes[0]);
+  var seccion = etiquetaSeccion(partes[0], secciones);
   if (partes[1] === "lista") return seccion + " — detalle";
 
   var campo = (etiquetas && etiquetas[k]) || partes[1].replace(/_/g, " ");
   return seccion + " — " + campo;
 }
 
-function etiquetaSeccion(clave) {
+/**
+ * El titulo de la seccion lo manda el formulario en `secciones`, asi
+ * no hay que tocar este archivo cada vez que se agrega un destino.
+ * El mapa de abajo queda solo como respaldo para expedientes viejos
+ * que se enviaron antes de que el formulario mandara los titulos.
+ */
+function etiquetaSeccion(clave, secciones) {
+  if (secciones && secciones[clave]) return secciones[clave];
   var mapa = {
     personales: "Datos personales",
     conyuge: "Cónyuge",

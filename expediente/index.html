@@ -353,6 +353,542 @@ var DOCUMENTOS_USA = [
   "Foto del otro pasaporte, si tienes doble nacionalidad"
 ];
 
+/* ------------------------------------------------------------
+   CANADÁ — visa de visitante (IMM 5257 + información familiar
+   IMM 5645). Pide más historia laboral y las preguntas de
+   antecedentes, que en el formulario canadiense son obligatorias.
+   ------------------------------------------------------------ */
+
+var SECCIONES_CANADA = [
+  {
+    id: "personales",
+    titulo: "Tus datos personales",
+    ayuda: "Como aparecen en tu pasaporte, tal cual.",
+    campos: [
+      {id:"nombres",     t:"Nombres completos", tipo:"texto", req:true},
+      {id:"apellidos",   t:"Apellidos completos", tipo:"texto", req:true},
+      {id:"otros_nombres", t:"Otros nombres que hayas usado", tipo:"texto", opcional:true,
+       ayuda:"Apellido de soltera, nombre anterior, cualquier variante que aparezca en documentos."},
+      {id:"sexo",        t:"Sexo", tipo:"opcion", req:true, opciones:["Femenino","Masculino","Otro"]},
+      {id:"nacimiento",  t:"Fecha de nacimiento", tipo:"fecha", req:true},
+      {id:"lugar_nacimiento", t:"Lugar de nacimiento", tipo:"texto", ayuda:"Ciudad y país", req:true},
+      {id:"ciudadania",  t:"País o países de tu ciudadanía", tipo:"texto", req:true},
+      {id:"cedula",      t:"Número de cédula", tipo:"texto", req:true},
+      {id:"direccion",   t:"Dirección de tu domicilio", tipo:"larga", req:true},
+      {id:"tel_casa",    t:"Teléfono de tu domicilio", tipo:"tel", opcional:true},
+      {id:"celular",     t:"Teléfono celular", tipo:"tel", req:true},
+      {id:"correo",      t:"Correo electrónico", tipo:"correo", req:true},
+      {id:"estado_civil",t:"Estado civil", tipo:"opcion", req:true,
+       opciones:["Soltero/a","Casado/a","Unión libre","Divorciado/a","Viudo/a","Separado/a"]}
+    ]
+  },
+  {
+    id: "conyuge",
+    titulo: "Datos de tu cónyuge",
+    ayuda: "Solo si estás casado, en unión libre, separado o divorciado.",
+    si: function(d){ return ["Casado/a","Unión libre","Divorciado/a","Separado/a"].indexOf(d.personales__estado_civil) !== -1; },
+    campos: [
+      {id:"nombre",       t:"Nombre completo de tu cónyuge", tipo:"texto", req:true},
+      {id:"nacimiento",   t:"Su fecha de nacimiento", tipo:"fecha"},
+      {id:"lugar",        t:"Su ciudad y país de nacimiento", tipo:"texto"},
+      {id:"ocupacion",    t:"Su ocupación actual", tipo:"texto", opcional:true},
+      {id:"matrimonio",   t:"Fecha de matrimonio o unión", tipo:"fecha", opcional:true},
+      {id:"divorcio",     t:"Fecha de divorcio o separación", tipo:"fecha", opcional:true},
+      {id:"acompana",     t:"¿Viaja contigo a Canadá?", tipo:"opcion", opciones:["Sí","No"], req:true},
+      {id:"ex_nombre",    t:"Si tuviste un matrimonio anterior, nombre de esa persona", tipo:"texto", opcional:true},
+      {id:"ex_fechas",    t:"Fechas de ese matrimonio anterior", tipo:"texto", opcional:true,
+       ayuda:"Desde cuándo hasta cuándo. Ejemplo: 2010 a 2015."}
+    ]
+  },
+  {
+    id: "padres",
+    titulo: "Datos de tus padres",
+    ayuda: "Canadá los pide completos, aunque hayan fallecido.",
+    campos: [
+      {id:"madre",             t:"Nombre completo de tu madre", tipo:"texto", req:true},
+      {id:"madre_nacimiento",  t:"Su fecha de nacimiento", tipo:"fecha", opcional:true},
+      {id:"madre_lugar",       t:"Su ciudad y país de nacimiento", tipo:"texto", opcional:true},
+      {id:"madre_situacion",   t:"¿Vive actualmente?", tipo:"opcion", opciones:["Sí","Falleció"], req:true},
+      {id:"madre_direccion",   t:"Dónde vive ahora (ciudad y país)", tipo:"texto", opcional:true},
+      {id:"madre_ocupacion",   t:"Su ocupación", tipo:"texto", opcional:true},
+      {id:"padre",             t:"Nombre completo de tu padre", tipo:"texto", req:true},
+      {id:"padre_nacimiento",  t:"Su fecha de nacimiento", tipo:"fecha", opcional:true},
+      {id:"padre_lugar",       t:"Su ciudad y país de nacimiento", tipo:"texto", opcional:true},
+      {id:"padre_situacion",   t:"¿Vive actualmente?", tipo:"opcion", opciones:["Sí","Falleció"], req:true},
+      {id:"padre_direccion",   t:"Dónde vive ahora (ciudad y país)", tipo:"texto", opcional:true},
+      {id:"padre_ocupacion",   t:"Su ocupación", tipo:"texto", opcional:true}
+    ]
+  },
+  {
+    id: "familia",
+    titulo: "Tus hijos y hermanos",
+    ayuda: "Canadá pide a todos, vivan donde vivan y sin importar la edad. Si no tienes, sigue de largo.",
+    repetible: {
+      etiqueta: "familiar",
+      campos: [
+        {id:"nombre",     t:"Nombre completo", tipo:"texto"},
+        {id:"parentesco", t:"Parentesco", tipo:"opcion", opciones:["Hijo/a","Hermano/a"]},
+        {id:"nacimiento", t:"Fecha de nacimiento", tipo:"fecha"},
+        {id:"pais",       t:"País de nacimiento", tipo:"texto"},
+        {id:"direccion",  t:"Dónde vive ahora (ciudad y país)", tipo:"texto"},
+        {id:"estado_civil", t:"Estado civil", tipo:"opcion",
+         opciones:["Soltero/a","Casado/a","Unión libre","Divorciado/a","Viudo/a"]},
+        {id:"ocupacion",  t:"Ocupación actual", tipo:"texto"}
+      ]
+    }
+  },
+  {
+    id: "idiomas",
+    titulo: "Idiomas",
+    campos: [
+      {id:"materno",  t:"Tu idioma materno", tipo:"texto", req:true},
+      {id:"comunica", t:"¿En cuál te puedes comunicar?", tipo:"opcion", req:true,
+       opciones:["Inglés","Francés","Los dos","Ninguno de los dos"]},
+      {id:"prueba",   t:"¿Has rendido una prueba de idioma (IELTS, TEF)?", tipo:"opcion", req:true,
+       opciones:["No","Sí"]}
+    ]
+  },
+  {
+    id: "pasaporte",
+    titulo: "Tu pasaporte",
+    campos: [
+      {id:"numero",    t:"Número de pasaporte", tipo:"texto", req:true},
+      {id:"emision",   t:"Fecha de emisión", tipo:"fecha", req:true},
+      {id:"expiracion",t:"Fecha de expiración", tipo:"fecha", req:true},
+      {id:"pais",      t:"País que lo emitió", tipo:"texto", req:true},
+      {id:"ciudad",    t:"Ciudad donde lo emitieron", tipo:"texto", req:true}
+    ]
+  },
+  {
+    id: "secundaria",
+    titulo: "Tus estudios secundarios",
+    campos: [
+      {id:"colegio",  t:"Nombre del colegio", tipo:"texto", req:true},
+      {id:"ciudad",   t:"Ciudad y país", tipo:"texto", req:true},
+      {id:"inicio",   t:"Fecha de inicio", tipo:"fecha", opcional:true},
+      {id:"fin",      t:"Fecha de culminación", tipo:"fecha", opcional:true},
+      {id:"titulo",   t:"Título obtenido", tipo:"texto", opcional:true}
+    ]
+  },
+  {
+    id: "universidad",
+    titulo: "Tus estudios superiores",
+    ayuda: "Universidad o instituto. Si no aplica, puedes saltar esta sección.",
+    campos: [
+      {id:"institucion",t:"Nombre de la universidad o instituto", tipo:"texto", opcional:true},
+      {id:"campo",      t:"Carrera o campo de estudio", tipo:"texto", opcional:true},
+      {id:"ciudad",     t:"Ciudad y país", tipo:"texto", opcional:true},
+      {id:"inicio",     t:"Fecha de inicio", tipo:"fecha", opcional:true},
+      {id:"fin",        t:"Fecha de culminación", tipo:"fecha", opcional:true},
+      {id:"titulo",     t:"Título obtenido", tipo:"texto", opcional:true}
+    ]
+  },
+  {
+    id: "laboral",
+    titulo: "Tu trabajo actual",
+    ayuda: "Si trabajas por tu cuenta, pon el nombre de tu negocio.",
+    campos: [
+      {id:"empresa",  t:"Nombre de la empresa o negocio", tipo:"texto", req:true},
+      {id:"cargo",    t:"Tu cargo u ocupación", tipo:"texto", req:true},
+      {id:"inicio",   t:"Fecha en que empezaste", tipo:"fecha", req:true},
+      {id:"direccion",t:"Dirección del trabajo", tipo:"larga", req:true},
+      {id:"ciudad",   t:"Ciudad y país", tipo:"texto", req:true},
+      {id:"telefono", t:"Teléfono del trabajo", tipo:"tel", req:true},
+      {id:"jefe",     t:"Nombre de tu jefe o jefa", tipo:"texto", opcional:true},
+      {id:"funciones",t:"¿Qué haces en tu trabajo?", tipo:"larga", req:true,
+       ayuda:"Al menos cinco tareas, separadas por comas."},
+      {id:"sueldo",   t:"Sueldo mensual aproximado (USD)", tipo:"numero", req:true}
+    ]
+  },
+  {
+    id: "laboral_anterior",
+    titulo: "Tus trabajos anteriores",
+    ayuda: "Canadá pide los últimos diez años. Agrega uno por cada empleo, incluyendo estudios o desempleo si hubo.",
+    repetible: {
+      etiqueta: "trabajo",
+      campos: [
+        {id:"empresa", t:"Empresa o actividad", tipo:"texto"},
+        {id:"cargo",   t:"Cargo u ocupación", tipo:"texto"},
+        {id:"inicio",  t:"Fecha de inicio", tipo:"fecha"},
+        {id:"fin",     t:"Fecha de salida", tipo:"fecha"},
+        {id:"ciudad",  t:"Ciudad y país", tipo:"texto"}
+      ]
+    }
+  },
+  {
+    id: "viaje",
+    titulo: "Tu viaje a Canadá",
+    ayuda: "Si todavía no tienes fechas exactas, pon las que estás planeando.",
+    campos: [
+      {id:"motivo",   t:"Motivo del viaje", tipo:"opcion", req:true,
+       opciones:["Turismo","Visitar familia o amigos","Negocios","Otro"]},
+      {id:"llegada",  t:"Fecha en que planeas llegar", tipo:"fecha", req:true},
+      {id:"salida",   t:"Fecha en que planeas regresar", tipo:"fecha", req:true},
+      {id:"fondos",   t:"Dinero disponible para el viaje (CAD)", tipo:"numero", req:true},
+      {id:"donde",    t:"Dónde te vas a quedar", tipo:"larga", req:true,
+       ayuda:"Nombre y dirección del hotel, o de la persona que te recibe."},
+      {id:"quien",    t:"A quién visitas y qué parentesco tienes", tipo:"texto", opcional:true}
+    ]
+  },
+  {
+    id: "viajes",
+    titulo: "Viajes a otros países",
+    ayuda: "De los últimos cinco años, sin contar Canadá. Si no has viajado, sigue de largo.",
+    repetible: {
+      etiqueta: "viaje",
+      campos: [
+        {id:"pais",   t:"País visitado", tipo:"texto"},
+        {id:"ingreso",t:"Fecha de ingreso", tipo:"fecha"},
+        {id:"salida", t:"Fecha de salida", tipo:"fecha"},
+        {id:"motivo", t:"Motivo del viaje", tipo:"texto"}
+      ]
+    }
+  },
+  {
+    id: "familia_canada",
+    titulo: "Familiares o contactos en Canadá",
+    ayuda: "Si no tienes a nadie allá, sigue de largo.",
+    repetible: {
+      etiqueta: "contacto",
+      campos: [
+        {id:"nombre",    t:"Nombre completo", tipo:"texto"},
+        {id:"parentesco",t:"Parentesco o relación", tipo:"opcion",
+         opciones:["Padre o madre","Hermano/a","Hijo/a","Cónyuge","Tío/a","Primo/a","Amigo/a","Otro"]},
+        {id:"estatus",   t:"Situación migratoria", tipo:"opcion",
+         opciones:["Ciudadano","Residente permanente","Con permiso temporal","Estudiante","Sin estatus","No lo sé"]},
+        {id:"ciudad",    t:"Ciudad y provincia", tipo:"texto"}
+      ]
+    }
+  },
+  {
+    id: "antecedentes",
+    titulo: "Preguntas de seguridad",
+    ayuda: "Canadá las hace de forma obligatoria. Responde con la verdad: ocultar algo aquí sí causa una negación.",
+    campos: [
+      {id:"visa_negada",   t:"¿Alguna vez te han negado una visa o la entrada a Canadá u otro país?", tipo:"opcion", req:true,
+       opciones:["No","Sí"]},
+      {id:"detalle_negada",t:"Si respondiste que sí, cuenta qué pasó", tipo:"larga", opcional:true,
+       ayuda:"País, año y motivo que te dieron."},
+      {id:"permanencia",   t:"¿Alguna vez te quedaste más tiempo del permitido en otro país?", tipo:"opcion", req:true,
+       opciones:["No","Sí"]},
+      {id:"penales",       t:"¿Has sido arrestado, acusado o condenado por algún delito, en cualquier país?", tipo:"opcion", req:true,
+       opciones:["No","Sí"]},
+      {id:"detalle_penal", t:"Si respondiste que sí, cuenta qué pasó", tipo:"larga", opcional:true},
+      {id:"tuberculosis",  t:"¿Has tenido tuberculosis o convivido de cerca con alguien que la tuvo?", tipo:"opcion", req:true,
+       opciones:["No","Sí"]},
+      {id:"militar",       t:"¿Has prestado servicio militar?", tipo:"opcion", req:true,
+       opciones:["No","Sí"]}
+    ]
+  },
+  {
+    id: "redes",
+    titulo: "Tus redes sociales",
+    ayuda: "Escribe tu nombre de usuario, sin el arroba. Solo las que uses.",
+    campos: [
+      {id:"facebook", t:"Facebook", tipo:"texto", opcional:true},
+      {id:"instagram",t:"Instagram", tipo:"texto", opcional:true},
+      {id:"tiktok",   t:"TikTok", tipo:"texto", opcional:true},
+      {id:"x",        t:"X (antes Twitter)", tipo:"texto", opcional:true}
+    ]
+  }
+];
+
+var DOCUMENTOS_CANADA = [
+  "Foto digital tamaño pasaporte, fondo blanco",
+  "Foto de la página de tu pasaporte donde salen tus datos",
+  "Certificado bancario de los últimos 3 a 6 meses",
+  "Certificado laboral con sueldo y antigüedad",
+  "Visa canadiense o americana anterior, si tienes"
+];
+
+/* ------------------------------------------------------------
+   EUROPA (SCHENGEN) — formulario uniforme de solicitud. Los
+   nombres de las secciones siguen el orden del formulario oficial,
+   que pide bastante detalle del viaje y de quién lo paga.
+   ------------------------------------------------------------ */
+
+var SECCIONES_SCHENGEN = [
+  {
+    id: "personales",
+    titulo: "Tus datos personales",
+    ayuda: "Como aparecen en tu pasaporte, tal cual.",
+    campos: [
+      {id:"apellidos",   t:"Apellidos completos", tipo:"texto", req:true},
+      {id:"apellido_soltera", t:"Apellido de soltera o apellido anterior", tipo:"texto", opcional:true},
+      {id:"nombres",     t:"Nombres completos", tipo:"texto", req:true},
+      {id:"sexo",        t:"Sexo", tipo:"opcion", req:true, opciones:["Femenino","Masculino","Otro"]},
+      {id:"nacimiento",  t:"Fecha de nacimiento", tipo:"fecha", req:true},
+      {id:"lugar_nacimiento", t:"Ciudad de nacimiento", tipo:"texto", req:true},
+      {id:"pais_nacimiento",  t:"País de nacimiento", tipo:"texto", req:true},
+      {id:"nacionalidad",     t:"Nacionalidad actual", tipo:"texto", req:true},
+      {id:"nacionalidad_nacimiento", t:"Nacionalidad al nacer, si es distinta", tipo:"texto", opcional:true},
+      {id:"cedula",      t:"Número de cédula", tipo:"texto", req:true},
+      {id:"direccion",   t:"Dirección de tu domicilio", tipo:"larga", req:true},
+      {id:"celular",     t:"Teléfono celular", tipo:"tel", req:true},
+      {id:"correo",      t:"Correo electrónico", tipo:"correo", req:true},
+      {id:"estado_civil",t:"Estado civil", tipo:"opcion", req:true,
+       opciones:["Soltero/a","Casado/a","Unión libre","Separado/a","Divorciado/a","Viudo/a"]}
+    ]
+  },
+  {
+    id: "conyuge",
+    titulo: "Datos de tu cónyuge",
+    ayuda: "Solo si estás casado, en unión libre, separado o divorciado.",
+    si: function(d){ return ["Casado/a","Unión libre","Separado/a","Divorciado/a"].indexOf(d.personales__estado_civil) !== -1; },
+    campos: [
+      {id:"nombre",     t:"Nombre completo de tu cónyuge", tipo:"texto", req:true},
+      {id:"nacimiento", t:"Su fecha de nacimiento", tipo:"fecha"},
+      {id:"lugar",      t:"Su ciudad y país de nacimiento", tipo:"texto"},
+      {id:"matrimonio", t:"Fecha de matrimonio o unión", tipo:"fecha", opcional:true},
+      {id:"divorcio",   t:"Fecha de divorcio o separación", tipo:"fecha", opcional:true},
+      {id:"acompana",   t:"¿Viaja contigo a Europa?", tipo:"opcion", opciones:["Sí","No"], req:true}
+    ]
+  },
+  {
+    id: "padres",
+    titulo: "Datos de tus padres",
+    ayuda: "Si alguno falleció, escríbelo en el nombre.",
+    campos: [
+      {id:"madre",           t:"Nombre completo de tu madre", tipo:"texto", req:true},
+      {id:"madre_nacimiento",t:"Su fecha de nacimiento", tipo:"fecha", opcional:true},
+      {id:"padre",           t:"Nombre completo de tu padre", tipo:"texto", req:true},
+      {id:"padre_nacimiento",t:"Su fecha de nacimiento", tipo:"fecha", opcional:true}
+    ]
+  },
+  {
+    id: "pasaporte",
+    titulo: "Tu pasaporte",
+    campos: [
+      {id:"tipo",      t:"Tipo de pasaporte", tipo:"opcion", req:true,
+       opciones:["Ordinario","Diplomático","De servicio","Oficial","Especial"]},
+      {id:"numero",    t:"Número de pasaporte", tipo:"texto", req:true},
+      {id:"emision",   t:"Fecha de emisión", tipo:"fecha", req:true},
+      {id:"expiracion",t:"Fecha de expiración", tipo:"fecha", req:true},
+      {id:"emitido_por", t:"País que lo emitió", tipo:"texto", req:true}
+    ]
+  },
+  {
+    id: "residencia",
+    titulo: "Residencia en otro país",
+    ayuda: "Solo si vives en un país distinto al de tu nacionalidad. Si vives en Ecuador y eres ecuatoriano, salta esta sección.",
+    campos: [
+      {id:"otro_pais",   t:"¿Vives en un país distinto al de tu nacionalidad?", tipo:"opcion", req:true,
+       opciones:["No","Sí"]},
+      {id:"permiso",     t:"Número de tu permiso de residencia", tipo:"texto", opcional:true},
+      {id:"permiso_hasta", t:"Válido hasta", tipo:"fecha", opcional:true}
+    ]
+  },
+  {
+    id: "secundaria",
+    titulo: "Tus estudios secundarios",
+    campos: [
+      {id:"colegio",  t:"Nombre del colegio", tipo:"texto", req:true},
+      {id:"ciudad",   t:"Ciudad y país", tipo:"texto", req:true},
+      {id:"fin",      t:"Fecha de culminación", tipo:"fecha", opcional:true},
+      {id:"titulo",   t:"Título obtenido", tipo:"texto", opcional:true}
+    ]
+  },
+  {
+    id: "universidad",
+    titulo: "Tus estudios superiores",
+    ayuda: "Universidad o instituto. Si no aplica, puedes saltar esta sección.",
+    campos: [
+      {id:"institucion",t:"Nombre de la universidad o instituto", tipo:"texto", opcional:true},
+      {id:"ciudad",     t:"Ciudad y país", tipo:"texto", opcional:true},
+      {id:"fin",        t:"Fecha de culminación", tipo:"fecha", opcional:true},
+      {id:"titulo",     t:"Título obtenido", tipo:"texto", opcional:true}
+    ]
+  },
+  {
+    id: "laboral",
+    titulo: "Tu trabajo actual",
+    ayuda: "Si eres estudiante, pon el nombre y la dirección de tu centro de estudios.",
+    campos: [
+      {id:"ocupacion",t:"Tu ocupación actual", tipo:"texto", req:true},
+      {id:"empresa",  t:"Nombre de la empresa, negocio o centro de estudios", tipo:"texto", req:true},
+      {id:"inicio",   t:"Fecha en que empezaste", tipo:"fecha", req:true},
+      {id:"direccion",t:"Dirección del trabajo o centro de estudios", tipo:"larga", req:true},
+      {id:"ciudad",   t:"Ciudad y país", tipo:"texto", req:true},
+      {id:"telefono", t:"Teléfono del trabajo", tipo:"tel", req:true},
+      {id:"sueldo",   t:"Sueldo mensual aproximado (USD)", tipo:"numero", req:true}
+    ]
+  },
+  {
+    id: "viaje",
+    titulo: "Tu viaje a Europa",
+    ayuda: "Si todavía no tienes fechas exactas, pon las que estás planeando.",
+    campos: [
+      {id:"motivo",  t:"Motivo principal del viaje", tipo:"opcion", req:true,
+       opciones:["Turismo","Visita a familiares o amigos","Negocios","Cultural","Deportivo","Estudios","Tratamiento médico","Tránsito","Otro"]},
+      {id:"pais_principal", t:"País de destino principal", tipo:"texto", req:true,
+       ayuda:"Donde vas a pasar más días."},
+      {id:"pais_entrada",   t:"País por el que entras a Europa", tipo:"texto", req:true,
+       ayuda:"Donde aterriza tu primer vuelo en el espacio Schengen."},
+      {id:"entradas", t:"Entradas que necesitas", tipo:"opcion", req:true,
+       opciones:["Una entrada","Dos entradas","Múltiples entradas"]},
+      {id:"llegada",  t:"Fecha en que planeas llegar", tipo:"fecha", req:true},
+      {id:"salida",   t:"Fecha en que planeas regresar", tipo:"fecha", req:true},
+      {id:"dias",     t:"Días que vas a estar en total", tipo:"numero", req:true}
+    ]
+  },
+  {
+    id: "alojamiento",
+    titulo: "Dónde te vas a quedar",
+    ayuda: "El consulado pide el dato aunque la reserva todavía sea provisional.",
+    campos: [
+      {id:"tipo",      t:"Tipo de alojamiento", tipo:"opcion", req:true,
+       opciones:["Hotel","Casa de un familiar o amigo","Departamento alquilado o Airbnb","Otro"]},
+      {id:"nombre",    t:"Nombre del hotel, o de la persona que te recibe", tipo:"texto", req:true},
+      {id:"direccion", t:"Dirección completa", tipo:"larga", req:true},
+      {id:"telefono",  t:"Teléfono", tipo:"tel", opcional:true},
+      {id:"correo",    t:"Correo electrónico", tipo:"correo", opcional:true}
+    ]
+  },
+  {
+    id: "costos",
+    titulo: "Quién paga el viaje",
+    campos: [
+      {id:"quien_paga", t:"¿Quién cubre los gastos del viaje?", tipo:"opcion", req:true,
+       opciones:["Yo mismo/a","Un patrocinador (familiar, amigo o empresa)"]},
+      {id:"medios",     t:"¿Con qué medios?", tipo:"opcion", req:true,
+       opciones:["Efectivo","Tarjeta de crédito","Cheques de viaje","Alojamiento ya pagado","Transporte ya pagado","Varios de los anteriores"]},
+      {id:"patrocinador", t:"Si te patrocinan, nombre de esa persona o empresa y su relación contigo", tipo:"texto", opcional:true}
+    ]
+  },
+  {
+    id: "visas_previas",
+    titulo: "Visas Schengen anteriores",
+    ayuda: "Si nunca has tenido una, responde que no y sigue.",
+    campos: [
+      {id:"tuvo",     t:"¿Has tenido visa Schengen en los últimos tres años?", tipo:"opcion", req:true,
+       opciones:["No","Sí"]},
+      {id:"validez",  t:"Fechas de validez de esa visa", tipo:"texto", opcional:true,
+       ayuda:"Desde cuándo hasta cuándo. Míralo en el sticker del pasaporte."},
+      {id:"huellas",  t:"¿Te tomaron las huellas antes para una visa Schengen?", tipo:"opcion", req:true,
+       opciones:["No","Sí","No lo sé"]}
+    ]
+  },
+  {
+    id: "viajes",
+    titulo: "Viajes a otros países",
+    ayuda: "De los últimos cinco años. Si no has viajado, sigue de largo.",
+    repetible: {
+      etiqueta: "viaje",
+      campos: [
+        {id:"pais",   t:"País visitado", tipo:"texto"},
+        {id:"ingreso",t:"Fecha de ingreso", tipo:"fecha"},
+        {id:"salida", t:"Fecha de salida", tipo:"fecha"},
+        {id:"motivo", t:"Motivo del viaje", tipo:"texto"}
+      ]
+    }
+  },
+  {
+    id: "familiar_ue",
+    titulo: "Familiar ciudadano de la Unión Europea",
+    ayuda: "Solo si tienes cónyuge, hijo o padre con ciudadanía de la UE, Suiza, Noruega o Islandia. Si no, responde que no y sigue.",
+    campos: [
+      {id:"tiene",       t:"¿Tienes un familiar así?", tipo:"opcion", req:true, opciones:["No","Sí"]},
+      {id:"nombre",      t:"Su nombre completo", tipo:"texto", opcional:true},
+      {id:"nacimiento",  t:"Su fecha de nacimiento", tipo:"fecha", opcional:true},
+      {id:"nacionalidad",t:"Su nacionalidad", tipo:"texto", opcional:true},
+      {id:"parentesco",  t:"Parentesco contigo", tipo:"opcion", opcional:true,
+       opciones:["Cónyuge","Hijo/a","Nieto/a","Padre o madre a mi cargo"]},
+      {id:"pasaporte",   t:"Número de su pasaporte o documento de identidad", tipo:"texto", opcional:true}
+    ]
+  },
+  {
+    id: "redes",
+    titulo: "Tus redes sociales",
+    ayuda: "Escribe tu nombre de usuario, sin el arroba. Solo las que uses.",
+    campos: [
+      {id:"facebook", t:"Facebook", tipo:"texto", opcional:true},
+      {id:"instagram",t:"Instagram", tipo:"texto", opcional:true},
+      {id:"tiktok",   t:"TikTok", tipo:"texto", opcional:true},
+      {id:"x",        t:"X (antes Twitter)", tipo:"texto", opcional:true}
+    ]
+  }
+];
+
+var DOCUMENTOS_SCHENGEN = [
+  "Foto tamaño carnet reciente, fondo blanco (35 x 45 mm)",
+  "Foto de la página de tu pasaporte donde salen tus datos",
+  "Reserva de vuelos de ida y vuelta",
+  "Reserva del hotel o carta de invitación",
+  "Seguro médico de viaje con cobertura mínima de 30.000 euros",
+  "Certificado bancario de los últimos 3 meses",
+  "Certificado laboral con sueldo y antigüedad"
+];
+
+/* ------------------------------------------------------------
+   REGISTRO DE DESTINOS
+   El texto de `destino` viene de empezar/index.html y llega tal
+   cual desde la hoja: "Estados Unidos", "Canadá" o
+   "Europa (Schengen)". `detecta` compara en minúsculas para
+   aguantar tildes perdidas o variantes al escribir.
+   ------------------------------------------------------------ */
+
+var DESTINOS = {
+  usa: {
+    nombre: "Estados Unidos",
+    formulario: "el DS-160",
+    detecta: ["estados unidos", "usa", "eeuu", "ee.uu", "americana"],
+    secciones: SECCIONES_USA,
+    documentos: DOCUMENTOS_USA,
+    preparate: [
+      "Tu pasaporte y tu cédula",
+      "Los datos de tu trabajo actual, y del anterior si tuviste",
+      "Tus estudios: colegio y universidad, con fechas y títulos",
+      "Los datos de tus padres, y de tu cónyuge si aplica",
+      "El detalle de tus viajes de los últimos cinco años",
+      "Tu visa americana anterior, si tienes"
+    ]
+  },
+  canada: {
+    nombre: "Canadá",
+    formulario: "el IMM 5257",
+    detecta: ["canada", "canadá", "canadiense"],
+    secciones: SECCIONES_CANADA,
+    documentos: DOCUMENTOS_CANADA,
+    preparate: [
+      "Tu pasaporte y tu cédula",
+      "Tu historial de trabajo de los últimos diez años, con fechas",
+      "Tus estudios: colegio y universidad, con fechas y títulos",
+      "Los datos de tus padres, hijos y hermanos, aunque vivan lejos",
+      "El detalle de tus viajes de los últimos cinco años",
+      "Las fechas y el alojamiento de tu viaje a Canadá"
+    ]
+  },
+  schengen: {
+    nombre: "Europa (Schengen)",
+    formulario: "el formulario Schengen",
+    detecta: ["schengen", "europa", "espana", "españa", "italia", "francia", "alemania", "portugal", "grecia", "suiza", "austria", "belgica", "bélgica", "holanda", "paises bajos", "países bajos"],
+    secciones: SECCIONES_SCHENGEN,
+    documentos: DOCUMENTOS_SCHENGEN,
+    preparate: [
+      "Tu pasaporte y tu cédula",
+      "Los datos de tu trabajo: dirección, teléfono y desde cuándo",
+      "Tus estudios: colegio y universidad, con fechas y títulos",
+      "Los datos de tus padres, y de tu cónyuge si aplica",
+      "Tu reserva de vuelos y de hotel, aunque sea provisional",
+      "El detalle de tus viajes de los últimos cinco años"
+    ]
+  }
+};
+
+/** Reconoce el destino del caso. Devuelve la clave de DESTINOS o
+ *  null si no lo puede identificar (por ejemplo "Todavía sin
+ *  decidir"), en cuyo caso el expediente deriva a WhatsApp. */
+function claveDestino(texto){
+  var t = String(texto || "").toLowerCase();
+  var encontrada = null;
+  Object.keys(DESTINOS).forEach(function(k){
+    if (encontrada) return;
+    var hay = DESTINOS[k].detecta.some(function(p){ return t.indexOf(p) !== -1; });
+    if (hay) encontrada = k;
+  });
+  return encontrada;
+}
+
 /* Mensajes de ánimo que aparecen cada pocas secciones mientras se
  * llena una ficha, para sostener el ritmo y recordar que la
  * información correcta y completa evita que David tenga que llamar
@@ -365,14 +901,22 @@ var ANIMOS = [
 
 /** Diccionario clave -> texto de la pregunta, para que la hoja de
  *  calculo muestre encabezados legibles en vez de claves internas
- *  como "personales__nombres". Se arma una sola vez a partir de
- *  SECCIONES_USA, y se manda junto con el expediente. */
+ *  como "personales__nombres". Se arma con las secciones del
+ *  destino del caso y se manda junto con el expediente. */
 function mapaEtiquetas(){
   var m = {};
-  SECCIONES_USA.forEach(function(s){
+  seccionesDelDestino().forEach(function(s){
     if (s.repetible) { m[s.id + "__lista"] = "Detalle (tabla)"; return; }
     s.campos.forEach(function(c){ m[s.id + "__" + c.id] = c.t; });
   });
+  return m;
+}
+
+/** Titulo de cada seccion, para que la hoja no dependa de una lista
+ *  fija dentro del Apps Script cuando se agregan destinos nuevos. */
+function mapaSecciones(){
+  var m = {};
+  seccionesDelDestino().forEach(function(s){ m[s.id] = s.titulo; });
   return m;
 }
 
@@ -385,6 +929,7 @@ var barra = document.getElementById("barra");
 var etiquetaPaso = document.getElementById("etiqueta-paso");
 
 var caso = null;          // {codigo, nombre, destino, personas}
+var DESTINO = null;       // definición del destino, sacada de DESTINOS
 var E = {                 // expediente en construcción
   titular: "",
   personas: [],           // [{__nombre:"Ana", datos:{...}, completa:false}]
@@ -416,6 +961,8 @@ function esc(s){
   });
 }
 function ir(html){ app.innerHTML = html; window.scrollTo(0,0); }
+function seccionesDelDestino(){ return DESTINO ? DESTINO.secciones : []; }
+function documentosDelDestino(){ return DESTINO ? DESTINO.documentos : []; }
 function progreso(hecho, total, etiqueta){
   barra.style.width = Math.round((hecho/Math.max(total,1))*100) + "%";
   etiquetaPaso.textContent = etiqueta || "";
@@ -443,6 +990,7 @@ function arrancar(){
     .then(function(d){
       if (!d || !d.ok) throw new Error("no encontrado");
       caso = d;
+      DESTINO = DESTINOS[claveDestino(caso.destino)] || null;
       recuperar();
       if (E.personas && E.personas.length) pantallaPersonas();
       else confirmarIdentidad();
@@ -522,24 +1070,24 @@ function corregirNombre(valor, titulo){
 
 function confirmarDestino(){
   progreso(1, 10, "Paso 2");
-  var esUsa = String(caso.destino || "").toLowerCase().indexOf("estados unidos") !== -1;
+  var conocido = !!DESTINO;
   ir(
     '<div class="seccion">' +
       '<h1>¿El destino sigue siendo el mismo?</h1>' +
       '<p class="ayuda">Cuando llenaste el primer formulario indicaste este país. Si cambió, dínoslo antes de seguir.</p>' +
       '<div class="tarjeta"><p style="margin:0;font-size:1.15rem;font-weight:700">' + esc(caso.destino) + '</p></div>' +
-      (esUsa ? "" :
-        '<div class="aviso">Por ahora el expediente completo solo está listo para la visa de Estados Unidos. Para tu destino, David te va a pedir la información directamente por WhatsApp.</div>') +
+      (conocido ? "" :
+        '<div class="aviso">No pudimos identificar tu país destino. Escríbele a David y lo ajustamos antes de que llenes la información.</div>') +
       '<div class="ops">' +
-        (esUsa ? '<button class="op" type="button" id="si"><span class="marca-op"></span><span>Sí, es correcto</span></button>' : "") +
+        (conocido ? '<button class="op" type="button" id="si"><span class="marca-op"></span><span>Sí, es correcto</span></button>' : "") +
         '<button class="op" type="button" id="no"><span class="marca-op"></span><span>' +
-          (esUsa ? "No, cambió mi destino" : "Escribirle a David") + '</span></button>' +
+          (conocido ? "No, cambió mi destino" : "Escribirle a David") + '</span></button>' +
       '</div>' +
       '<div><button class="atras" type="button" id="atras">← Volver</button></div>' +
     '</div>'
   );
 
-  if (esUsa) {
+  if (conocido) {
     document.getElementById("si").addEventListener("click", function(){
       if (!E.personas.length) E.personas = [{ nombre: E.titular, datos: {}, completa: false }];
       guardar();
@@ -562,7 +1110,7 @@ function pantallaPreparate(){
   ir(
     '<div class="seccion">' +
       '<h1>Antes de empezar</h1>' +
-      '<p class="ayuda">Con esto se llena tu formulario oficial, el mismo que después se presenta ante el consulado. Por eso importa que quede completo y bien escrito — no hace falta que lo hagas rápido, sino correcto.</p>' +
+      '<p class="ayuda">Con esto se llena tu formulario oficial, ' + esc(DESTINO.formulario) + ', el mismo que después se presenta ante el consulado. Por eso importa que quede completo y bien escrito — no hace falta que lo hagas rápido, sino correcto.</p>' +
 
       '<div class="tarjeta">' +
         '<h2>No tienes que terminarlo hoy</h2>' +
@@ -576,12 +1124,7 @@ function pantallaPreparate(){
       '<div class="tarjeta">' +
         '<h2>Ten esto a la mano antes de empezar</h2>' +
         '<ul class="lista-prep">' +
-          '<li>Tu pasaporte y tu cédula</li>' +
-          '<li>Los datos de tu trabajo actual, y del anterior si tuviste</li>' +
-          '<li>Tus estudios: colegio y universidad, con fechas y títulos</li>' +
-          '<li>Los datos de tus padres, y de tu cónyuge si aplica</li>' +
-          '<li>El detalle de tus viajes de los últimos cinco años</li>' +
-          '<li>Tu visa americana anterior, si tienes</li>' +
+          DESTINO.preparate.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join("") +
         '</ul>' +
       '</div>' +
 
@@ -667,7 +1210,7 @@ function nuevaPersona(){
    ============================================================ */
 
 function seccionesQueAplican(datos){
-  return SECCIONES_USA.filter(function(s){ return !s.si || s.si(datos); });
+  return seccionesDelDestino().filter(function(s){ return !s.si || s.si(datos); });
 }
 
 function pintarSeccion(){
@@ -841,11 +1384,13 @@ function revisarPersona(){
 
 function pantallaDocumentos(){
   progreso(1, 1, "Documentos");
+  var docs = documentosDelDestino();
+  var pendiente = "Marca los " + docs.length + " documentos para continuar.";
   var html = '<div class="seccion">' +
     '<h1>¿Qué documentos ya tienes?</h1>' +
     '<p class="ayuda">Solo dinos cómo estás con cada uno. No hace falta subir nada aquí: los envías por WhatsApp cuando David te los pida.</p>';
 
-  DOCUMENTOS_USA.forEach(function(d, i){
+  docs.forEach(function(d, i){
     var v = E.documentos[i] || "";
     html += '<div class="doc"><p>' + esc(d) + '</p><div class="estados">' +
       ["Lo tengo","En trámite","No lo tengo","No aplica"].map(function(op){
@@ -855,17 +1400,17 @@ function pantallaDocumentos(){
   });
 
   html += '<button class="btn" type="button" id="enviar" disabled>Enviar mi expediente</button>';
-  html += '<p class="micro" id="pista">Marca los cuatro documentos para continuar.</p>';
+  html += '<p class="micro" id="pista">' + esc(pendiente) + '</p>';
   html += '<div><button class="atras" type="button" id="atras">← Volver a la lista</button></div>';
   html += '</div>';
   ir(html);
 
   function revisar(){
-    var listos = DOCUMENTOS_USA.every(function(_, i){ return E.documentos[i]; });
+    var listos = docs.every(function(_, i){ return E.documentos[i]; });
     document.getElementById("enviar").disabled = !listos;
     document.getElementById("pista").textContent = listos
       ? "Al enviar, David recibe tu expediente y sabe qué te falta."
-      : "Marca los cuatro documentos para continuar.";
+      : pendiente;
   }
 
   [].forEach.call(document.querySelectorAll(".estados button"), function(b){
@@ -893,7 +1438,7 @@ function enviar(){
   btn.disabled = true;
   btn.textContent = "Enviando…";
 
-  var documentos = DOCUMENTOS_USA.map(function(d, i){
+  var documentos = documentosDelDestino().map(function(d, i){
     return { nombre: d, estado: E.documentos[i] || "Sin marcar" };
   });
 
@@ -902,6 +1447,7 @@ function enviar(){
     codigo: CODIGO,
     titular: E.titular,
     destinoNombre: caso.destino,
+    destinoClave: claveDestino(caso.destino) || "",
     personas: E.personas.map(function(p){
       var o = { nombre_ficha: p.nombre };
       Object.keys(p.datos).forEach(function(k){
@@ -911,7 +1457,8 @@ function enviar(){
       return o;
     }),
     documentos: documentos,
-    etiquetas: mapaEtiquetas()
+    etiquetas: mapaEtiquetas(),
+    secciones: mapaSecciones()
   };
 
   fetch(ENDPOINT, {

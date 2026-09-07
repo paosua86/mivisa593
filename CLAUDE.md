@@ -162,6 +162,32 @@ y `logo-icono.png`):**
   migra sola el nombre antiguo (`Casos Mi Visa593`) si lo encuentra, sin
   perder los casos ya guardados ahí.
 
+## Expediente: cómo está armado por destino
+
+`expediente/index.html` sirve los tres destinos desde una sola página.
+Las preguntas viven en `SECCIONES_USA`, `SECCIONES_CANADA` y
+`SECCIONES_SCHENGEN`, y el registro `DESTINOS` une cada una con sus
+documentos y con la lista de "ten esto a la mano". `claveDestino()`
+reconoce el texto que llega de la hoja (`Estados Unidos`, `Canadá`,
+`Europa (Schengen)`); si no lo reconoce, deriva a WhatsApp.
+
+Las secciones salen de los formularios oficiales: DS-160 para Estados
+Unidos, IMM 5257 más la información familiar del IMM 5645 para Canadá,
+y el formulario uniforme para Schengen. **David todavía no validó las
+de Canadá y Schengen** — se armaron desde los formularios oficiales
+porque los Excel originales ya no estaban en `referencias/`.
+
+Para agregar o cambiar una pregunta basta con editar el arreglo del
+destino: los encabezados de la hoja, el mapa de etiquetas y la barra de
+progreso salen todos de ahí. No hace falta tocar el Apps Script.
+
+En la hoja de cálculo **cada destino tiene su propia pestaña**
+(`Expedientes EE.UU.`, `Expedientes Canadá`, `Expedientes Europa`),
+porque las columnas no son las mismas y mezclarlas desalinea las filas.
+En cada pestaña la fila 1 lleva el título legible y la fila 2, oculta,
+la clave interna; si después se agrega un campo, el script crea la
+columna al final sin mover lo ya guardado.
+
 ## Idioma
 
 Todo el contenido público en español ecuatoriano, tuteo, frases cortas,
