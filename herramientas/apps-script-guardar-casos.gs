@@ -25,7 +25,7 @@ var SITIO = "https://mivisaec.com";
    implementacion en vivo ya tiene los cambios: al abrir la URL /exec
    sin parametros, la respuesta trae este mismo texto. Subirla cada vez
    que se cambie este archivo. */
-var VERSION = "2026-09-04-destinos";
+var VERSION = "2026-09-07-columnas-por-titulo";
 
 /* Nombre de la carpeta raíz en Drive donde se guarda cada caso.
    NOMBRE_CARPETA_ANTERIOR es el nombre con el que se creó al inicio del
@@ -123,9 +123,18 @@ function doPost(e) {
     datos.link_pago = SITIO + "/pago/?v=" + servicio(datos);
     datos.carpeta = carpetaDelCaso(datos);
 
-    var fila = COLUMNAS.map(function (c) {
+    // Cada dato va a la columna que le corresponde por su titulo, no
+    // por su posicion en COLUMNAS: la hoja puede tener columnas
+    // añadidas a mano en el medio y nada se corre de lugar.
+    var indice = columnasDeLaHoja(hoja);
+    var ancho = hoja.getLastColumn();
+    var fila = [];
+    for (var k = 0; k < ancho; k++) fila.push("");
+    COLUMNAS.forEach(function (c) {
+      var pos = indice[c[0]];
+      if (!pos) return;
       var v = datos[c[0]];
-      return v === undefined || v === null ? "" : v;
+      fila[pos - 1] = v === undefined || v === null ? "" : v;
     });
     hoja.appendRow(fila);
 
@@ -133,7 +142,7 @@ function doPost(e) {
     var colores = { verde: "#e8f2ec", ambar: "#fbf2e0", rojo: "#f8ecec" };
     var color = colores[String(datos.semaforo).toLowerCase()];
     if (color) {
-      hoja.getRange(hoja.getLastRow(), 1, 1, COLUMNAS.length).setBackground(color);
+      hoja.getRange(hoja.getLastRow(), 1, 1, ancho).setBackground(color);
     }
 
     return responder({ ok: true, codigo: datos.codigo });
@@ -148,7 +157,7 @@ function doPost(e) {
 function codigoNuevo(hoja) {
   var usados = {};
   var ultimaFila = hoja.getLastRow();
-  var col = indiceColumna("codigo");
+  var col = indiceColumna(hoja, "codigo");
   if (ultimaFila > 1 && col > 0) {
     hoja.getRange(2, col, ultimaFila - 1, 1).getValues().forEach(function (f) {
       if (f[0]) usados[String(f[0])] = true;
@@ -164,11 +173,41 @@ function codigoNuevo(hoja) {
   return "X" + String(ultimaFila);
 }
 
-function indiceColumna(clave) {
-  for (var i = 0; i < COLUMNAS.length; i++) {
-    if (COLUMNAS[i][0] === clave) return i + 1;
-  }
-  return 0;
+/**
+ * En que columna real de la hoja vive cada dato, mirando los titulos
+ * de la fila 1.
+ *
+ * Antes la fila se armaba por posicion fija, con el orden del arreglo
+ * COLUMNAS. En cuanto alguien insertaba una columna a mano en el medio
+ * de la hoja (por ejemplo "¿Pagó?" entre "Link del expediente" y
+ * "Link de pago"), todo lo que el script escribia despues se corria un
+ * puesto y quedaba bajo el titulo equivocado. Ahora la hoja manda: si
+ * una columna se mueve, se sigue escribiendo donde corresponde, y si
+ * la hoja no tiene columna para algun dato, ese dato simplemente no se
+ * escribe en vez de desplazar a los demas.
+ */
+function columnasDeLaHoja(hoja) {
+  var indice = {};
+  var ancho = hoja.getLastColumn();
+  if (ancho === 0) return indice;
+
+  var titulos = hoja.getRange(1, 1, 1, ancho).getValues()[0];
+  var porTitulo = {};
+  titulos.forEach(function (t, i) {
+    var titulo = String(t).trim();
+    if (titulo && porTitulo[titulo] === undefined) porTitulo[titulo] = i + 1;
+  });
+
+  COLUMNAS.forEach(function (c) {
+    var pos = porTitulo[c[1]];
+    if (pos) indice[c[0]] = pos;
+  });
+  return indice;
+}
+
+/** Columna real de un dato en la hoja. 0 si la hoja no la tiene. */
+function indiceColumna(hoja, clave) {
+  return columnasDeLaHoja(hoja)[clave] || 0;
 }
 
 /** Devuelve el identificador del servicio, para el link de pago. */
@@ -246,20 +285,22 @@ function doGet(e) {
     var ultima = hoja.getLastRow();
     if (ultima < 2) return responder({ ok: false, error: "Caso no encontrado" });
 
-    var colCodigo   = indiceColumna("codigo");
-    var colNombre   = indiceColumna("nombre");
-    var colDestino  = indiceColumna("destino");
-    var colPersonas = indiceColumna("personas");
+    var indice = columnasDeLaHoja(hoja);
+    var colCodigo   = indice.codigo;
+    var colNombre   = indice.nombre;
+    var colDestino  = indice.destino;
+    var colPersonas = indice.personas;
+    if (!colCodigo) return responder({ ok: false, error: "La hoja no tiene columna Código" });
 
-    var valores = hoja.getRange(2, 1, ultima - 1, COLUMNAS.length).getValues();
+    var valores = hoja.getRange(2, 1, ultima - 1, hoja.getLastColumn()).getValues();
     for (var i = valores.length - 1; i >= 0; i--) {
       if (String(valores[i][colCodigo - 1]).toUpperCase() === codigo) {
         return responder({
           ok: true,
           codigo: codigo,
-          nombre: valores[i][colNombre - 1],
-          destino: valores[i][colDestino - 1],
-          personas: valores[i][colPersonas - 1]
+          nombre:   colNombre   ? valores[i][colNombre - 1]   : "",
+          destino:  colDestino  ? valores[i][colDestino - 1]  : "",
+          personas: colPersonas ? valores[i][colPersonas - 1] : ""
         });
       }
     }
