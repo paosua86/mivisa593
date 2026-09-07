@@ -365,7 +365,6 @@ var etiquetaPaso = document.getElementById("etiqueta-paso");
 var respuestas = {};
 var banderas = [];
 var indice = 0;
-var historial = [];
 
 /* Prellenar destino desde la URL: empezar/?destino=usa */
 (function(){
@@ -398,6 +397,17 @@ function siguienteIndice(desde){
   return -1;
 }
 
+/* La pregunta anterior se deduce de lo ya contestado, no de un
+   historial en memoria. Así el botón de volver sigue estando después
+   de recargar la página, y también cuando el destino vino prellenado
+   desde el link y su pregunta se saltó. */
+function anteriorIndice(desde){
+  for (var i = desde - 1; i >= 0; i--){
+    if (aplica(PREGUNTAS[i]) && respuestas[PREGUNTAS[i].id] !== undefined) return i;
+  }
+  return -1;
+}
+
 function totalAplicables(){
   return PREGUNTAS.filter(aplica).length;
 }
@@ -406,10 +416,14 @@ function contestadas(){
   return PREGUNTAS.filter(function(q){ return aplica(q) && respuestas[q.id] !== undefined; }).length;
 }
 
-function progreso(){
+/* La posición sale de la pregunta que se está mostrando, no de cuántas
+   van contestadas: si no, al volver atrás el contador seguía marcando
+   la pregunta siguiente. */
+function progreso(i){
   var t = totalAplicables();
-  barra.style.width = Math.round((contestadas() / t) * 100) + "%";
-  etiquetaPaso.textContent = "Pregunta " + Math.min(contestadas()+1, t) + " de " + t;
+  var pos = PREGUNTAS.slice(0, i).filter(aplica).length;
+  barra.style.width = Math.round((pos / t) * 100) + "%";
+  etiquetaPaso.textContent = "Pregunta " + Math.min(pos + 1, t) + " de " + t;
 }
 
 function esc(s){
@@ -421,46 +435,60 @@ function esc(s){
 function pintarPregunta(i){
   var q = PREGUNTAS[i];
   indice = i;
-  progreso();
+  progreso(i);
+
+  var elegida = respuestas[q.id];
+  var prev = anteriorIndice(i);
 
   var html = '<div class="pregunta activa">';
   html += '<h1>' + esc(q.titulo) + '</h1>';
   if (q.ayuda) html += '<p class="ayuda">' + esc(q.ayuda) + '</p>';
   html += '<div class="ops">';
   q.opciones.forEach(function(op){
-    html += '<button class="op" type="button" data-v="' + esc(op.v) + '" aria-pressed="false">' +
+    var marcada = elegida !== undefined && String(op.v) === String(elegida);
+    html += '<button class="op" type="button" data-v="' + esc(op.v) + '" aria-pressed="' + marcada + '">' +
               '<span class="marca-op"></span>' +
               '<span>' + esc(op.t) + (op.s ? '<small>' + esc(op.s) + '</small>' : '') + '</span>' +
             '</button>';
   });
   html += '</div>';
-  if (historial.length) html += '<div class="pie-nav"><button class="atras" type="button" id="atras">← Volver a la anterior</button></div>';
+  if (prev !== -1) html += '<div class="pie-nav"><button class="atras" type="button" id="atras">← Volver a la anterior</button></div>';
   html += '</div>';
   app.innerHTML = html;
   window.scrollTo(0,0);
 
   app.querySelectorAll(".op").forEach(function(b){
     b.addEventListener("click", function(){
+      app.querySelectorAll(".op").forEach(function(o){ o.setAttribute("aria-pressed","false"); });
       b.setAttribute("aria-pressed","true");
       var op = q.opciones.filter(function(o){ return String(o.v) === b.dataset.v; })[0];
       respuestas[q.id] = op.v;
       guardar();
-      setTimeout(function(){ avanzar(i); }, 160);
+      setTimeout(avanzar, 160);
     });
   });
 
   var atras = document.getElementById("atras");
-  if (atras) atras.addEventListener("click", function(){
-    var prev = historial.pop();
-    if (prev === undefined) return;
-    delete respuestas[PREGUNTAS[prev].id];
-    guardar();
-    pintarPregunta(prev);
-  });
+  if (atras) atras.addEventListener("click", function(){ pintarPregunta(prev); });
 }
 
-function avanzar(desde){
-  historial.push(desde);
+/* Al cambiar una respuesta, algunas preguntas dejan de aplicar: si el
+   destino pasa de Europa a Canadá, el país de Schengen ya no viene al
+   caso. Se limpian para que no lleguen a la hoja datos que no
+   corresponden al caso final. */
+function limpiarNoAplicables(){
+  PREGUNTAS.forEach(function(q){
+    if (!aplica(q) && respuestas[q.id] !== undefined) delete respuestas[q.id];
+  });
+  if (respuestas.destino !== "schengen") delete respuestas.pais_schengen;
+  guardar();
+}
+
+/* Volver atrás no borra la respuesta: la deja marcada para que se vea
+   qué se había elegido. Al contestar de nuevo, avanzar() salta sola a
+   la primera pregunta que siga sin responder. */
+function avanzar(){
+  limpiarNoAplicables();
   var sig = siguienteIndice(0);
   if (sig === -1) pintarContacto();
   else pintarPregunta(sig);
@@ -552,10 +580,8 @@ function pintarContacto(){
   });
 
   document.getElementById("atras").addEventListener("click", function(){
-    var prev = historial.pop();
-    if (prev === undefined) return;
-    delete respuestas[PREGUNTAS[prev].id];
-    guardar();
+    var prev = anteriorIndice(PREGUNTAS.length);
+    if (prev === -1) return;
     pintarPregunta(prev);
   });
 }
