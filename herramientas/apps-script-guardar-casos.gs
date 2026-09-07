@@ -25,7 +25,7 @@ var SITIO = "https://mivisaec.com";
    implementacion en vivo ya tiene los cambios: al abrir la URL /exec
    sin parametros, la respuesta trae este mismo texto. Subirla cada vez
    que se cambie este archivo. */
-var VERSION = "2026-09-07-columnas-por-titulo";
+var VERSION = "2026-09-07-columnas-por-titulo-2";
 
 /* Nombre de la carpeta raíz en Drive donde se guarda cada caso.
    NOMBRE_CARPETA_ANTERIOR es el nombre con el que se creó al inicio del
