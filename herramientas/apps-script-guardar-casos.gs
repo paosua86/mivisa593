@@ -25,7 +25,7 @@ var SITIO = "https://mivisaec.com";
    implementacion en vivo ya tiene los cambios: al abrir la URL /exec
    sin parametros, la respuesta trae este mismo texto. Subirla cada vez
    que se cambie este archivo. */
-var VERSION = "2026-09-07-columnas-por-titulo-2";
+var VERSION = "2026-09-07-tope-envio";
 
 /* Nombre de la carpeta raíz en Drive donde se guarda cada caso.
    NOMBRE_CARPETA_ANTERIOR es el nombre con el que se creó al inicio del
@@ -68,6 +68,16 @@ var COLUMNAS = [
   ["consentimiento",  "Consentimiento"]
 ];
 
+/* Tope de tamaño de un envío, solo para descartar basura.
+   Antes estaba en 8000 caracteres, que alcanzaba cuando el expediente
+   era solo de Estados Unidos y con respuestas cortas. Con datos reales
+   ya no: un expediente de una persona pesa entre 8 y 12 KB según el
+   destino, y uno de cuatro personas pasa de 29 KB. Como el formulario
+   envía en modo no-cors y no puede leer la respuesta, los envíos
+   rechazados se perdían en silencio: la persona veía "Expediente
+   enviado" y a David no le llegaba nada. */
+var TOPE_ENVIO = 200000;
+
 /* Campos que debe traer un caso de verdad, para descartar basura. */
 var OBLIGATORIOS = ["nombre", "telefono", "destino", "semaforo"];
 var SEMAFOROS = ["verde", "ambar", "rojo"];
@@ -79,7 +89,7 @@ function doPost(e) {
   var lock = LockService.getScriptLock();
   lock.waitLock(30000);
   try {
-    if (!e || !e.postData || e.postData.contents.length > 8000) {
+    if (!e || !e.postData || e.postData.contents.length > TOPE_ENVIO) {
       return responder({ ok: false, error: "Envio invalido" });
     }
     var datos = JSON.parse(e.postData.contents);
