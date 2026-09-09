@@ -36,11 +36,43 @@ var SITIO = "https://mivisaec.com";
    WhatsApp. */
 var CORREO_DAVID = "davidubilluz83@gmail.com";
 
+/* ------------------------------------------------------------
+   TELEGRAM — por dónde le llegan los avisos a David
+
+   Los avisos de trabajo (caso nuevo, pago declarado, expediente
+   listo) van por Telegram, no por correo. Motivo: el correo se
+   acumula y se lee tarde, y WhatsApp es justo de donde este proyecto
+   le está sacando el trabajo — un aviso ahí se pierde entre los
+   mensajes de los clientes. Telegram es una bandeja aparte que solo
+   tiene esto.
+
+   Los correos a la PERSONA (su código, su página, la confirmación de
+   pago) no cambian: siguen saliendo por correo, que es lo que ella
+   dio.
+
+   CÓMO SE CONFIGURA, una sola vez:
+     1. En Telegram, escríbele a @BotFather → /newbot → nombre y
+        usuario del bot. Devuelve un token largo: va en TELEGRAM_TOKEN.
+     2. Búscale el bot por su usuario y mándale cualquier cosa, aunque
+        sea "hola". Sin ese primer mensaje el bot no puede escribirte.
+     3. Abre https://api.telegram.org/bot<TOKEN>/getUpdates en el
+        navegador y copia el número de "chat":{"id": ...}. Va en
+        TELEGRAM_CHAT_ID. Si es un grupo, el id es negativo; el bot
+        tiene que estar dentro del grupo.
+     4. Ejecuta `probarTelegram` desde el editor. Si llega el mensaje
+        de prueba, está listo.
+
+   MIENTRAS ESTO ESTÉ VACÍO los avisos siguen saliendo por correo, para
+   no quedarse sin ellos en el intermedio. No es el modo final.
+   ------------------------------------------------------------ */
+var TELEGRAM_TOKEN = "";
+var TELEGRAM_CHAT_ID = "";
+
 /* Marca de version. Sirve para comprobar desde fuera que la
    implementacion en vivo ya tiene los cambios: al abrir la URL /exec
    sin parametros, la respuesta trae este mismo texto. Subirla cada vez
    que se cambie este archivo. */
-var VERSION = "2026-09-09-sin-candado";
+var VERSION = "2026-09-09-telegram";
 
 /* ------------------------------------------------------------
    NO HAY CANDADO
@@ -951,6 +983,96 @@ function pintarDocumentos(hoja, datos) {
    CORREOS
    ============================================================ */
 
+/* ------------------------------------------------------------
+   EL CANAL DE AVISOS A DAVID
+
+   Una sola puerta: `avisarDavid`. Si Telegram está configurado, va
+   por ahí; si no, cae al correo. Cambiar de canal más adelante (a
+   WhatsApp Cloud API, por ejemplo) es tocar solo estas funciones.
+   ------------------------------------------------------------ */
+
+function telegramListo() {
+  return String(TELEGRAM_TOKEN).trim() !== "" && String(TELEGRAM_CHAT_ID).trim() !== "";
+}
+
+/** Escapa lo que Telegram interpreta como HTML. */
+function tg(s) {
+  return String(s === undefined || s === null ? "" : s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+/** Telegram corta los mensajes largos; mejor cortarlos nosotros. */
+function recortar(texto, tope) {
+  var t = String(texto || "");
+  return t.length <= tope ? t : t.substring(0, tope - 1) + "…";
+}
+
+function telegramMensaje(texto) {
+  var res = UrlFetchApp.fetch("https://api.telegram.org/bot" + TELEGRAM_TOKEN + "/sendMessage", {
+    method: "post",
+    payload: {
+      chat_id: TELEGRAM_CHAT_ID,
+      text: recortar(texto, 4000),
+      parse_mode: "HTML",
+      disable_web_page_preview: "true"
+    },
+    muteHttpExceptions: true
+  });
+  if (res.getResponseCode() !== 200) {
+    throw new Error("Telegram " + res.getResponseCode() + ": " + res.getContentText());
+  }
+}
+
+/** El mismo aviso, pero con un archivo colgado. El pie va aparte
+ *  porque Telegram solo admite 1024 caracteres de descripción. */
+function telegramArchivo(blob, pie) {
+  var res = UrlFetchApp.fetch("https://api.telegram.org/bot" + TELEGRAM_TOKEN + "/sendDocument", {
+    method: "post",
+    payload: {
+      chat_id: TELEGRAM_CHAT_ID,
+      document: blob,
+      caption: recortar(pie, 1000),
+      parse_mode: "HTML"
+    },
+    muteHttpExceptions: true
+  });
+  if (res.getResponseCode() !== 200) {
+    throw new Error("Telegram " + res.getResponseCode() + ": " + res.getContentText());
+  }
+}
+
+/**
+ * Le avisa a David. `texto` es la versión para Telegram y `html` la
+ * de respaldo por correo; se manda una sola, no las dos.
+ */
+function avisarDavid(asunto, texto, html, adjuntos) {
+  if (telegramListo()) {
+    if (adjuntos && adjuntos.length) {
+      telegramArchivo(adjuntos[0], texto);
+    } else {
+      telegramMensaje(texto);
+    }
+    return;
+  }
+  MailApp.sendEmail({
+    to: CORREO_DAVID,
+    subject: asunto,
+    htmlBody: html,
+    name: "MiVisa EC",
+    attachments: adjuntos || []
+  });
+}
+
+/** Para comprobar la configuración desde el editor, sin esperar a que
+ *  entre un caso real. */
+function probarTelegram() {
+  if (!telegramListo()) {
+    throw new Error("Falta TELEGRAM_TOKEN o TELEGRAM_CHAT_ID arriba en este archivo.");
+  }
+  telegramMensaje("✅ <b>MiVisa EC</b>\nLos avisos de casos van a llegar aquí.");
+  return "Mensaje enviado. Si no llegó, revisa el token y el chat id.";
+}
+
 /** Aviso a David de que entró un caso nuevo. Reemplaza al WhatsApp. */
 function avisarCasoNuevo(datos) {
   var sem = String(datos.semaforo).toLowerCase();
@@ -1014,13 +1136,40 @@ function avisarCasoNuevo(datos) {
     '</div>' +
     '</div>';
 
-  MailApp.sendEmail({
-    to: CORREO_DAVID,
-    subject: asunto,
-    htmlBody: cuerpo,
-    name: "MiVisa EC",
-    replyTo: datos.correo || CORREO_DAVID
+  // La versión de Telegram: lo mismo, en vertical y sin adornos.
+  var l = [];
+  l.push({ verde: "🟢", ambar: "🟡", rojo: "🔴" }[sem] || "•");
+  l.push("<b>CASO NUEVO · " + tg(etiqueta) + "</b>");
+  l.push("<b>" + tg(datos.nombre) + "</b>");
+  l.push(tg(datos.destino) + (datos.pais_schengen ? " (" + tg(datos.pais_schengen) + ")" : "") +
+         " · código <code>" + tg(datos.codigo) + "</code>");
+  l.push("");
+  identidad.slice(1).forEach(function (p) {
+    if (p[1] !== undefined && p[1] !== null && String(p[1]).trim() !== "") {
+      l.push(tg(p[0]) + ": " + tg(p[1]));
+    }
   });
+  l.push("");
+  l.push("<b>RESPUESTAS</b>");
+  respuestas.forEach(function (p) {
+    if (p[1] !== undefined && p[1] !== null && String(p[1]).trim() !== "") {
+      l.push("· " + tg(p[0]) + " " + tg(p[1]));
+    }
+  });
+  [["A FAVOR", datos.a_favor], ["EN CONTRA", datos.en_contra]].forEach(function (par) {
+    var puntos = String(par[1] || "").split("|").map(function (s) { return s.trim(); }).filter(String);
+    if (!puntos.length) return;
+    l.push("");
+    l.push("<b>" + par[0] + "</b>");
+    puntos.forEach(function (p) { l.push("· " + tg(p)); });
+  });
+  l.push("");
+  l.push("Su página: " + SITIO + "/caso/?c=" + tg(datos.codigo));
+  if (datos.carpeta) l.push("Carpeta: " + tg(datos.carpeta));
+  l.push("");
+  l.push("<i>Ya tiene su página con el pago y el formulario. No hay que mandarle ningún link.</i>");
+
+  avisarDavid(asunto, l.join("\n"), cuerpo);
 }
 
 /** Filas etiqueta/valor, saltando lo que viene vacío. */
@@ -1125,13 +1274,22 @@ function avisarPagoDeclarado(fila, codigo) {
       '<a href="' + SITIO + '/caso/?c=' + escaparHtml(codigo) + '" style="color:#0b6478">Ver su página</a></p>' +
     '</div>';
 
-  MailApp.sendEmail({
-    to: CORREO_DAVID,
-    subject: "Pago declarado · " + escaparHtml(fila.valor("nombre")) + " · " + codigo,
-    htmlBody: cuerpo,
-    name: "MiVisa EC",
-    replyTo: String(fila.valor("correo") || CORREO_DAVID)
-  });
+  var texto = [
+    "💵 <b>PAGO DECLARADO</b>",
+    "<b>" + tg(fila.valor("nombre")) + "</b>",
+    tg(fila.valor("destino")) + " · código <code>" + tg(codigo) + "</code>",
+    "Valor esperado: " + tg(valor),
+    "WhatsApp: " + tg(fila.valor("telefono")),
+    "",
+    "Debería haberte llegado el comprobante por WhatsApp, y el cobro",
+    "estar en PayPhone o en la cuenta del Pichincha.",
+    "Cuando lo compruebes, marca la columna <b>Pagado</b> de su fila.",
+    "Ella no está esperando permiso: el formulario lo tiene abierto.",
+    "",
+    "Su página: " + SITIO + "/caso/?c=" + tg(codigo)
+  ].join("\n");
+
+  avisarDavid("Pago declarado · " + fila.valor("nombre") + " · " + codigo, texto, cuerpo);
 }
 
 /** Le manda a David el expediente listo, con el archivo adjunto. */
@@ -1180,13 +1338,26 @@ function avisarExpediente(codigo, datos, archivo, urlDoc) {
     '</div>' +
     '</div>';
 
-  MailApp.sendEmail({
-    to: CORREO_DAVID,
-    subject: "Expediente listo · " + (datos.destinoNombre || "") + " · " + codigo,
-    htmlBody: cuerpo,
-    name: "MiVisa EC",
-    attachments: adjuntos
-  });
+  // En Telegram el Excel va colgado del mensaje, así que el texto es
+  // el pie del archivo: corto, porque Telegram solo deja 1024.
+  var texto = [
+    "📄 <b>EXPEDIENTE COMPLETO</b>",
+    "<b>" + tg(datos.titular || codigo) + "</b>",
+    tg(datos.destinoNombre || "") + " · " + datos.personas.length +
+      (datos.personas.length === 1 ? " solicitante" : " solicitantes") +
+      " · código <code>" + tg(codigo) + "</code>",
+    "",
+    faltan.length
+      ? "⚠️ Le falta: " + faltan.map(function (d) {
+          return tg(d.nombre) + " (" + tg(d.estado.toLowerCase()) + ")";
+        }).join(", ")
+      : "✅ Marcó que tiene todos los documentos.",
+    "",
+    "Su página: " + SITIO + "/caso/?c=" + tg(codigo)
+  ].join("\n");
+
+  avisarDavid("Expediente listo · " + (datos.destinoNombre || "") + " · " + codigo,
+              texto, cuerpo, adjuntos);
 }
 
 /**

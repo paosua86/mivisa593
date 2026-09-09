@@ -106,6 +106,31 @@ el formulario están en una sola pantalla y el bloque de pago existe en
 un solo archivo. El copy del semáforo y el mapa `CONSEJOS` viven en
 `caso/index.html`, que es donde se leen.
 
+**Los avisos de trabajo a David van por Telegram, no por correo.** Un
+bot de Telegram, configurado en `TELEGRAM_TOKEN` y `TELEGRAM_CHAT_ID`
+del Apps Script. Motivo: el correo se lee tarde, y WhatsApp es de donde
+este proyecto le está sacando el trabajo — un aviso ahí se pierde entre
+los mensajes de clientes. Telegram es una bandeja que solo tiene esto.
+Mientras las constantes estén vacías, los avisos caen al correo, que no
+es el modo final. Los correos a la PERSONA (su código, su página, la
+confirmación de pago) no cambian.
+
+WhatsApp quedó descartado por dos razones concretas: la Cloud API exige
+plantillas aprobadas por Meta para mensajes que inicia el negocio, y el
+número que se registra en la API deja de servir en la app normal — el
++593 99 896 1214 es al que le escriben los clientes, así que haría
+falta un segundo número. No volver a proponerlo sin resolver eso.
+
+**`appsscript.json` declara los `oauthScopes` a mano.** Está copiado en
+`herramientas/appsscript.json`. Cuando esa lista es explícita, Apps
+Script **no** deduce los permisos del código: si se agrega una llamada
+a un servicio nuevo (`MailApp`, `UrlFetchApp`, `CalendarApp`…) y su
+scope no está en la lista, falla en tiempo de ejecución y, como casi
+todo va dentro de `try/catch`, falla en silencio. Ya pasó una vez: los
+correos y el Excel adjunto se desplegaron sin permiso y no habrían
+funcionado nunca. **Al agregar un servicio nuevo, actualizar también
+este archivo y volver a autorizar.**
+
 **No hay candado en ninguna parte del flujo.** El formulario detallado
 está abierto desde el primer momento para cualquiera con su código.
 David no habilita nada. Lo que ordena el trabajo es que él se pone con
