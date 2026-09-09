@@ -1039,6 +1039,21 @@ function mapaSecciones(){
   return m;
 }
 
+/* Qué campos tiene cada sección, en su orden. El Apps Script lo usa
+   para armar el Excel de David: sin esto tiene que adivinar el orden
+   a partir de las claves que le llegaron, y una sección que la persona
+   dejó vacía desordena el resto. */
+function ordenSecciones(){
+  return seccionesDelDestino().map(function(s){
+    return {
+      id: s.id,
+      campos: s.repetible
+        ? [s.id + "__lista"]
+        : s.campos.map(function(c){ return s.id + "__" + c.id; })
+    };
+  });
+}
+
 /* ============================================================
    ESTADO
    ============================================================ */
@@ -1576,7 +1591,8 @@ function enviar(){
     }),
     documentos: documentos,
     etiquetas: mapaEtiquetas(),
-    secciones: mapaSecciones()
+    secciones: mapaSecciones(),
+    orden: ordenSecciones()
   };
 
   /* Se espera la respuesta del script antes de decir "enviado".

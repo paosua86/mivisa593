@@ -683,11 +683,69 @@ function etiquetaSeccion(clave, secciones) {
    solicitante, las secciones numeradas en el mismo orden, la etiqueta
    a la izquierda y la respuesta a la derecha.
 
-   El orden y los títulos NO están escritos aquí: llegan desde el
+   Los títulos y las preguntas NO están escritos aquí: llegan desde el
    formulario en `orden`, `secciones` y `etiquetas`. Así, cambiar una
    pregunta en expediente/index.html cambia también este archivo, sin
    tocar el script.
+
+   El ORDEN sí está aquí, en ORDEN_DAVID: es el de las secciones de
+   sus propios Excel, para que copie y pegue de corrido como siempre.
    ------------------------------------------------------------ */
+
+/* ------------------------------------------------------------
+   EL ORDEN DE LAS SECCIONES DE DAVID
+
+   Cada lista es el orden de su archivo de Excel, traducido a los ids
+   de las secciones del formulario web (los de SECCIONES_* en
+   expediente/index.html).
+
+   Las preguntas de la web son la unión de dos cosas: lo que pide el
+   formulario oficial y lo que pide su Excel. Las que él ya tenía van
+   en su orden de siempre; las que sobran caen al final, juntas, bajo
+   "DATOS ADICIONALES DEL FORMULARIO OFICIAL". Así lo de arriba se
+   copia de corrido y lo de abajo es material extra, no un estorbo.
+
+   Una sección que no esté en ninguna de estas listas no se pierde:
+   termina en el bloque final. Si mañana se agrega una al formulario y
+   se quiere en un sitio concreto, se mete aquí y ya.
+   ------------------------------------------------------------ */
+var ORDEN_DAVID = {
+  usa: [
+    "personales", "conyuge", "padres", "secundaria", "universidad",
+    "laboral_anterior", "laboral", "pasaporte", "viajes", "viajes_usa",
+    "redes", "familia_usa"
+  ],
+  canada: [
+    "personales", "nacionalidades", "conyuge", "padres", "familia",
+    "universidad", "postgrado", "laboral_anterior", "laboral",
+    "pasaporte", "viajes", "estancias_largas", "familia_canada", "viaje"
+  ],
+  schengen: [
+    "viaje", "ruta", "personales", "pasaporte", "laboral",
+    "visas_previas", "visas_detalle", "alojamiento", "acompanantes"
+  ]
+};
+
+var TITULO_EXTRAS = "DATOS ADICIONALES DEL FORMULARIO OFICIAL";
+
+/**
+ * Reordena los grupos de secciones al orden del Excel de David y
+ * separa los que él no tiene. Devuelve {suyas, extras}.
+ */
+function ordenarComoDavid(grupos, destinoClave) {
+  var orden = ORDEN_DAVID[destinoClave];
+  if (!orden) return { suyas: grupos, extras: [] };
+
+  var porId = {};
+  grupos.forEach(function (g) { porId[g.id] = g; });
+
+  var suyas = [];
+  orden.forEach(function (id) {
+    if (porId[id]) { suyas.push(porId[id]); porId[id] = null; }
+  });
+  var extras = grupos.filter(function (g) { return porId[g.id]; });
+  return { suyas: suyas, extras: extras };
+}
 
 function libroDelCaso(codigo, datos) {
   var titular = datos.titular || "";
@@ -757,13 +815,16 @@ function pintarFichaPersona(hoja, per, datos) {
   fila("Recibido:", per.fecha || "");
   fila("", "");
 
-  // Las secciones, en el orden en que el formulario se las presentó a
-  // la persona. Si el formulario no manda `orden` (versión antigua),
-  // se cae en el orden natural de las claves.
+  // Las secciones llegan en el orden en que el formulario se las
+  // presentó a la persona; aquí se reordenan al de los Excel de David.
+  // Si el formulario no manda `orden` (versión antigua), se cae en el
+  // orden natural de las claves.
   var grupos = orden.length ? orden : ordenDeRespaldo(per);
+  var repartidos = ordenarComoDavid(grupos, datos.destinoClave);
 
   var numero = 0;
-  grupos.forEach(function (grupo) {
+
+  function pintarGrupo(grupo) {
     var claves = grupo.campos.filter(function (k) {
       var v = per[k];
       return v !== "" && v !== undefined && v !== null && v !== "[]";
@@ -786,7 +847,27 @@ function pintarFichaPersona(hoja, per, datos) {
       fila(etiqueta + ":", String(per[k]));
     });
     fila("", "");
-  });
+  }
+
+  repartidos.suyas.forEach(pintarGrupo);
+
+  // Lo que su Excel no tiene va al final, en bloque y avisado. Es lo
+  // que el formulario oficial le va a pedir igual, así que conviene
+  // que lo tenga a mano aunque no lo copie de corrido.
+  if (repartidos.extras.length) {
+    var conDatos = repartidos.extras.filter(function (g) {
+      return g.campos.some(function (k) {
+        var v = per[k];
+        return v !== "" && v !== undefined && v !== null && v !== "[]";
+      });
+    });
+    if (conDatos.length) {
+      fila("", "");
+      marcar(fila(TITULO_EXTRAS, ""), "titulo");
+      fila("", "");
+      conDatos.forEach(pintarGrupo);
+    }
+  }
 
   hoja.getRange(1, 1, filas.length, 2).setValues(filas);
   hoja.setColumnWidth(1, 320);
@@ -844,14 +925,25 @@ function ordenDeRespaldo(per) {
 
 /** Pestaña con el estado de los documentos de soporte. */
 function pintarDocumentos(hoja, datos) {
-  var filas = [["DOCUMENTOS DE SOPORTE", ""], ["Documento", "¿Lo tiene?"]];
-  datos.documentos.forEach(function (d) { filas.push([d.nombre, d.estado]); });
-  hoja.getRange(1, 1, filas.length, 2).setValues(filas).setWrap(true).setVerticalAlignment("top");
-  hoja.setColumnWidth(1, 460);
-  hoja.setColumnWidth(2, 180);
-  hoja.getRange(1, 1, 1, 2).merge().setFontSize(13).setFontWeight("bold")
+  // Numerada y en tres columnas, como el checklist de sus Excel.
+  var filas = [["DOCUMENTOS DE SOPORTE", "", ""], ["N.º", "Documento", "¿Lo tiene?"]];
+  datos.documentos.forEach(function (d, i) {
+    filas.push([i + 1, d.nombre, d.estado]);
+  });
+  hoja.getRange(1, 1, filas.length, 3).setValues(filas).setWrap(true).setVerticalAlignment("top");
+  hoja.setColumnWidth(1, 50);
+  hoja.setColumnWidth(2, 460);
+  hoja.setColumnWidth(3, 160);
+  hoja.getRange(1, 1, 1, 3).merge().setFontSize(13).setFontWeight("bold")
       .setBackground("#0b6478").setFontColor("#ffffff");
-  hoja.getRange(2, 1, 1, 2).setFontWeight("bold").setBackground("#d9edf2");
+  hoja.getRange(2, 1, 1, 3).setFontWeight("bold").setBackground("#d9edf2");
+
+  // Lo que falta, en ámbar: es lo primero que David va a mirar.
+  datos.documentos.forEach(function (d, i) {
+    if (d.estado === "No lo tengo" || d.estado === "En trámite") {
+      hoja.getRange(i + 3, 1, 1, 3).setBackground("#fbf2e0");
+    }
+  });
   hoja.setFrozenRows(2);
 }
 
