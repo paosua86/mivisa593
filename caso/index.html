@@ -83,8 +83,13 @@ a{color:var(--brand-deep)}
 .tarjeta h2{font-size:1.08rem}
 .paso-rot{font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;color:var(--tinta-suave);font-weight:700;margin:0 0 4px}
 .nota{font-size:.9rem;color:var(--tinta-suave)}
-ul.puntos{margin:0 0 1em;padding-left:20px}
-ul.puntos li{margin-bottom:7px;font-size:.95rem}
+.tit-lista{font-size:1.15rem;margin:0 0 .5em}
+ul.simple{margin:0 0 1em;padding-left:20px}
+ul.simple li{margin-bottom:7px;font-size:.95rem}
+ul.puntos{list-style:none;padding:0;margin:0 0 22px}
+ul.puntos li{background:#fff;border:1px solid var(--borde);border-radius:10px;padding:14px 16px;margin-bottom:9px;font-size:.98rem}
+ul.puntos li b{display:block;margin-bottom:2px}
+ul.puntos li span{color:var(--tinta-suave);font-size:.92rem}
 ol{margin:0;padding-left:20px}
 ol li{margin-bottom:9px;font-size:.96rem;color:var(--tinta-suave)}
 
@@ -252,21 +257,71 @@ var QUE_REUNIR = {
   }
 };
 
+/* Consejo que acompaña a cada punto en contra. La clave es la frase
+   exacta que genera empezar/index.html; si allá se cambia el texto de
+   un punto, hay que cambiar la clave aquí o el consejo deja de salir
+   (sin romper nada: el punto se muestra solo). */
+var CONSEJOS = {
+  "Sin viajes internacionales previos":
+    "Un viaje breve a otro país antes de aplicar fortalece de forma notable tu caso. Si no resulta posible, reforzamos el perfil por la vía laboral y familiar.",
+  "Muy poco tiempo en la actividad actual":
+    "Con más tiempo en la misma actividad, tu perfil transmite mayor estabilidad. En ocasiones conviene esperar unos meses.",
+  "Sin actividad laboral actual":
+    "Sin una actividad que acredite tu motivo de retorno, el caso queda debilitado. Es el primer punto a resolver.",
+  "Ingresos difíciles de demostrar":
+    "Existen formas de acreditar los ingresos de un negocio propio o de un trabajo independiente. Lo revisamos contigo.",
+  "Negación reciente sin cambios en el perfil":
+    "Presentarse nuevamente sin cambios en el perfil suele conducir al mismo resultado. Conviene fortalecer el caso antes de volver a aplicar.",
+  "Pasaporte próximo a vencer: hay que renovarlo primero":
+    "Conviene renovar el pasaporte antes de iniciar. El trámite es ágil y evita rehacer la documentación más adelante.",
+  "Sin pasaporte: es el primer trámite a resolver":
+    "El pasaporte es el punto de partida del proceso. Una vez lo tengas, continuamos.",
+  "Fecha muy justa: las citas consulares tardan semanas":
+    "La disponibilidad de citas no depende de nosotros y suele demorar. Conviene iniciar cuanto antes o reconsiderar la fecha del viaje.",
+  "Solo has viajado dentro de Latinoamérica":
+    "Suma a tu favor, aunque tiene menos peso que un viaje a Europa, Estados Unidos o Asia. Reforzamos el caso por la vía del arraigo.",
+  "Parte de tus ingresos no se puede acreditar documentalmente":
+    "Existen formas de documentar los ingresos de un negocio propio o de un trabajo independiente. Lo revisamos contigo.",
+  "Poco tiempo en tu actividad actual":
+    "Cuanto mayor sea tu antigüedad, más estable resulta tu perfil. En ocasiones conviene esperar unos meses.",
+  "Sin hijos ni dependientes en Ecuador":
+    "No es un requisito. Cuando no existen, se refuerza el perfil por la vía laboral y económica.",
+  "Sin bienes a tu nombre":
+    "Tampoco es un requisito. Se compensa con estabilidad laboral, vínculos familiares e ingresos acreditables.",
+  "Como estudiante hay que reforzar el respaldo económico":
+    "Habitualmente mediante el respaldo de quien financia el viaje y el certificado de estudios vigente.",
+  "Cambió poco desde la negación anterior":
+    "Cuanto más haya cambiado tu situación desde la negativa anterior, mejores son tus probabilidades."
+};
+
+/* El texto del semáforo. Es el que se venía mostrando al terminar la
+   precalificación, palabra por palabra: esta página absorbió esa
+   pantalla, así que el copy se mudó aquí entero. {n} es el primer
+   nombre. */
 var TEXTO_SEMAFORO = {
   verde: {
     etiqueta: "Tu resultado · verde",
     titulo: "Tu caso se ve sólido",
-    cuerpo: "Por lo que nos contaste, tu perfil reúne lo que el oficial consular evalúa: razones claras para regresar y con qué acreditarlas. No es una garantía, porque ninguna existe, pero es un buen punto de partida."
+    cuerpo: "{n}, por la información que nos compartes, tu perfil reúne lo que el oficial consular evalúa: razones claras para regresar y con qué acreditarlas. No constituye una garantía, porque ninguna existe, pero es un buen punto de partida.",
+    cierre: "<strong>Ya puedes continuar por tu cuenta.</strong> Abajo tienes el pago y el formulario detallado.",
+    tituloContra: "Aspectos a tener en cuenta",
+    vacioContra: ""
   },
   ambar: {
     etiqueta: "Tu resultado · ámbar",
-    titulo: "Tu caso tiene puntos por reforzar",
-    cuerpo: "Hay partes de tu situación que hoy no juegan a tu favor. Puedes presentarte igual y reforzar el caso por otras vías, o esperar y llegar en mejores condiciones. La decisión es tuya, y David la revisa contigo con el formulario en la mano."
+    titulo: "Tu caso es viable, aunque presenta puntos a reforzar",
+    cuerpo: "{n}, preferimos ser precisos: hay aspectos de tu perfil que el oficial consular examinará con especial atención.",
+    cierre: "Puedes presentarte de todos modos y reforzar el caso por otras vías, o esperar un tiempo y llegar en mejores condiciones. Esa decisión es tuya, ahora con la información completa.",
+    tituloContra: "Aspectos a reforzar",
+    vacioContra: "Tu perfil no muestra puntos fuertes que destaquen"
   },
   rojo: {
     etiqueta: "Tu resultado · rojo",
-    titulo: "Hoy tu perfil no está en su mejor momento",
-    cuerpo: "Varios de los puntos que el consulado evalúa todavía no están a tu favor. Puedes seguir adelante si quieres, pero queremos que lo hagas sabiendo esto: el arancel consular no se devuelve si te niegan, y el valor de la asesoría tampoco se devuelve por una negativa."
+    titulo: "Todavía no es tu momento",
+    cuerpo: "{n}, preferimos advertírtelo ahora antes de que inviertas tiempo y dinero en una solicitud con escasas probabilidades. El arancel consular no se reembolsa.",
+    cierre: "<strong>No se trata de una negativa definitiva, sino de un &laquo;todavía no&raquo;.</strong>",
+    tituloContra: "Aspectos que hoy juegan en contra",
+    vacioContra: "Tu perfil todavía no muestra razones fuertes para regresar"
   }
 };
 
@@ -293,12 +348,24 @@ function claveDestino(texto){
 
 function primerNombre(n){ return String(n || "").trim().split(" ")[0] || ""; }
 
-function listaPuntos(texto){
+/* ¿Aplica más de una persona? El dato llega como el texto de la opción
+   ("Solo yo", "Dos personas", "Cuatro o más"), no como un número. */
+function esPlural(v){
+  var t = String(v || "").trim().toLowerCase();
+  return t !== "" && t !== "1" && t.indexOf("solo yo") === -1;
+}
+
+/* Los puntos llegan de la hoja como "uno | dos | tres". Cada uno se
+   pinta con su consejo debajo, si lo tiene. */
+function listaPuntos(texto, respaldo){
   var t = String(texto || "").trim();
-  if (!t) return "";
-  var puntos = t.split("|").map(function(s){ return s.trim(); }).filter(Boolean);
+  var puntos = t ? t.split("|").map(function(s){ return s.trim(); }).filter(Boolean) : [];
+  if (!puntos.length && respaldo) puntos = [respaldo];
   if (!puntos.length) return "";
-  return '<ul class="puntos">' + puntos.map(function(p){ return '<li>' + esc(p) + '</li>'; }).join("") + '</ul>';
+  return '<ul class="puntos">' + puntos.map(function(p){
+    return '<li><b>' + esc(p) + '</b>' +
+      (CONSEJOS[p] ? '<span>' + esc(CONSEJOS[p]) + '</span>' : '') + '</li>';
+  }).join("") + '</ul>';
 }
 
 /* ============================================================
@@ -345,11 +412,17 @@ function pintarPedirCodigo(mensaje){
 
 function bloqueFicha(d){
   return '<div class="ficha">' +
-    '<p class="cod">Tu caso</p>' +
+    '<p class="cod">Tu código</p>' +
     '<p class="num">' + esc(d.codigo) + '</p>' +
+    // "personas" llega como el texto de la opción ("Solo yo", "Dos
+    // personas"), no como un número: se muestra tal cual, y solo
+    // cuando aplica más de uno.
     '<p class="meta">' + esc(d.nombre) + ' · ' + esc(d.destino) +
-      (d.personas && String(d.personas) !== "1" ? ' · ' + esc(d.personas) + ' personas' : '') +
+      (esPlural(d.personas) ? ' · ' + esc(d.personas) : '') +
     '</p>' +
+    '<p class="meta" style="margin-top:8px">Anótalo. Con él vuelves a esta página desde cualquier teléfono' +
+      (d.correo ? ', y también te la enviamos a <strong>' + esc(d.correo) + '</strong>' : '') +
+      '.</p>' +
   '</div>';
 }
 
@@ -376,13 +449,37 @@ function bloqueRuta(d){
 function bloqueSemaforo(d){
   var s = TEXTO_SEMAFORO[d.semaforo];
   if (!s) return "";
-  return '<div class="sem ' + esc(d.semaforo) + '">' +
+
+  var html = '<div class="sem ' + esc(d.semaforo) + '">' +
     '<p class="etiqueta">' + esc(s.etiqueta) + '</p>' +
     '<h2>' + esc(s.titulo) + '</h2>' +
-    '<p style="margin-bottom:0">' + esc(s.cuerpo) + '</p>' +
-  '</div>' +
-  (d.a_favor ? '<div class="tarjeta"><h2>Lo que juega a tu favor</h2>' + listaPuntos(d.a_favor) + '</div>' : '') +
-  (d.en_contra ? '<div class="tarjeta"><h2>Lo que hoy conviene reforzar</h2>' + listaPuntos(d.en_contra) + '</div>' : '');
+    '<p>' + esc(s.cuerpo).replace("{n}", esc(primerNombre(d.nombre))) + '</p>' +
+    '<p style="margin-bottom:0">' + s.cierre + '</p>' +
+  '</div>';
+
+  if (d.a_favor){
+    html += '<h2 class="tit-lista">Lo que juega a tu favor</h2>' + listaPuntos(d.a_favor);
+  }
+  var contra = listaPuntos(d.en_contra, s.vacioContra);
+  if (contra){
+    html += '<h2 class="tit-lista">' + esc(s.tituloContra) + '</h2>' + contra;
+  }
+
+  // El rojo lleva dos avisos más: que puede volver cuando mejore, y qué
+  // se está jugando si decide seguir igual. Van aquí, no en el bloque de
+  // pago, porque la decisión es anterior a cómo pagar.
+  if (d.semaforo === "rojo"){
+    html += '<div class="tarjeta">' +
+      '<h2>Cuando esos puntos mejoren, vuelve</h2>' +
+      '<p class="nota" style="margin-bottom:0">Tu caso se fortalece de forma notable y te acompañamos con mucha mayor confianza. Guarda tu código y vuelve a completar el formulario cuando tu situación cambie.</p>' +
+    '</div>' +
+    '<div class="tarjeta" style="border-color:#e0c9c9;background:#fdf7f7">' +
+      '<h2>Si aun así quieres seguir</h2>' +
+      '<p class="nota">Es tu decisión y la respetamos: nadie puede impedirte presentarte. Pero queremos que la tomes sabiendo esto: el arancel consular <strong>no se devuelve</strong> si te niegan, y David tampoco devuelve el valor de la asesoría por una negativa. Con tu perfil de hoy, la probabilidad no está a tu favor.</p>' +
+      '<p class="nota" style="margin-bottom:0">Abajo tienes el pago y el formulario, igual que cualquier otro caso.</p>' +
+    '</div>';
+  }
+  return html;
 }
 
 /* ---------- paso 2: el pago ---------- */
@@ -470,9 +567,9 @@ function bloqueDocumentos(d){
     '<h2>Lo que tienes que tener a la mano</h2>' +
     '<p class="nota">Reúne esto antes de sentarte a llenar el formulario. Si te falta algo, consíguelo primero: llenar a medias y con datos aproximados es lo que más atrasa un trámite.</p>' +
     '<h2 style="font-size:.98rem;margin-top:18px">Documentos</h2>' +
-    '<ul class="puntos">' + q.documentos.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join("") + '</ul>' +
+    '<ul class="simple">' + q.documentos.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join("") + '</ul>' +
     '<h2 style="font-size:.98rem">Información</h2>' +
-    '<ul class="puntos">' + q.datos.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join("") + '</ul>' +
+    '<ul class="simple">' + q.datos.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join("") + '</ul>' +
     '<div class="aviso" style="margin:18px 0 0">' +
       '<b>¿Por qué todo esto ahora y no el día de la cita?</b><br>' +
       'Porque es la única forma de que David revise tu situación con tiempo. Si un dato no cuadra o falta un documento, se descubre hoy — no el día de la entrega de documentos ni frente al oficial consular, cuando ya no hay margen para arreglarlo. Llenarlo completo ahora es lo que hace que el resto del trámite vaya rápido y sin sustos.' +
@@ -504,8 +601,11 @@ function bloqueFormulario(d){
 
 function pintarCaso(d){
   var html = bloqueFicha(d);
-  html += '<p class="nota" style="margin-top:-6px">Hola ' + esc(primerNombre(d.nombre)) +
-          '. Esta es tu página. Guárdala: desde aquí sigues todo tu trámite sin depender de que nadie te reenvíe nada.</p>';
+  html += '<p class="nota" style="margin-top:-6px">' +
+          (d.reciente
+            ? 'Esta es tu página. Desde aquí sigues todo tu trámite: no tienes que pedirle nada a nadie para avanzar.'
+            : 'Desde aquí sigues todo tu trámite. Todo lo que llenes se guarda solo.') +
+          '</p>';
   html += bloqueRuta(d);
   html += bloqueSemaforo(d);
 
@@ -591,18 +691,42 @@ function conectarYaPague(d){
    ARRANQUE
    ============================================================ */
 
+/* El caso que /empezar/ acaba de calcular, si viene de ahí.
+   Sirve para pintar la página al instante, sin la espera de consultar
+   al script justo después de haberle escrito. */
+function casoServido(codigo){
+  try {
+    var crudo = sessionStorage.getItem("mivisaec_caso_" + codigo);
+    return crudo ? JSON.parse(crudo) : null;
+  } catch(e){ return null; }
+}
+
 function abrir(){
   var codigo = codigoDeLaUrl();
   if (!codigo || codigo.length !== 6){ pintarPedirCodigo(); return; }
-  pintarCargando();
+
+  // Recién llegada de la precalificación: ya tenemos todo, se pinta y
+  // en segundo plano se confirma contra la hoja.
+  var servido = casoServido(codigo);
+  if (servido && servido.ok){
+    servido.reciente = true;
+    pintarCaso(servido);
+  } else {
+    pintarCargando();
+  }
 
   fetch(ENDPOINT + "?caso=" + encodeURIComponent(codigo))
     .then(function(res){ return res.json(); })
     .then(function(d){
       if (!d || !d.ok){
+        // Si ya está pintado con lo que trajo la precalificación, se
+        // deja como está: la fila puede tardar un instante en poder
+        // consultarse, y no tiene sentido asustarla.
+        if (servido && servido.ok) return;
         pintarPedirCodigo("No encontramos ningún caso con el código " + codigo + ". Revísalo y vuelve a intentar.");
         return;
       }
+      if (servido && servido.reciente) d.reciente = true;
       // Si acaba de declarar el pago desde este mismo navegador, la
       // página lo da por hecho sin esperar a que la hoja se actualice.
       try {
@@ -613,6 +737,7 @@ function abrir(){
       pintarCaso(d);
     })
     ["catch"](function(){
+      if (servido && servido.ok) return;
       app.innerHTML =
         '<h1>No pudimos abrir tu caso</h1>' +
         '<p class="nota">Puede ser tu conexión. Vuelve a intentarlo en un momento; tu caso no se pierde.</p>' +

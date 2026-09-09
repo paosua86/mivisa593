@@ -451,6 +451,7 @@ function doGet(e) {
       ok: true,
       codigo: codigo,
       nombre:     fila.valor("nombre"),
+      correo:     fila.valor("correo"),
       destino:    fila.valor("destino"),
       personas:   fila.valor("personas"),
       semaforo:   String(fila.valor("semaforo")).toLowerCase(),

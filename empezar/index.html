@@ -226,7 +226,7 @@ var PREGUNTAS = [
     titulo: "¿Ya habías pedido esta visa antes?",
     opciones: [
       {v:"nunca",    t:"No, es mi primera vez", p:0},
-      {v:"aprobada", t:"Sí, y me la dieron",    s:"Sería una renovación", p:3, fuerte:"Ya tuvo la visa antes: es una renovación"},
+      {v:"aprobada", t:"Sí, y me la dieron",    s:"Sería una renovación", p:3, fuerte:"Ya tuviste la visa antes: es una renovación"},
       {v:"negada",   t:"Sí, y me la negaron",   p:0}
     ]
   },
@@ -246,7 +246,7 @@ var PREGUNTAS = [
     titulo: "Desde que te la negaron, ¿cambió algo importante en tu vida?",
     ayuda: "Un nuevo empleo, un viaje a otro país, un hijo, una propiedad o mayores ingresos.",
     opciones: [
-      {v:"si", t:"Sí, varias cosas cambiaron",  p:2, fuerte:"Su situación cambió desde la negación anterior"},
+      {v:"si", t:"Sí, varias cosas cambiaron",  p:2, fuerte:"Tu situación cambió desde la negación anterior"},
       {v:"algo", t:"Alguna cosa, no mucho",     p:0, flojo:"Cambió poco desde la negación anterior"},
       {v:"no", t:"No, sigo igual",              p:-2, bandera:"Negación reciente sin cambios en el perfil"}
     ]
@@ -258,7 +258,7 @@ var PREGUNTAS = [
     opciones: [
       {v:"nunca",  t:"No, nunca he salido del país", p:-2, bandera:"Sin viajes internacionales previos"},
       {v:"latam",  t:"Sí, a países de Latinoamérica", s:"Colombia, Perú, Panamá, México…", p:0, flojo:"Solo has viajado dentro de Latinoamérica"},
-      {v:"fuerte", t:"Sí, a Estados Unidos, Canadá, Europa o Asia", p:3, fuerte:"Ha viajado a Estados Unidos, Canadá, Europa o Asia"}
+      {v:"fuerte", t:"Sí, a Estados Unidos, Canadá, Europa o Asia", p:3, fuerte:"Has viajado a Estados Unidos, Canadá, Europa o Asia"}
     ]
   },
   {
@@ -279,7 +279,7 @@ var PREGUNTAS = [
     opciones: [
       {v:"menos6", t:"Menos de 6 meses",   p:-2, bandera:"Muy poco tiempo en la actividad actual"},
       {v:"6a24",   t:"Entre 6 meses y 2 años", p:1, flojo:"Poco tiempo en tu actividad actual"},
-      {v:"mas2",   t:"Más de 2 años",      p:2, fuerte:"Más de 2 años en su actividad actual"}
+      {v:"mas2",   t:"Más de 2 años",      p:2, fuerte:"Más de 2 años en tu actividad actual"}
     ]
   },
   {
@@ -287,7 +287,7 @@ var PREGUNTAS = [
     titulo: "¿Puedes acreditar tus ingresos o ahorros con documentos?",
     ayuda: "Rol de pagos, certificado bancario, movimientos de cuenta o declaración de impuestos.",
     opciones: [
-      {v:"si",   t:"Sí, sin problema", p:2, fuerte:"Puede acreditar ingresos con documentos"},
+      {v:"si",   t:"Sí, sin problema", p:2, fuerte:"Puedes acreditar tus ingresos con documentos"},
       {v:"algo", t:"Algo, pero no todo", s:"Parte de mis ingresos no están respaldados", p:0, flojo:"Parte de tus ingresos no se puede acreditar documentalmente"},
       {v:"no",   t:"No, me sería difícil", p:-2, bandera:"Ingresos difíciles de demostrar"}
     ]
@@ -296,7 +296,7 @@ var PREGUNTAS = [
     id: "dependientes",
     titulo: "¿Tienes hijos o personas que dependan de ti aquí en Ecuador?",
     opciones: [
-      {v:"si", t:"Sí", p:2, fuerte:"Tiene hijos o dependientes en Ecuador"},
+      {v:"si", t:"Sí", p:2, fuerte:"Tienes hijos o dependientes en Ecuador"},
       {v:"no", t:"No", p:0, flojo:"Sin hijos ni dependientes en Ecuador"}
     ]
   },
@@ -304,7 +304,7 @@ var PREGUNTAS = [
     id: "pareja",
     titulo: "¿Tienes pareja o cónyuge?",
     opciones: [
-      {v:"si_queda", t:"Sí, y se queda en Ecuador", p:1, fuerte:"Su pareja se queda en Ecuador"},
+      {v:"si_queda", t:"Sí, y se queda en Ecuador", p:1, fuerte:"Tu pareja se queda en Ecuador"},
       {v:"si_viaja", t:"Sí, y viaja conmigo", p:0},
       {v:"no",       t:"No tengo pareja", p:0}
     ]
@@ -314,7 +314,7 @@ var PREGUNTAS = [
     titulo: "¿Tienes casa, terreno, vehículo o negocio a tu nombre?",
     ayuda: "No son un requisito. Únicamente suman a favor si los tienes.",
     opciones: [
-      {v:"si", t:"Sí, alguno de esos", p:2, fuerte:"Tiene bienes a su nombre"},
+      {v:"si", t:"Sí, alguno de esos", p:2, fuerte:"Tienes bienes a tu nombre"},
       {v:"no", t:"No, ninguno", p:0, flojo:"Sin bienes a tu nombre"}
     ]
   },
@@ -351,38 +351,10 @@ var PREGUNTAS = [
 ];
 
 /* Cómo se explica cada punto flojo en el resultado */
-var CONSEJOS = {
-  "Sin viajes internacionales previos":
-    "Un viaje breve a otro país antes de aplicar fortalece de forma notable tu caso. Si no resulta posible, reforzamos el perfil por la vía laboral y familiar.",
-  "Muy poco tiempo en la actividad actual":
-    "Con más tiempo en la misma actividad, tu perfil transmite mayor estabilidad. En ocasiones conviene esperar unos meses.",
-  "Sin actividad laboral actual":
-    "Sin una actividad que acredite tu motivo de retorno, el caso queda debilitado. Es el primer punto a resolver.",
-  "Ingresos difíciles de demostrar":
-    "Existen formas de acreditar los ingresos de un negocio propio o de un trabajo independiente. Lo revisamos contigo.",
-  "Negación reciente sin cambios en el perfil":
-    "Presentarse nuevamente sin cambios en el perfil suele conducir al mismo resultado. Conviene fortalecer el caso antes de volver a aplicar.",
-  "Pasaporte próximo a vencer: hay que renovarlo primero":
-    "Conviene renovar el pasaporte antes de iniciar. El trámite es ágil y evita rehacer la documentación más adelante.",
-  "Sin pasaporte: es el primer trámite a resolver":
-    "El pasaporte es el punto de partida del proceso. Una vez lo tengas, continuamos.",
-  "Fecha muy justa: las citas consulares tardan semanas":
-    "La disponibilidad de citas no depende de nosotros y suele demorar. Conviene iniciar cuanto antes o reconsiderar la fecha del viaje.",
-  "Solo has viajado dentro de Latinoamérica":
-    "Suma a tu favor, aunque tiene menos peso que un viaje a Europa, Estados Unidos o Asia. Reforzamos el caso por la vía del arraigo.",
-  "Parte de tus ingresos no se puede acreditar documentalmente":
-    "Existen formas de documentar los ingresos de un negocio propio o de un trabajo independiente. Lo revisamos contigo.",
-  "Poco tiempo en tu actividad actual":
-    "Cuanto mayor sea tu antigüedad, más estable resulta tu perfil. En ocasiones conviene esperar unos meses.",
-  "Sin hijos ni dependientes en Ecuador":
-    "No es un requisito. Cuando no existen, se refuerza el perfil por la vía laboral y económica.",
-  "Sin bienes a tu nombre":
-    "Tampoco es un requisito. Se compensa con estabilidad laboral, vínculos familiares e ingresos acreditables.",
-  "Como estudiante hay que reforzar el respaldo económico":
-    "Habitualmente mediante el respaldo de quien financia el viaje y el certificado de estudios vigente.",
-  "Cambió poco desde la negación anterior":
-    "Cuanto más haya cambiado tu situación desde la negativa anterior, mejores son tus probabilidades."
-};
+/* Los consejos que acompañan a cada punto en contra viven ahora en
+   caso/index.html, que es donde se pintan. Aquí solo se generan las
+   frases; el texto de acompañamiento se busca allá por esa frase. */
+
 
 var NOMBRE_DESTINO = {usa:"Estados Unidos", canada:"Canadá", schengen:"Europa (Schengen)", "no-se":"Todavía sin decidir"};
 
@@ -634,7 +606,7 @@ function pintarContacto(){
    redirección: en la práctica se puede leer. Si por lo que sea no se
    puede, no se rompe nada — se sigue con el código que generó esta
    página, que es el mismo que el script va a guardar salvo choque. */
-function guardarEnHoja(r, codigo){
+function armarFila(r, codigo){
   var fila = {
     fecha: new Date().toISOString(),
     codigo: codigo,
@@ -656,6 +628,10 @@ function guardarEnHoja(r, codigo){
     var op = q.opciones.filter(function(o){ return String(o.v) === String(v); })[0];
     fila[q.id] = op ? op.t : v;
   });
+  return fila;
+}
+
+function guardarEnHoja(fila, codigo){
   if (!ENDPOINT_GUARDADO) return Promise.resolve(codigo);
 
   return fetch(ENDPOINT_GUARDADO, {
@@ -678,9 +654,37 @@ function conTope(promesa, ms, respaldo){
   ]);
 }
 
+/* Identifica el servicio igual que lo hace el Apps Script, para que la
+   página del caso pueda mostrar el precio sin consultar nada. */
+function servicioDe(fila){
+  var d = String(fila.destino || "").toLowerCase();
+  var renovacion = String(fila.aplico_antes || "").toLowerCase().indexOf("dieron") !== -1;
+  if (d.indexOf("estados unidos") !== -1) return renovacion ? "usa-renovacion" : "usa-primera";
+  if (d.indexOf("canad") !== -1)          return renovacion ? "canada-renovacion" : "canada-primera";
+  if (d.indexOf("europa") !== -1 || d.indexOf("schengen") !== -1) return "schengen";
+  return "";
+}
+
+/* ------------------------------------------------------------
+   AQUÍ TERMINA ESTE FORMULARIO
+
+   La pantalla de resultado no se pinta aquí: ES la página del caso.
+   Antes se pintaba el semáforo en esta página y se ponía un botón que
+   llevaba a /caso/, así que la persona veía dos veces lo mismo y el
+   bloque de pago habría tenido que existir en los dos archivos.
+
+   Ahora se le deja el resultado servido en sessionStorage y se la
+   lleva directo a su página, que pinta al instante sin esperar al
+   servidor. Una sola pantalla, una sola URL — la misma a la que
+   apunta el link de su correo.
+
+   Va con location.replace para que el botón "atrás" no la devuelva a
+   una pantalla de carga que ya no significa nada.
+   ------------------------------------------------------------ */
 function pintarResultado(){
   var r = calcular();
   var codigo = codigoNuevo();
+  var fila = armarFila(r, codigo);
 
   app.innerHTML =
     '<div class="pregunta activa"><h1>Revisando tu caso…</h1>' +
@@ -688,91 +692,26 @@ function pintarResultado(){
   window.scrollTo(0,0);
   etiquetaPaso.textContent = "Casi listo";
 
-  conTope(guardarEnHoja(r, codigo), 9000, codigo).then(function(definitivo){
-    dibujarResultado(r, definitivo);
+  conTope(guardarEnHoja(fila, codigo), 9000, codigo).then(function(definitivo){
+    try {
+      sessionStorage.setItem("mivisaec_caso_" + definitivo, JSON.stringify({
+        ok: true,
+        codigo:     definitivo,
+        nombre:     fila.nombre,
+        destino:    fila.destino,
+        personas:   fila.personas,
+        semaforo:   fila.semaforo,
+        servicio:   servicioDe(fila),
+        a_favor:    fila.a_favor,
+        en_contra:  fila.en_contra,
+        correo:     fila.correo,
+        pagoConfirmado: false,
+        pagoDeclarado:  false,
+        expediente:     false
+      }));
+    } catch(e){}
+    location.replace("../caso/?c=" + encodeURIComponent(definitivo));
   });
-}
-
-function dibujarResultado(r, codigo){
-  var linkCaso = "../caso/?c=" + encodeURIComponent(codigo);
-  var html = "";
-
-  if (r.semaforo === "verde"){
-    html += '<div class="res verde">' +
-      '<h1>Tu caso se ve sólido</h1>' +
-      '<p>' + esc(primerNombre()) + ', por la información que nos compartes, tu perfil reúne lo que el oficial consular evalúa: razones claras para regresar y con qué acreditarlas. No constituye una garantía, porque ninguna existe, pero es un buen punto de partida.</p>' +
-      '<p style="margin-bottom:0"><strong>Ya puedes continuar por tu cuenta.</strong> Abajo tienes tu página personal, con el pago y el formulario detallado.</p>' +
-      '</div>';
-    if (r.mostrar.length){
-      html += '<h2>Aspectos a tener en cuenta</h2>' + listaPuntos(r.mostrar);
-    }
-    html += bloqueTuPagina(codigo, linkCaso);
-
-  } else if (r.semaforo === "ambar"){
-    html += '<div class="res ambar">' +
-      '<h1>Tu caso es viable, aunque presenta puntos a reforzar</h1>' +
-      '<p>' + esc(primerNombre()) + ', preferimos ser precisos: hay aspectos de tu perfil que el oficial consular examinará con especial atención.</p>' +
-      '<p style="margin-bottom:0">Puedes presentarte de todos modos y reforzar el caso por otras vías, o esperar un tiempo y llegar en mejores condiciones. Esa decisión es tuya, ahora con la información completa.</p>' +
-      '</div>';
-    html += '<h2>Aspectos a reforzar</h2>' + listaPuntos(r.mostrar.length ? r.mostrar : ["Tu perfil no muestra puntos fuertes que destaquen"]);
-    html += bloqueTuPagina(codigo, linkCaso);
-
-  } else {
-    html += '<div class="res rojo">' +
-      '<h1>Todavía no es tu momento</h1>' +
-      '<p>' + esc(primerNombre()) + ', preferimos advertírtelo ahora antes de que inviertas tiempo y dinero en una solicitud con escasas probabilidades. El arancel consular no se reembolsa.</p>' +
-      '<p style="margin-bottom:0"><strong>No se trata de una negativa definitiva, sino de un &laquo;todavía no&raquo;.</strong></p>' +
-      '</div>';
-    html += '<h2>Aspectos que hoy juegan en contra</h2>' + listaPuntos(r.mostrar.length ? r.mostrar : ["Tu perfil todavía no muestra razones fuertes para regresar"]);
-    html += '<div class="recuadro">' +
-      '<h2>Cuando esos puntos mejoren, vuelve</h2>' +
-      '<p style="margin-bottom:0;font-size:.97rem;color:#4a5a56">Tu caso se fortalece de forma notable y te acompañamos con mucha mayor confianza. Guarda tu código y vuelve a completar el formulario cuando tu situación cambie.</p>' +
-      '</div>';
-    html += '<div class="recuadro" style="border-color:#e0c9c9;background:#fdf7f7">' +
-      '<h2>Si aun así quieres seguir</h2>' +
-      '<p style="font-size:.97rem;color:#4a5a56">Es tu decisión y la respetamos: nadie puede impedirte presentarte. Pero queremos que la tomes sabiendo esto: el arancel consular <strong>no se devuelve</strong> si te niegan, y David tampoco devuelve el valor de la asesoría por una negativa. Con tu perfil de hoy, la probabilidad no está a tu favor.</p>' +
-      '<p style="margin-bottom:0;font-size:.97rem;color:#4a5a56">Abajo tienes tu página con el pago y el formulario, igual que cualquier otro caso.</p>' +
-      '</div>';
-    html += bloqueTuPagina(codigo, linkCaso);
-  }
-
-  html += '<p class="nota" style="text-align:center;margin-top:26px"><a href="../">Volver a la página</a></p>';
-  app.innerHTML = html;
-  window.scrollTo(0,0);
-  etiquetaPaso.textContent = "Tu resultado";
-}
-
-function primerNombre(){
-  return (respuestas.nombre || "").split(" ")[0] || "";
-}
-
-function listaPuntos(bs){
-  var h = '<ul class="puntos">';
-  bs.forEach(function(b){
-    h += '<li><b>' + esc(b) + '</b>' + (CONSEJOS[b] ? '<span>' + esc(CONSEJOS[b]) + '</span>' : '') + '</li>';
-  });
-  return h + '</ul>';
-}
-
-/* La pantalla de resultado ya entrega el caso completo: el código, el
-   link a la página personal y el correo con todo. Antes esto era un
-   botón de WhatsApp y David tenía que ir mandando link por link. */
-function bloqueTuPagina(codigo, linkCaso){
-  return '<div class="recuadro"><h2>Qué pasa ahora</h2><ol>' +
-      '<li>Abres tu página personal, aquí abajo.</li>' +
-      '<li>Ahí pagas la asesoría, por transferencia o con tarjeta.</li>' +
-      '<li>En cuanto David confirme tu pago, se te abre el formulario detallado en esa misma página.</li>' +
-      '<li>Lo llenas cuando puedas, se guarda solo, y David prepara tu solicitud.</li>' +
-    '</ol></div>' +
-    '<div class="recuadro" style="text-align:center">' +
-      '<p class="nota" style="margin:0 0 4px">Tu código</p>' +
-      '<p style="margin:0 0 4px;font-size:1.9rem;font-weight:700;letter-spacing:.1em">' + esc(codigo) + '</p>' +
-      '<p class="nota" style="margin:0">Anótalo. Con él siempre puedes volver a tu caso.</p>' +
-    '</div>' +
-    '<a class="btn" href="' + linkCaso + '">Abrir mi página y continuar</a>' +
-    '<p class="nota" style="text-align:center;margin-top:14px">' +
-      'También te la enviamos a <strong>' + esc(respuestas.correo || "tu correo") + '</strong>. ' +
-      'Si no la ves, revisa el spam.</p>';
 }
 
 /* arranque */

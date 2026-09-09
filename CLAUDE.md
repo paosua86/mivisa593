@@ -37,7 +37,7 @@ visas/
 ├── terminos.html          Términos y condiciones
 ├── privacidad.html        Política de privacidad
 ├── empezar/               Formulario de precalificación (paso 1)
-├── caso/                  Página personal de cada caso (pasos 2 a 4)
+├── caso/                  Página personal: resultado, pago y formulario
 ├── pago/                  Página de pago suelta, fuera del flujo
 ├── expediente/            Formulario largo, se entra desde caso/
 ├── docs/                  Documentos internos de trabajo
@@ -97,6 +97,15 @@ conciliación automática sería la API de PayPhone con
 `clientTransactionId` = código; hace falta credenciales de comercio y
 no está hecho.
 
+**`empezar/` no pinta el resultado: redirige a `caso/`.** La pantalla
+de resultado y la página del caso son la misma cosa. Al terminar las 12
+preguntas, `empezar/` guarda el caso, deja el resultado en
+`sessionStorage` y hace `location.replace` a `caso/?c=CODIGO`, que
+pinta al instante sin esperar al servidor. Así el semáforo, el pago y
+el formulario están en una sola pantalla y el bloque de pago existe en
+un solo archivo. El copy del semáforo y el mapa `CONSEJOS` viven en
+`caso/index.html`, que es donde se leen.
+
 **No hay candado en ninguna parte del flujo.** El formulario detallado
 está abierto desde el primer momento para cualquiera con su código.
 David no habilita nada. Lo que ordena el trabajo es que él se pone con
@@ -104,6 +113,7 @@ un caso cuando ve el pago, no un permiso técnico. Las columnas `Pago
 declarado` (la escribe la persona desde su página) y `Pagado` (la
 escribe David al verificar) son registro, no permiso. No volver a
 proponer un desbloqueo por pago.
+
 **Agenda:** Horarios de citas de Google Calendar. No Cal.com.
 **Facturación:** electrónica SRI, pendiente de integrar.
 
@@ -206,14 +216,20 @@ Unidos, IMM 5257 más la información familiar del IMM 5645 para Canadá,
 y el formulario uniforme para Schengen. **David todavía no validó las
 de Canadá y Schengen.**
 
-Los tres Excel de David volvieron a `referencias/`
-(`formulario-visa-americana.xlsx`, `-canadiense`, `-schengen`), así que
-ya se pueden alinear las preguntas de la web al orden y las etiquetas
-de sus archivos. **Está pendiente:** hoy las de Canadá y Schengen
-siguen el formulario oficial, no su Excel, y no coinciden. Alinearlas
-significa perder campos que el formulario oficial pide y su Excel no
-(en Canadá: idiomas y las preguntas de seguridad); antes de hacerlo,
-preguntarle si esos los pide por teléfono.
+Los tres Excel de David están en `referencias/`
+(`formulario-visa-americana.xlsx`, `-canadiense`, `-schengen`) y ya se
+compararon campo por campo: el detalle está en
+`docs/comparacion-excel-david.md`.
+
+**Las preguntas de la web son la unión de los dos lados: lo que pide el
+formulario oficial más lo que pide el Excel de David. No quitar nada de
+ninguno de los dos.** Sus formatos de Canadá y Schengen están
+incompletos frente a los formularios oficiales, así que alinear la web
+a ellos le devolvería las llamadas telefónicas que el proyecto está
+quitando. Lo que queda pendiente es lo contrario: **reordenar el Excel
+que genera el Apps Script** para que salga en el orden de sus
+secciones, con los campos extra al final en un bloque "Datos
+adicionales del formulario oficial".
 
 Para agregar o cambiar una pregunta basta con editar el arreglo del
 destino: los encabezados de la hoja, el mapa de etiquetas y la barra de

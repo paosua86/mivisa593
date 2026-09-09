@@ -262,6 +262,7 @@ var SECCIONES_USA = [
       {id:"jefe",     t:"Nombre de tu jefe o jefa", tipo:"texto", opcional:true},
       {id:"funciones",t:"¿Qué haces en tu trabajo?", tipo:"larga", req:true,
        ayuda:"Al menos cinco tareas, separadas por comas."},
+      {id:"fin",      t:"Fecha de culminación, si ya no trabajas ahí", tipo:"fecha", opcional:true},
       {id:"sueldo",   t:"Sueldo mensual aproximado (USD)", tipo:"numero", req:true}
     ]
   },
@@ -374,12 +375,32 @@ var SECCIONES_CANADA = [
       {id:"lugar_nacimiento", t:"Lugar de nacimiento", tipo:"texto", ayuda:"Ciudad y país", req:true},
       {id:"ciudadania",  t:"País o países de tu ciudadanía", tipo:"texto", req:true},
       {id:"cedula",      t:"Número de cédula", tipo:"texto", req:true},
+      {id:"cedula_emision", t:"Fecha de emisión de tu cédula", tipo:"fecha", opcional:true},
       {id:"direccion",   t:"Dirección de tu domicilio", tipo:"larga", req:true},
+      {id:"codigo_postal", t:"Código postal", tipo:"texto", opcional:true,
+       ayuda:"Si no lo sabes, déjalo en blanco."},
       {id:"tel_casa",    t:"Teléfono de tu domicilio", tipo:"tel", opcional:true},
       {id:"celular",     t:"Teléfono celular", tipo:"tel", req:true},
       {id:"correo",      t:"Correo electrónico", tipo:"correo", req:true},
       {id:"estado_civil",t:"Estado civil", tipo:"opcion", req:true,
        opciones:["Soltero/a","Casado/a","Unión libre","Divorciado/a","Viudo/a","Separado/a"]}
+    ]
+  },
+  {
+    id: "nacionalidades",
+    titulo: "Otras nacionalidades y residencia",
+    ayuda: "Solo si tienes otra nacionalidad o eres residente de otro país. Si no, responde que no y sigue.",
+    campos: [
+      {id:"otra_nac",      t:"¿Tienes otra nacionalidad además de la ecuatoriana?", tipo:"opcion", req:true,
+       opciones:["No","Sí"]},
+      {id:"otra_nac_pais", t:"País o países de esa nacionalidad", tipo:"texto", opcional:true},
+      {id:"otra_nac_doc",  t:"Número de pasaporte o documento de esa nacionalidad", tipo:"texto", opcional:true},
+      {id:"residente",     t:"¿Eres o has sido residente permanente de otro país?", tipo:"opcion", req:true,
+       opciones:["No","Sí"], ayuda:"Estados Unidos, España, Chile, el que sea."},
+      {id:"residente_pais",t:"País de esa residencia", tipo:"texto", opcional:true},
+      {id:"residente_doc", t:"Tipo y número del documento de residencia", tipo:"texto", opcional:true,
+       ayuda:"Por ejemplo Green Card, TRP, NIE."},
+      {id:"residente_hasta", t:"Fecha de expiración de esa residencia", tipo:"fecha", opcional:true}
     ]
   },
   {
@@ -477,7 +498,20 @@ var SECCIONES_CANADA = [
     campos: [
       {id:"institucion",t:"Nombre de la universidad o instituto", tipo:"texto", opcional:true},
       {id:"campo",      t:"Carrera o campo de estudio", tipo:"texto", opcional:true},
+      {id:"direccion",  t:"Dirección", tipo:"texto", opcional:true},
       {id:"ciudad",     t:"Ciudad y país", tipo:"texto", opcional:true},
+      {id:"inicio",     t:"Fecha de inicio", tipo:"fecha", opcional:true},
+      {id:"fin",        t:"Fecha de culminación", tipo:"fecha", opcional:true},
+      {id:"titulo",     t:"Título obtenido", tipo:"texto", opcional:true}
+    ]
+  },
+  {
+    id: "postgrado",
+    titulo: "Tu postgrado",
+    ayuda: "Maestría, especialización o doctorado. Si no tienes, sigue de largo.",
+    campos: [
+      {id:"institucion",t:"Nombre de la institución", tipo:"texto", opcional:true},
+      {id:"direccion",  t:"Dirección", tipo:"texto", opcional:true},
       {id:"inicio",     t:"Fecha de inicio", tipo:"fecha", opcional:true},
       {id:"fin",        t:"Fecha de culminación", tipo:"fecha", opcional:true},
       {id:"titulo",     t:"Título obtenido", tipo:"texto", opcional:true}
@@ -507,11 +541,28 @@ var SECCIONES_CANADA = [
     repetible: {
       etiqueta: "trabajo",
       campos: [
-        {id:"empresa", t:"Empresa o actividad", tipo:"texto"},
-        {id:"cargo",   t:"Cargo u ocupación", tipo:"texto"},
-        {id:"inicio",  t:"Fecha de inicio", tipo:"fecha"},
-        {id:"fin",     t:"Fecha de salida", tipo:"fecha"},
-        {id:"ciudad",  t:"Ciudad y país", tipo:"texto"}
+        {id:"empresa",  t:"Empresa o actividad", tipo:"texto"},
+        {id:"cargo",    t:"Cargo u ocupación", tipo:"texto"},
+        {id:"inicio",   t:"Fecha de inicio", tipo:"fecha"},
+        {id:"fin",      t:"Fecha de salida", tipo:"fecha"},
+        {id:"direccion",t:"Dirección", tipo:"texto"},
+        {id:"ciudad",   t:"Ciudad y país", tipo:"texto"},
+        {id:"telefono", t:"Teléfono", tipo:"texto"},
+        {id:"jefe",     t:"Nombre del jefe o jefa", tipo:"texto"},
+        {id:"funciones",t:"Funciones (al menos cinco, separadas por comas)", tipo:"texto"}
+      ]
+    }
+  },
+  {
+    id: "estancias_largas",
+    titulo: "Países donde estuviste más de seis meses",
+    ayuda: "De los últimos cinco años. Canadá lo pregunta expresamente. Si no aplica, sigue de largo.",
+    repetible: {
+      etiqueta: "país",
+      campos: [
+        {id:"pais",    t:"País", tipo:"texto"},
+        {id:"periodo", t:"Período", tipo:"texto"},
+        {id:"motivo",  t:"Motivo de la estadía", tipo:"texto"}
       ]
     }
   },
@@ -556,7 +607,12 @@ var SECCIONES_CANADA = [
          opciones:["Padre o madre","Hermano/a","Hijo/a","Cónyuge","Tío/a","Primo/a","Amigo/a","Otro"]},
         {id:"estatus",   t:"Situación migratoria", tipo:"opcion",
          opciones:["Ciudadano","Residente permanente","Con permiso temporal","Estudiante","Sin estatus","No lo sé"]},
-        {id:"ciudad",    t:"Ciudad y provincia", tipo:"texto"}
+        {id:"ciudad",    t:"Ciudad y provincia", tipo:"texto"},
+        {id:"direccion", t:"Dirección en Canadá", tipo:"texto"},
+        {id:"telefono",  t:"Teléfono", tipo:"texto"},
+        {id:"conyuge",   t:"Nombre de su cónyuge, si tiene", tipo:"texto"},
+        {id:"conyuge_tel",     t:"Teléfono del cónyuge", tipo:"texto"},
+        {id:"conyuge_estatus", t:"Situación migratoria del cónyuge", tipo:"texto"}
       ]
     }
   },
@@ -597,8 +653,14 @@ var DOCUMENTOS_CANADA = [
   "Foto digital tamaño pasaporte, fondo blanco",
   "Foto de la página de tu pasaporte donde salen tus datos",
   "Certificado bancario de los últimos 3 a 6 meses",
+  "Movimiento bancario de los últimos 6 meses",
   "Certificado laboral con sueldo y antigüedad",
-  "Visa canadiense o americana anterior, si tienes"
+  "Roles de pago de los últimos 3 meses",
+  "Visa canadiense o americana anterior, si tienes",
+  "Documento de residencia en otro país, si tienes",
+  "Carta de invitación de tu contacto en Canadá, si aplica",
+  "Reserva de vuelos y de alojamiento",
+  "Copia del impuesto predial o la matrícula vehicular, si tienes"
 ];
 
 /* ------------------------------------------------------------
@@ -624,6 +686,9 @@ var SECCIONES_SCHENGEN = [
       {id:"nacionalidad_nacimiento", t:"Nacionalidad al nacer, si es distinta", tipo:"texto", opcional:true},
       {id:"cedula",      t:"Número de cédula", tipo:"texto", req:true},
       {id:"direccion",   t:"Dirección de tu domicilio", tipo:"larga", req:true},
+      {id:"codigo_postal", t:"Código postal", tipo:"texto", opcional:true,
+       ayuda:"Si no lo sabes, déjalo en blanco."},
+      {id:"ciudad_residencia", t:"Ciudad de residencia", tipo:"texto", req:true},
       {id:"celular",     t:"Teléfono celular", tipo:"tel", req:true},
       {id:"correo",      t:"Correo electrónico", tipo:"correo", req:true},
       {id:"estado_civil",t:"Estado civil", tipo:"opcion", req:true,
@@ -732,6 +797,32 @@ var SECCIONES_SCHENGEN = [
     ]
   },
   {
+    id: "ruta",
+    titulo: "La ruta de tu viaje",
+    ayuda: "Ciudad por ciudad, con las noches que vas a dormir en cada una. El consulado revisa que cuadre con tus reservas.",
+    repetible: {
+      etiqueta: "ciudad",
+      campos: [
+        {id:"pais",   t:"País", tipo:"texto"},
+        {id:"ciudad", t:"Ciudad", tipo:"texto"},
+        {id:"noches", t:"Noches", tipo:"numero"}
+      ]
+    }
+  },
+  {
+    id: "acompanantes",
+    titulo: "Familiares que viajan contigo",
+    ayuda: "Solo los que viajan en el mismo grupo. Si viajas solo o sola, sigue de largo.",
+    repetible: {
+      etiqueta: "acompañante",
+      campos: [
+        {id:"nombre",     t:"Nombre completo", tipo:"texto"},
+        {id:"parentesco", t:"Parentesco", tipo:"texto"},
+        {id:"nacimiento", t:"Fecha de nacimiento", tipo:"fecha"}
+      ]
+    }
+  },
+  {
     id: "alojamiento",
     titulo: "Dónde te vas a quedar",
     ayuda: "El consulado pide el dato aunque la reserva todavía sea provisional.",
@@ -767,6 +858,19 @@ var SECCIONES_SCHENGEN = [
       {id:"huellas",  t:"¿Te tomaron las huellas antes para una visa Schengen?", tipo:"opcion", req:true,
        opciones:["No","Sí","No lo sé"]}
     ]
+  },
+  {
+    id: "visas_detalle",
+    titulo: "Detalle de tus visas Schengen",
+    ayuda: "Una por cada visa que hayas tenido, aunque sea de hace años. Si nunca has tenido, sigue de largo.",
+    repetible: {
+      etiqueta: "visa",
+      campos: [
+        {id:"pais",     t:"País que la emitió", tipo:"texto"},
+        {id:"fecha",    t:"Fecha de la visa", tipo:"fecha"},
+        {id:"vigencia", t:"Vigencia o número de visa", tipo:"texto"}
+      ]
+    }
   },
   {
     id: "viajes",
@@ -810,13 +914,28 @@ var SECCIONES_SCHENGEN = [
 ];
 
 var DOCUMENTOS_SCHENGEN = [
-  "Foto tamaño carnet reciente, fondo blanco (35 x 45 mm)",
+  "Pasaporte vigente (mínimo 3 meses después del regreso, 2 páginas en blanco)",
+  "Formulario de solicitud Schengen firmado",
+  "Foto tipo pasaporte (3,5 x 4,5 cm, fondo blanco, de los últimos 3 meses)",
   "Foto de la página de tu pasaporte donde salen tus datos",
-  "Reserva de vuelos de ida y vuelta",
-  "Reserva del hotel o carta de invitación",
-  "Seguro médico de viaje con cobertura mínima de 30.000 euros",
-  "Certificado bancario de los últimos 3 meses",
-  "Certificado laboral con sueldo y antigüedad"
+  "Reserva de vuelo de ida y vuelta",
+  "Itinerario de viaje o reserva de actividades",
+  "Reserva de hotel, tour o carta de invitación",
+  "Seguro de viaje con cobertura mínima de 30.000 euros",
+  "Copia de cédula, pasaporte y papeleta de votación",
+  "Copia de visas Schengen anteriores, si tienes",
+  "Certificado de estudios, si eres estudiante",
+  "Certificado laboral original y roles de pago de los últimos 3 meses",
+  "Certificado de pensión o jubilación, si eres jubilado",
+  "Certificado bancario con sello de la institución",
+  "Movimiento bancario de los últimos 3 meses con sello",
+  "Certificado de tarjeta de crédito",
+  "Copia del impuesto predial",
+  "Copia de la matrícula vehicular",
+  "Carta de invitación a evento, si aplica",
+  "Carta de la empresa si te cubre los gastos de movilización",
+  "Carta de motivo de viaje (cover letter)",
+  "Comprobante de pago de la tasa consular, si ya lo pagaste"
 ];
 
 /* ------------------------------------------------------------
