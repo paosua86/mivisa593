@@ -975,11 +975,10 @@ function progreso(hecho, total, etiqueta){
 function arrancar(){
   if (!CODIGO) {
     return ir(
-      '<div class="seccion"><h1>Necesitas tu link personal</h1>' +
-      '<p class="ayuda">Esta página se abre con el link que te envía David. Si lo perdiste, escríbele y te lo reenvía.</p>' +
-      '<a class="btn btn-wa" href="https://wa.me/' + WHATSAPP + '?text=' +
-      encodeURIComponent("Hola David, perdí el link de mi expediente y quisiera que me lo reenvíes.") +
-      '">Pedir mi link por WhatsApp</a></div>'
+      '<div class="seccion"><h1>Entra desde la página de tu caso</h1>' +
+      '<p class="ayuda">Este formulario se abre desde tu página personal. Ahí está tu código, tu estado y este mismo link. ' +
+      'Si no recuerdas tu código, búscalo en el correo que te mandamos.</p>' +
+      '<a class="btn" href="../caso/">Abrir mi caso con mi código</a></div>'
     );
   }
 
@@ -1461,14 +1460,45 @@ function enviar(){
     secciones: mapaSecciones()
   };
 
+  /* Se espera la respuesta del script antes de decir "enviado".
+     Antes esto iba en no-cors: el navegador no podía leer la
+     respuesta, así que un guardado fallido se veía igual que uno
+     bueno y la persona se iba tranquila con su expediente perdido.
+     El envío no lleva cabeceras que disparen preflight, así que
+     Google contesta con Access-Control-Allow-Origin desde la
+     redirección y sí se puede leer. */
   fetch(ENDPOINT, {
     method: "POST",
-    mode: "no-cors",
     headers: {"Content-Type": "text/plain;charset=utf-8"},
     body: JSON.stringify(carga)
-  })["catch"](function(){});
+  })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if (!d || !d.ok) throw new Error(d && d.error ? d.error : "no guardado");
+      pantallaFinal(documentos);
+    })
+    ["catch"](function(err){
+      pantallaFalloEnvio(String(err && err.message ? err.message : err), documentos);
+    });
+}
 
-  setTimeout(function(){ pantallaFinal(documentos); }, 1200);
+/* Si el guardado falló, se dice. Callar aquí es lo peor que puede
+   pasar: la persona da por hecho que su expediente llegó, David nunca
+   lo recibe, y nadie se entera hasta la cita. */
+function pantallaFalloEnvio(motivo, documentos){
+  ir(
+    '<div class="seccion">' +
+      '<h1>Tu expediente no se pudo enviar</h1>' +
+      '<p class="ayuda">No lo perdiste: todo lo que llenaste sigue guardado en este navegador. ' +
+      'Vuelve a intentarlo en un momento, o avísale a David.</p>' +
+      '<button class="btn" type="button" id="reintentar">Volver a intentar</button>' +
+      '<a class="btn btn-wa" style="margin-top:12px" href="https://wa.me/' + WHATSAPP + '?text=' +
+        encodeURIComponent("Hola David, mi expediente " + CODIGO + " no se pudo enviar desde la página.") +
+        '">Avisarle a David</a>' +
+      '<p class="nota" style="margin-top:16px">Detalle técnico: ' + esc(motivo) + '</p>' +
+    '</div>'
+  );
+  document.getElementById("reintentar").addEventListener("click", pantallaDocumentos);
 }
 
 function pantallaFinal(documentos){
@@ -1486,7 +1516,8 @@ function pantallaFinal(documentos){
 
   var html = '<div class="seccion">' +
     '<h1>Expediente enviado</h1>' +
-    '<p class="ayuda">David ya tiene tu información. Avísale por WhatsApp para que la revise cuanto antes.</p>' +
+    '<p class="ayuda">Confirmado: tu información quedó guardada y a David ya le llegó, con todo lleno. ' +
+    'Ahora la revisa y te escribe para coordinar la cita y los últimos detalles. No hace falta que le avises.</p>' +
     '<div class="tarjeta">' +
       '<p class="nota" style="margin:0 0 4px">Código de tu caso</p>' +
       '<p style="margin:0;font-size:1.3rem;font-weight:700;letter-spacing:.06em">' + esc(CODIGO) + '</p>' +
@@ -1498,8 +1529,11 @@ function pantallaFinal(documentos){
       '</div>';
   }
 
-  html += '<a class="btn btn-wa" href="https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent(linea) + '">Avisarle a David</a>' +
-    '<p class="micro">Se abre WhatsApp con el mensaje ya redactado.</p>' +
+  html += '<a class="btn" href="../caso/?c=' + encodeURIComponent(CODIGO) + '">Volver a mi caso</a>' +
+    '<p class="micro">Ahí sigues viendo en qué punto va tu trámite.</p>' +
+    '<a class="btn btn-wa" style="margin-top:16px" href="https://wa.me/' + WHATSAPP + '?text=' +
+      encodeURIComponent(linea) + '">Escribirle a David</a>' +
+    '<p class="micro">Solo si quieres decirle algo que el formulario no recogió.</p>' +
     '<p class="micro" style="margin-top:24px"><a href="../">Volver a la página</a></p>' +
     '</div>';
 

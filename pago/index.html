@@ -187,6 +187,22 @@ footer a{color:var(--brand-deep)}
 
 var WHATSAPP = "593998961214";
 
+/* Links de pago de PayPhone, uno por monto. David los crea una sola
+   vez en su panel (Links de pago, reutilizables) y aquí solo se pegan
+   las URLs. Mientras uno quede vacío, esa opción sigue pidiéndole el
+   link a David por WhatsApp, como antes.
+
+   Tienen que ser los MISMOS que están en caso/index.html. Esa es la
+   página que la gente usa dentro del flujo; esta queda para cobrar
+   sin pasar por un caso. */
+var LINKS_PAYPHONE = {
+  "usa-primera":       "",
+  "usa-renovacion":    "",
+  "canada-primera":    "",
+  "canada-renovacion": "",
+  "schengen":          ""
+};
+
 var SERVICIOS = [
   {v:"usa-primera",      t:"Visa americana B1/B2 · primera vez", valor:65,  det:"Aparte va el arancel consular de $185, que se paga directo al consulado."},
   {v:"usa-renovacion",   t:"Visa americana B1/B2 · renovación",  valor:55,  det:"Aparte va el arancel consular de $185, que se paga directo al consulado."},
@@ -223,10 +239,17 @@ function pintar(){
         '<p class="valor">$' + s.valor + '</p>' +
         '<p class="detalle">por persona · ' + esc(s.det) + '</p>' +
       '</div>';
-    var msgLink = "Hola David, quiero el link de pago para " + s.t + " ($" + s.valor + ").";
-    accion.innerHTML =
-      '<a class="btn" href="https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent(msgLink) + '">Pedir mi link de pago</a>' +
-      '<p class="micro">Se abre WhatsApp con el mensaje ya escrito. Solo tienes que enviarlo.</p>';
+    var link = LINKS_PAYPHONE[s.v] || "";
+    if (link) {
+      accion.innerHTML =
+        '<a class="btn" style="background:#0b6478;box-shadow:0 2px 0 #084d5c" href="' + esc(link) + '" target="_blank" rel="noopener">Pagar $' + s.valor + ' con tarjeta</a>' +
+        '<p class="micro">Se abre PayPhone. Aceptan tarjetas de crédito y de débito.</p>';
+    } else {
+      var msgLink = "Hola David, quiero el link de pago para " + s.t + " ($" + s.valor + ").";
+      accion.innerHTML =
+        '<a class="btn" href="https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent(msgLink) + '">Pedir mi link de pago</a>' +
+        '<p class="micro">Se abre WhatsApp con el mensaje ya escrito. Solo tienes que enviarlo.</p>';
+    }
     var msgComprobante = "Hola David, ya pagué " + s.t + " ($" + s.valor + "). Te comparto mis datos para la factura y el comprobante:\n\nNombre completo: \nCédula o RUC: \nCorreo: \n\n(Adjunto el comprobante de la transferencia, o la captura del pago con tarjeta)";
     btnComprobante.href = "https://wa.me/" + WHATSAPP + "?text=" + encodeURIComponent(msgComprobante);
   } else {

@@ -37,8 +37,9 @@ visas/
 ├── terminos.html          Términos y condiciones
 ├── privacidad.html        Política de privacidad
 ├── empezar/               Formulario de precalificación (paso 1)
-├── pago/                  Página de pago por servicio (paso 5)
-├── expediente/            Formulario largo, solo con link personal (paso 4+)
+├── caso/                  Página personal de cada caso (pasos 2 a 4)
+├── pago/                  Página de pago suelta, fuera del flujo
+├── expediente/            Formulario largo, se entra desde caso/
 ├── docs/                  Documentos internos de trabajo
 │   └── estrategia/        Copy, guiones, calendario, mapa de dolor
 ├── referencias/           Originales del cliente (Excel, Word). NO editar.
@@ -74,6 +75,19 @@ autoridad correspondiente, no a David.
 
 **Pagos:** transferencia bancaria o tarjeta de crédito por PayPhone. No
 Stripe (el negocio es solo Ecuador).
+
+**Los links de PayPhone son fijos, uno por monto.** David los crea una
+sola vez en su panel (Links de pago, reutilizables) y se pegan en
+`LINKS_PAYPHONE`, que existe igual en `caso/index.html` y en
+`pago/index.html`. Mientras uno esté vacío, esa opción cae al botón de
+WhatsApp de siempre y David lo genera a mano. Reemplaza a la decisión
+anterior de generarlos uno por uno.
+
+Contra conocida: un link reutilizable no dice quién pagó. Por eso la
+página pide poner el código del caso en la referencia y mandar el
+comprobante. La conciliación automática sería la API de PayPhone con
+`clientTransactionId` = código; hace falta credenciales de comercio y
+no está hecho.
 **Agenda:** Horarios de citas de Google Calendar. No Cal.com.
 **Facturación:** electrónica SRI, pendiente de integrar.
 
@@ -174,8 +188,16 @@ reconoce el texto que llega de la hoja (`Estados Unidos`, `Canadá`,
 Las secciones salen de los formularios oficiales: DS-160 para Estados
 Unidos, IMM 5257 más la información familiar del IMM 5645 para Canadá,
 y el formulario uniforme para Schengen. **David todavía no validó las
-de Canadá y Schengen** — se armaron desde los formularios oficiales
-porque los Excel originales ya no estaban en `referencias/`.
+de Canadá y Schengen.**
+
+Los tres Excel de David volvieron a `referencias/`
+(`formulario-visa-americana.xlsx`, `-canadiense`, `-schengen`), así que
+ya se pueden alinear las preguntas de la web al orden y las etiquetas
+de sus archivos. **Está pendiente:** hoy las de Canadá y Schengen
+siguen el formulario oficial, no su Excel, y no coinciden. Alinearlas
+significa perder campos que el formulario oficial pide y su Excel no
+(en Canadá: idiomas y las preguntas de seguridad); antes de hacerlo,
+preguntarle si esos los pide por teléfono.
 
 Para agregar o cambiar una pregunta basta con editar el arreglo del
 destino: los encabezados de la hoja, el mapa de etiquetas y la barra de

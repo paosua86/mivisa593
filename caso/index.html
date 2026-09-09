@@ -1,0 +1,618 @@
+<!doctype html>
+<html lang="es-EC">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tu caso — MiVisa EC</title>
+<meta name="description" content="Tu página personal en MiVisa EC: tu resultado, el pago y tu formulario detallado.">
+<meta name="theme-color" content="#0b6478">
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="../imagenes/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="../imagenes/favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="../imagenes/apple-touch-icon.png">
+<meta property="og:title" content="Tu caso — MiVisa EC">
+<meta property="og:description" content="Tu página personal en MiVisa EC: tu resultado, el pago y tu formulario detallado.">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="es_EC">
+<meta property="og:url" content="https://mivisaec.com/caso/">
+<meta property="og:image" content="https://mivisaec.com/imagenes/og-imagen.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="MiVisa EC — Asesoría de visas">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,600&family=Public+Sans:wght@400;500;600;700;800&display=swap">
+<style>
+:root{
+  --tinta:#14201e;--tinta-suave:#4a5a56;--papel:#f4f5f3;--papel-2:#e9ebe8;--borde:#dde1dd;--radio:14px;
+  --brand-deep:#0b6478;--brand-tint:#e3f1ef;--btn-1:#0e8ba3;--brand-2:#0b6478;
+  --ok:#1f7a4d;--ambar:#a8730a;--rojo:#a63232;
+  --wa:#1f9c53;--wa-sombra:#16713b;
+  --sans:"Public Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  --display:"Playfair Display",Georgia,"Times New Roman",serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--papel);color:var(--tinta);
+  font-family:var(--sans);font-size:19px;line-height:1.55;
+  -webkit-font-smoothing:antialiased;min-height:100vh;display:flex;flex-direction:column;
+}
+h1,h2{font-family:var(--display);line-height:1.2;margin:0 0 .5em;letter-spacing:-.01em;font-weight:700}
+h1{font-size:1.7rem}
+h2{font-size:1.15rem}
+p{margin:0 0 1em}
+a{color:var(--brand-deep)}
+.cab{background:var(--papel);border-bottom:1px solid var(--borde);padding:12px 20px}
+.cab a{display:flex;align-items:center;gap:10px;color:var(--tinta);text-decoration:none;font-weight:600;font-size:.92rem}
+.cab img{height:26px;width:auto;display:block}
+.env{max-width:560px;margin:0 auto;padding:26px 20px 50px;width:100%;flex:1}
+
+/* --- cabecera del caso --- */
+.ficha{background:#fff;border:1px solid var(--borde);border-radius:var(--radio);padding:20px;margin:0 0 18px}
+.ficha .cod{font-size:.78rem;letter-spacing:.14em;color:var(--tinta-suave);margin:0 0 2px;text-transform:uppercase}
+.ficha .num{font-size:1.5rem;font-weight:700;letter-spacing:.1em;margin:0 0 8px}
+.ficha .meta{font-size:.93rem;color:var(--tinta-suave);margin:0}
+
+/* --- ruta de 4 pasos --- */
+.ruta{display:grid;gap:0;margin:0 0 22px;background:#fff;border:1px solid var(--borde);border-radius:var(--radio);overflow:hidden}
+.ruta-paso{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-bottom:1px solid var(--borde);font-size:.95rem}
+.ruta-paso:last-child{border-bottom:0}
+.ruta-num{flex:0 0 26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:.82rem;font-weight:700;background:var(--papel-2);color:var(--tinta-suave)}
+.ruta-paso.hecho .ruta-num{background:var(--ok);color:#fff}
+.ruta-paso.ahora{background:var(--brand-tint)}
+.ruta-paso.ahora .ruta-num{background:var(--brand-deep);color:#fff}
+.ruta-tit{font-weight:600}
+.ruta-sub{color:var(--tinta-suave);font-size:.88rem}
+
+/* --- semáforo --- */
+.sem{border-radius:var(--radio);padding:20px;margin:0 0 18px;border:1px solid}
+.sem.verde{background:#e8f2ec;border-color:#bcdcc9}
+.sem.ambar{background:#fbf2e0;border-color:#e9d5a4}
+.sem.rojo{background:#f8ecec;border-color:#e5c4c4}
+.sem h2{margin-bottom:.35em}
+.sem.verde h2{color:var(--ok)}
+.sem.ambar h2{color:var(--ambar)}
+.sem.rojo h2{color:var(--rojo)}
+.sem p:last-child{margin-bottom:0}
+.sem .etiqueta{font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;margin:0 0 4px;opacity:.75}
+
+.tarjeta{background:#fff;border:1px solid var(--borde);border-radius:var(--radio);padding:20px;margin:0 0 14px}
+.tarjeta.bloqueada{opacity:.62}
+.tarjeta h2{font-size:1.08rem}
+.paso-rot{font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;color:var(--tinta-suave);font-weight:700;margin:0 0 4px}
+.nota{font-size:.9rem;color:var(--tinta-suave)}
+ul.puntos{margin:0 0 1em;padding-left:20px}
+ul.puntos li{margin-bottom:7px;font-size:.95rem}
+ol{margin:0;padding-left:20px}
+ol li{margin-bottom:9px;font-size:.96rem;color:var(--tinta-suave)}
+
+.destacado{background:#fff;border:2px solid var(--brand-deep);border-radius:var(--radio);padding:22px;margin:0 0 14px;text-align:center}
+.destacado .servicio{font-size:1rem;font-weight:600;color:var(--tinta-suave);margin:0 0 6px}
+.destacado .valor{font-family:var(--display);font-size:2.8rem;font-weight:700;letter-spacing:-.02em;line-height:1;margin:0 0 8px;color:var(--brand-deep)}
+.destacado .detalle{font-size:.92rem;color:var(--tinta-suave);margin:0}
+
+.btn{
+  display:block;width:100%;text-align:center;text-decoration:none;font:inherit;
+  background:linear-gradient(135deg,var(--btn-1),var(--brand-2));color:#fff;font-weight:700;font-size:1.05rem;
+  padding:18px 22px;border-radius:var(--radio);border:0;cursor:pointer;
+  box-shadow:0 2px 0 #084d5c;transition:transform .06s ease;margin:0 0 4px;
+}
+.btn:active{transform:translateY(2px);box-shadow:0 0 0 #084d5c}
+.btn-wa{background:var(--wa);box-shadow:0 2px 0 var(--wa-sombra)}
+.btn-wa:active{box-shadow:0 0 0 var(--wa-sombra)}
+.btn-2{background:#fff;color:var(--brand-deep);border:2px solid var(--brand-deep);box-shadow:none;font-size:1rem;padding:15px 20px}
+.micro{font-size:.88rem;color:var(--tinta-suave);text-align:center;margin:10px 0 0}
+
+.metodo{background:#fff;border:1px solid var(--borde);border-radius:var(--radio);padding:20px;margin:0 0 12px}
+.metodo-tit{font-weight:700;font-size:1.03rem;margin:0 0 4px}
+.banco{background:var(--brand-tint);border-radius:10px;padding:2px 16px;margin-top:4px}
+.banco-fila{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid rgba(11,100,120,.16);font-size:.94rem}
+.banco-fila:last-child{border-bottom:0}
+.banco-fila > span:first-child{color:var(--tinta-suave)}
+.banco-fila b{font-weight:700;color:var(--tinta)}
+.banco-num{display:flex;align-items:center;gap:10px}
+.copiar{font:inherit;font-size:.78rem;font-weight:700;color:var(--brand-deep);background:#fff;border:1px solid var(--brand-deep);border-radius:7px;padding:5px 10px;cursor:pointer;white-space:nowrap}
+.copiar:active{transform:translateY(1px)}
+
+.aviso{background:var(--brand-tint);border-left:4px solid var(--brand-deep);border-radius:0 10px 10px 0;padding:14px 16px;margin:0 0 14px;font-size:.94rem}
+.aviso b{color:var(--brand-deep)}
+
+.campo{display:block;margin:0 0 14px;font-weight:600;font-size:.95rem}
+.campo input{
+  display:block;width:100%;margin-top:6px;font:inherit;font-weight:400;
+  padding:14px 15px;border:1px solid var(--borde);border-radius:11px;background:#fff;
+  text-transform:uppercase;letter-spacing:.12em;
+}
+.campo input:focus{outline:2px solid var(--brand-deep);outline-offset:1px;border-color:var(--brand-deep)}
+
+.cargando{text-align:center;padding:60px 0;color:var(--tinta-suave)}
+footer{background:var(--papel-2);padding:24px 20px 36px;font-size:.83rem;color:var(--tinta-suave);text-align:center}
+footer a{color:var(--brand-deep)}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<div class="cab"><a href="../"><img src="../imagenes/logo-icono.png" width="209" height="267" alt="">← MiVisa EC</a></div>
+
+<div class="env" id="app">
+  <div class="cargando">Abriendo tu caso…</div>
+</div>
+
+<footer>
+  <a href="../">Inicio</a> · <a href="../terminos.html">Términos</a> · <a href="../privacidad.html">Privacidad</a><br>
+  MiVisa EC · David Ubilluz · Quito, Ecuador
+</footer>
+
+<script>
+"use strict";
+
+/* ============================================================
+   LA PÁGINA DEL CASO
+
+   Es la única página que la persona necesita después de la
+   precalificación. Aquí ve su semáforo, paga, sabe qué documentos
+   reunir y entra al formulario detallado. David ya no manda ningún
+   link: el único que sale de sus manos es el de /empezar/.
+
+   Todo lo que se muestra sale de una sola llamada al Apps Script
+   (?caso=CODIGO). La página no guarda nada por su cuenta.
+   ============================================================ */
+
+var ENDPOINT = "https://script.google.com/macros/s/AKfycbxB8bkBNzeRVzkzk7QSH-iZ5itcAUm33VRfX2lSaLLb_gzMmhZfU7RHGf_rOob1e2hL/exec";
+var WHATSAPP = "593998961214";
+
+/* ------------------------------------------------------------
+   LINKS DE PAGO DE PAYPHONE — se pegan aquí una sola vez
+
+   David los crea en su panel de PayPhone (Links de pago), uno por
+   monto, marcados como reutilizables. Aquí solo se pegan las URLs.
+   Mientras una quede vacía, esa opción cae al botón de WhatsApp de
+   siempre: la persona le pide el link a David y él lo genera a mano.
+
+   La contra de los links reutilizables: el cobro llega sin nombre de
+   caso. Por eso la página le pide a la persona que ponga su código en
+   la referencia y que mande el comprobante. Si algún día se quiere
+   conciliación automática, es la API de PayPhone con
+   clientTransactionId = código, no estos links.
+   ------------------------------------------------------------ */
+var LINKS_PAYPHONE = {
+  "usa-primera":       "",
+  "usa-renovacion":    "",
+  "canada-primera":    "",
+  "canada-renovacion": "",
+  "schengen":          ""
+};
+
+var SERVICIOS = {
+  "usa-primera":       {t:"Visa americana B1/B2 · primera vez", valor:65,  det:"Aparte va el arancel consular de $185, que se paga directo al consulado."},
+  "usa-renovacion":    {t:"Visa americana B1/B2 · renovación",  valor:55,  det:"Aparte va el arancel consular de $185, que se paga directo al consulado."},
+  "canada-primera":    {t:"Visa de Canadá · primera vez",       valor:95,  det:"Aparte van la tasa de la visa (100 CAD) y la biometría (85 CAD por persona)."},
+  "canada-renovacion": {t:"Visa de Canadá · renovación",        valor:75,  det:"Aparte van la tasa de la visa (100 CAD) y la biometría (85 CAD por persona)."},
+  "schengen":          {t:"Visa Schengen · Europa",             valor:155, det:"Aparte van la tasa consular, el fee del centro de visas y el seguro de viaje."}
+};
+
+/* Qué tiene que reunir la persona antes de sentarse a llenar el
+   formulario largo. La lista viva de campos está en
+   expediente/index.html (DESTINOS[...].preparate y DOCUMENTOS_*);
+   esto es el resumen que se lee antes, no la fuente de la verdad. */
+var QUE_REUNIR = {
+  usa: {
+    documentos: [
+      "Tu pasaporte vigente y los anteriores, si los conservas",
+      "Tu cédula",
+      "Una foto digital 5x5 con fondo blanco",
+      "Tu visa americana anterior, si tienes",
+      "El otro pasaporte, si tienes doble nacionalidad"
+    ],
+    datos: [
+      "Los datos de tu trabajo actual y del anterior: dirección, teléfono, jefe y sueldo",
+      "Tus estudios: colegio y universidad, con fechas y títulos",
+      "Los datos de tus padres, y de tu cónyuge si aplica",
+      "El detalle de tus viajes de los últimos cinco años"
+    ]
+  },
+  canada: {
+    documentos: [
+      "Tu pasaporte vigente",
+      "Tu cédula",
+      "Una foto digital reciente",
+      "Tu documento de residencia en otro país, si tienes",
+      "La carta de invitación, si vas donde un familiar o conocido"
+    ],
+    datos: [
+      "Tu historial de trabajo de los últimos diez años, con fechas, direcciones y teléfonos",
+      "Tus estudios: universidad y postgrado, con fechas y títulos",
+      "Los datos de tus padres, hijos y hermanos, aunque vivan lejos",
+      "El detalle de tus viajes de los últimos cinco años",
+      "Las fechas de tu viaje, las ciudades y dónde te vas a alojar"
+    ]
+  },
+  schengen: {
+    documentos: [
+      "Tu pasaporte vigente y los anteriores, si los conservas",
+      "Tu cédula",
+      "Una foto digital reciente con fondo claro",
+      "Tu reserva de vuelos, aunque sea provisional",
+      "Tu reserva de hotel o la carta de invitación",
+      "Tu seguro de viaje, si ya lo contrataste"
+    ],
+    datos: [
+      "Los datos de tu trabajo: dirección, teléfono y desde cuándo",
+      "Tus estudios: colegio y universidad, con fechas y títulos",
+      "Los datos de tus padres, y de tu cónyuge si aplica",
+      "El detalle de tus viajes de los últimos cinco años",
+      "Las fechas exactas de entrada y salida del espacio Schengen"
+    ]
+  }
+};
+
+var TEXTO_SEMAFORO = {
+  verde: {
+    etiqueta: "Tu resultado · verde",
+    titulo: "Tu caso se ve sólido",
+    cuerpo: "Por lo que nos contaste, tu perfil reúne lo que el oficial consular evalúa: razones claras para regresar y con qué acreditarlas. No es una garantía, porque ninguna existe, pero es un buen punto de partida."
+  },
+  ambar: {
+    etiqueta: "Tu resultado · ámbar",
+    titulo: "Tu caso tiene puntos por reforzar",
+    cuerpo: "Hay partes de tu situación que hoy no juegan a tu favor. Puedes presentarte igual y reforzar el caso por otras vías, o esperar y llegar en mejores condiciones. La decisión es tuya, y David la revisa contigo con el formulario en la mano."
+  },
+  rojo: {
+    etiqueta: "Tu resultado · rojo",
+    titulo: "Hoy tu perfil no está en su mejor momento",
+    cuerpo: "Varios de los puntos que el consulado evalúa todavía no están a tu favor. Puedes seguir adelante si quieres, pero queremos que lo hagas sabiendo esto: el arancel consular no se devuelve si te niegan, y el valor de la asesoría tampoco se devuelve por una negativa."
+  }
+};
+
+function esc(s){
+  return String(s === undefined || s === null ? "" : s).replace(/[&<>"']/g, function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+  });
+}
+
+function codigoDeLaUrl(){
+  try {
+    var p = new URLSearchParams(location.search);
+    return String(p.get("c") || p.get("caso") || "").trim().toUpperCase();
+  } catch(e){ return ""; }
+}
+
+function claveDestino(texto){
+  var t = String(texto || "").toLowerCase();
+  if (t.indexOf("estados unidos") !== -1 || t.indexOf("eeuu") !== -1 || t.indexOf("ee.uu") !== -1) return "usa";
+  if (t.indexOf("canad") !== -1) return "canada";
+  if (t.indexOf("europa") !== -1 || t.indexOf("schengen") !== -1) return "schengen";
+  return null;
+}
+
+function primerNombre(n){ return String(n || "").trim().split(" ")[0] || ""; }
+
+function listaPuntos(texto){
+  var t = String(texto || "").trim();
+  if (!t) return "";
+  var puntos = t.split("|").map(function(s){ return s.trim(); }).filter(Boolean);
+  if (!puntos.length) return "";
+  return '<ul class="puntos">' + puntos.map(function(p){ return '<li>' + esc(p) + '</li>'; }).join("") + '</ul>';
+}
+
+/* ============================================================
+   PINTAR
+   ============================================================ */
+
+var app = document.getElementById("app");
+
+function pintarCargando(){
+  app.innerHTML = '<div class="cargando">Abriendo tu caso…</div>';
+}
+
+/* Sin código en la URL, o con uno que no existe: se le pide.
+   Nadie tiene por qué acordarse de un link entero, pero el código de
+   seis caracteres sí lo tiene anotado o le llegó al correo. */
+function pintarPedirCodigo(mensaje){
+  app.innerHTML =
+    '<h1>Abre tu caso</h1>' +
+    (mensaje ? '<p class="nota">' + esc(mensaje) + '</p>'
+             : '<p class="nota">Escribe el código de seis caracteres que te dimos al terminar la precalificación. También te llegó al correo.</p>') +
+    '<div class="tarjeta">' +
+      '<label class="campo">Tu código' +
+        '<input type="text" id="cod" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="A2B3C4">' +
+      '</label>' +
+      '<button class="btn" id="abrir" disabled>Abrir mi caso</button>' +
+    '</div>' +
+    '<div class="tarjeta">' +
+      '<h2>¿No tienes código?</h2>' +
+      '<p class="nota" style="margin-bottom:14px">Entonces todavía no has hecho la precalificación. Son 12 preguntas y toma unos minutos.</p>' +
+      '<a class="btn btn-2" href="../empezar/">Empezar mi precalificación</a>' +
+    '</div>';
+
+  var input = document.getElementById("cod");
+  var boton = document.getElementById("abrir");
+  input.addEventListener("input", function(){
+    input.value = input.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+    boton.disabled = input.value.length !== 6;
+  });
+  boton.addEventListener("click", function(){
+    location.search = "?c=" + encodeURIComponent(input.value);
+  });
+  input.focus();
+}
+
+function bloqueFicha(d){
+  return '<div class="ficha">' +
+    '<p class="cod">Tu caso</p>' +
+    '<p class="num">' + esc(d.codigo) + '</p>' +
+    '<p class="meta">' + esc(d.nombre) + ' · ' + esc(d.destino) +
+      (d.personas && String(d.personas) !== "1" ? ' · ' + esc(d.personas) + ' personas' : '') +
+    '</p>' +
+  '</div>';
+}
+
+/* La ruta completa, siempre visible. El punto es que la persona vea de
+   una sola vez todo lo que viene, incluido lo que todavía no puede
+   hacer: así sabe qué le espera y no tiene que preguntar. */
+function bloqueRuta(d){
+  var pasos = [
+    {t:"Precalificación", s:"Ya la hiciste.", estado:"hecho"},
+    {t:"Pagar la asesoría", s:"Con tarjeta o por transferencia.", estado: d.desbloqueado ? "hecho" : "ahora"},
+    {t:"Reunir tus documentos", s:"La lista está más abajo.", estado: d.desbloqueado ? (d.expediente ? "hecho" : "ahora") : ""},
+    {t:"Llenar tu formulario", s:"Es lo que David usa para preparar tu solicitud.", estado: d.expediente ? "hecho" : ""}
+  ];
+  return '<div class="ruta">' + pasos.map(function(p, i){
+    return '<div class="ruta-paso ' + p.estado + '">' +
+      '<div class="ruta-num">' + (p.estado === "hecho" ? "✓" : (i + 1)) + '</div>' +
+      '<div><div class="ruta-tit">' + esc(p.t) + '</div>' +
+      '<div class="ruta-sub">' + esc(p.s) + '</div></div></div>';
+  }).join("") + '</div>';
+}
+
+function bloqueSemaforo(d){
+  var s = TEXTO_SEMAFORO[d.semaforo];
+  if (!s) return "";
+  return '<div class="sem ' + esc(d.semaforo) + '">' +
+    '<p class="etiqueta">' + esc(s.etiqueta) + '</p>' +
+    '<h2>' + esc(s.titulo) + '</h2>' +
+    '<p style="margin-bottom:0">' + esc(s.cuerpo) + '</p>' +
+  '</div>' +
+  (d.a_favor ? '<div class="tarjeta"><h2>Lo que juega a tu favor</h2>' + listaPuntos(d.a_favor) + '</div>' : '') +
+  (d.en_contra ? '<div class="tarjeta"><h2>Lo que hoy conviene reforzar</h2>' + listaPuntos(d.en_contra) + '</div>' : '');
+}
+
+/* ---------- paso 2: el pago ---------- */
+function bloquePago(d){
+  var srv = SERVICIOS[d.servicio];
+  if (!srv){
+    // Destino sin decidir: no hay valor que cobrar todavía.
+    return '<div class="tarjeta">' +
+      '<p class="paso-rot">Paso 2</p><h2>Definir tu destino</h2>' +
+      '<p class="nota" style="margin-bottom:14px">Tu caso quedó sin un país definido, así que todavía no hay un valor que cobrar. Escríbele a David y lo resuelven en un minuto.</p>' +
+      '<a class="btn btn-wa" href="https://wa.me/' + WHATSAPP + '?text=' +
+        encodeURIComponent("Hola David, soy " + d.nombre + " (caso " + d.codigo + "). Todavía no tengo definido el país al que quiero viajar.") +
+        '">Escribirle a David</a></div>';
+  }
+
+  var link = LINKS_PAYPHONE[d.servicio] || "";
+  var tarjeta;
+  if (link){
+    tarjeta =
+      '<a class="btn" href="' + esc(link) + '" target="_blank" rel="noopener">Pagar $' + srv.valor + ' con tarjeta</a>' +
+      '<p class="micro">Se abre PayPhone. Aceptan tarjetas de crédito y de débito.</p>';
+  } else {
+    var pedir = "Hola David, soy " + d.nombre + " (caso " + d.codigo + "). Quiero el link de pago para " + srv.t + " ($" + srv.valor + ").";
+    tarjeta =
+      '<a class="btn btn-wa" href="https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent(pedir) + '">Pedir mi link de pago</a>' +
+      '<p class="micro">Se abre WhatsApp con el mensaje escrito. David te devuelve el link de PayPhone.</p>';
+  }
+
+  var factura = "Hola David, soy " + d.nombre + " (caso " + d.codigo + "). Ya pagué " + srv.t +
+    " ($" + srv.valor + ").\n\nMis datos para la factura:\nNombre completo: \nCédula o RUC: \nCorreo: \n\n(Adjunto el comprobante)";
+  var wa = "https://wa.me/" + WHATSAPP + "?text=" + encodeURIComponent(factura);
+
+  return '<div class="destacado">' +
+      '<p class="servicio">' + esc(srv.t) + '</p>' +
+      '<p class="valor">$' + srv.valor + '</p>' +
+      '<p class="detalle">por persona · ' + esc(srv.det) + '</p>' +
+    '</div>' +
+
+    '<div class="metodo">' +
+      '<p class="metodo-tit">Con tarjeta</p>' +
+      '<p class="nota">Pago en línea por PayPhone.</p>' +
+      tarjeta +
+    '</div>' +
+
+    '<div class="metodo">' +
+      '<p class="metodo-tit">Por transferencia</p>' +
+      '<p class="nota">Transfiere directo a esta cuenta. Los datos completos hacen falta para que la transferencia llegue desde otros bancos.</p>' +
+      '<div class="banco">' +
+        '<div class="banco-fila"><span>Banco</span><b>Pichincha</b></div>' +
+        '<div class="banco-fila"><span>Tipo de cuenta</span><b>Ahorros</b></div>' +
+        '<div class="banco-fila"><span>Número</span><span class="banco-num"><b id="cuentaNum">2208167919</b><button type="button" class="copiar" data-copiar="cuentaNum">Copiar</button></span></div>' +
+        '<div class="banco-fila"><span>Titular</span><span class="banco-num"><b id="titularNom">David Ubilluz</b><button type="button" class="copiar" data-copiar="titularNom">Copiar</button></span></div>' +
+        '<div class="banco-fila"><span>Cédula</span><span class="banco-num"><b id="cedulaNum">1803686656</b><button type="button" class="copiar" data-copiar="cedulaNum">Copiar</button></span></div>' +
+      '</div>' +
+    '</div>' +
+
+    '<div class="aviso">' +
+      'Pagues como pagues, <b>escribe tu código ' + esc(d.codigo) + '</b> en la referencia o la observación del pago. ' +
+      'Es lo que le permite a David saber que ese cobro es tuyo.' +
+    '</div>' +
+
+    '<div class="tarjeta">' +
+      '<h2>Cuando ya hayas pagado</h2>' +
+      '<p class="nota" style="margin-bottom:14px">Mándale a David el comprobante y tus datos de facturación. Con eso se te abre el formulario detallado aquí mismo.</p>' +
+      '<a class="btn btn-wa" id="yaPague" href="' + wa + '">Ya pagué · enviar mi comprobante</a>' +
+      '<p class="micro">Se abre WhatsApp con el mensaje escrito. Adjunta la foto de la transferencia o la captura del pago.</p>' +
+    '</div>';
+}
+
+/* ---------- paso 3: qué reunir, y por qué ahora ---------- */
+function bloqueDocumentos(d, abierto){
+  var k = claveDestino(d.destino);
+  var q = k ? QUE_REUNIR[k] : null;
+  if (!q) return "";
+  return '<div class="tarjeta' + (abierto ? '' : ' bloqueada') + '">' +
+    '<p class="paso-rot">Paso 3</p>' +
+    '<h2>Lo que tienes que tener a la mano</h2>' +
+    '<p class="nota">Reúne esto antes de sentarte a llenar el formulario. Si te falta algo, consíguelo primero: llenar a medias y con datos aproximados es lo que más atrasa un trámite.</p>' +
+    '<h2 style="font-size:.98rem;margin-top:18px">Documentos</h2>' +
+    '<ul class="puntos">' + q.documentos.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join("") + '</ul>' +
+    '<h2 style="font-size:.98rem">Información</h2>' +
+    '<ul class="puntos">' + q.datos.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join("") + '</ul>' +
+    '<div class="aviso" style="margin:18px 0 0">' +
+      '<b>¿Por qué todo esto ahora y no el día de la cita?</b><br>' +
+      'Porque es la única forma de que David revise tu situación con tiempo. Si un dato no cuadra o falta un documento, se descubre hoy — no el día de la entrega de documentos ni frente al oficial consular, cuando ya no hay margen para arreglarlo. Llenarlo completo ahora es lo que hace que el resto del trámite vaya rápido y sin sustos.' +
+    '</div>' +
+  '</div>';
+}
+
+/* ---------- paso 4: el formulario ---------- */
+function bloqueFormulario(d){
+  if (d.expediente){
+    return '<div class="tarjeta">' +
+      '<p class="paso-rot">Paso 4</p>' +
+      '<h2>Tu formulario ya llegó</h2>' +
+      '<p class="nota">David lo recibió completo. Ahora lo revisa, prepara tu solicitud y te escribe para coordinar la cita y los últimos detalles.</p>' +
+      '<p class="nota" style="margin-bottom:0">Si te acordaste de algo que no pusiste, vuelve a abrirlo y envíalo de nuevo.</p>' +
+    '</div>' +
+    '<a class="btn btn-2" href="../expediente/?caso=' + encodeURIComponent(d.codigo) + '">Volver a abrir mi formulario</a>';
+  }
+  if (d.desbloqueado){
+    return '<div class="tarjeta">' +
+      '<p class="paso-rot">Paso 4</p>' +
+      '<h2>Llena tu formulario detallado</h2>' +
+      '<p class="nota" style="margin-bottom:14px">Es largo, pero se guarda solo: puedes cerrarlo y seguir después desde este mismo link. Si viajan varias personas, hay una ficha para cada una.</p>' +
+      '<a class="btn" href="../expediente/?caso=' + encodeURIComponent(d.codigo) + '">Abrir mi formulario</a>' +
+    '</div>';
+  }
+  return '<div class="tarjeta bloqueada">' +
+    '<p class="paso-rot">Paso 4</p>' +
+    '<h2>Tu formulario detallado</h2>' +
+    '<p class="nota" style="margin-bottom:0">Se abre aquí mismo en cuanto registres tu pago. Es el formulario largo, el que David usa para preparar tu solicitud.</p>' +
+  '</div>';
+}
+
+function pintarCaso(d){
+  var html = bloqueFicha(d);
+  html += '<p class="nota" style="margin-top:-6px">Hola ' + esc(primerNombre(d.nombre)) +
+          '. Esta es tu página. Guárdala: desde aquí sigues todo tu trámite sin depender de que nadie te reenvíe nada.</p>';
+  html += bloqueRuta(d);
+  html += bloqueSemaforo(d);
+
+  if (!d.desbloqueado){
+    // El encabezado solo tiene sentido si hay un valor que cobrar. Sin
+    // destino definido, bloquePago pone su propia tarjeta.
+    if (SERVICIOS[d.servicio]){
+      html += '<div class="tarjeta" style="border-color:var(--brand-deep)">' +
+        '<p class="paso-rot">Paso 2 · lo que toca ahora</p>' +
+        '<h2>Pagar la asesoría</h2>' +
+        '<p class="nota" style="margin-bottom:0">Este es el valor de la asesoría de David. Los aranceles y tasas consulares, la biometría cuando aplica y el seguro de viaje van aparte y se pagan directo a esas entidades, no a nosotros.</p>' +
+      '</div>';
+    }
+    html += bloquePago(d);
+  } else {
+    html += '<div class="tarjeta">' +
+      '<p class="paso-rot">Paso 2</p>' +
+      '<h2>Pago registrado</h2>' +
+      '<p class="nota" style="margin-bottom:0">' +
+        (d.pagoConfirmado
+          ? 'David confirmó tu pago. Ya puedes seguir.'
+          : 'Registramos que ya pagaste. David lo verifica con tu comprobante; mientras tanto puedes avanzar sin esperar.') +
+      '</p></div>';
+  }
+
+  html += bloqueDocumentos(d, d.desbloqueado);
+  html += bloqueFormulario(d);
+
+  html += '<div class="tarjeta" style="margin-top:22px">' +
+    '<h2>¿Algo no cuadra?</h2>' +
+    '<p class="nota" style="margin-bottom:14px">Si tienes una duda que esta página no responde, escríbele a David directo.</p>' +
+    '<a class="btn btn-2" href="https://wa.me/' + WHATSAPP + '?text=' +
+      encodeURIComponent("Hola David, soy " + d.nombre + " (caso " + d.codigo + "). Tengo una duda:") +
+      '">Escribirle a David</a></div>';
+
+  app.innerHTML = html;
+  window.scrollTo(0, 0);
+  conectarCopiar();
+  conectarYaPague(d);
+}
+
+/* Botones de copiar de los datos bancarios. */
+function conectarCopiar(){
+  [].forEach.call(document.querySelectorAll(".copiar"), function(btn){
+    btn.addEventListener("click", function(){
+      var destino = document.getElementById(btn.getAttribute("data-copiar"));
+      if (!destino) return;
+      btn.textContent = "Copiado";
+      setTimeout(function(){ btn.textContent = "Copiar"; }, 1800);
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText){
+          navigator.clipboard.writeText(destino.textContent).catch(function(){});
+        }
+      } catch(e){}
+    });
+  });
+}
+
+/* "Ya pagué": avisa al script y abre WhatsApp con el comprobante.
+   El aviso va en segundo plano — el enlace sigue su curso normal, que
+   es lo que hace que WhatsApp se abra sin que el navegador lo bloquee
+   por venir de una respuesta asíncrona. */
+function conectarYaPague(d){
+  var btn = document.getElementById("yaPague");
+  if (!btn) return;
+  btn.addEventListener("click", function(){
+    try {
+      fetch(ENDPOINT, {
+        method: "POST",
+        headers: {"Content-Type": "text/plain;charset=utf-8"},
+        body: JSON.stringify({ tipo: "pago-declarado", codigo: d.codigo })
+      })["catch"](function(){});
+    } catch(e){}
+    try { sessionStorage.setItem("mivisaec_pago_declarado_" + d.codigo, "1"); } catch(e){}
+  });
+}
+
+/* ============================================================
+   ARRANQUE
+   ============================================================ */
+
+function abrir(){
+  var codigo = codigoDeLaUrl();
+  if (!codigo || codigo.length !== 6){ pintarPedirCodigo(); return; }
+  pintarCargando();
+
+  fetch(ENDPOINT + "?caso=" + encodeURIComponent(codigo))
+    .then(function(res){ return res.json(); })
+    .then(function(d){
+      if (!d || !d.ok){
+        pintarPedirCodigo("No encontramos ningún caso con el código " + codigo + ". Revísalo y vuelve a intentar.");
+        return;
+      }
+      // Si acaba de declarar el pago desde este mismo navegador, no le
+      // hacemos esperar a que la hoja se actualice para verlo abierto.
+      try {
+        if (sessionStorage.getItem("mivisaec_pago_declarado_" + codigo) === "1") d.pagado = true;
+      } catch(e){}
+      d.pagoConfirmado = !!d.pagoConfirmado;
+      d.desbloqueado = !!d.pagado;
+      pintarCaso(d);
+    })
+    ["catch"](function(){
+      app.innerHTML =
+        '<h1>No pudimos abrir tu caso</h1>' +
+        '<p class="nota">Puede ser tu conexión. Vuelve a intentarlo en un momento; tu caso no se pierde.</p>' +
+        '<button class="btn" onclick="location.reload()">Reintentar</button>' +
+        '<a class="btn btn-wa" style="margin-top:12px" href="https://wa.me/' + WHATSAPP + '?text=' +
+          encodeURIComponent("Hola David, no puedo abrir mi caso " + codigo + " en la página.") +
+          '">Escribirle a David</a>' +
+        '<p class="micro">Tu código es ' + esc(codigo) + '.</p>';
+    });
+}
+
+abrir();
+</script>
+</body>
+</html>

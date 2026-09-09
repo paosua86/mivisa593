@@ -5,3 +5,6 @@ docs/
 
 # Referencias originales del cliente
 referencias/
+
+# Configuración local del entorno de trabajo
+.claude/

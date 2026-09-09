@@ -159,7 +159,10 @@ footer{background:var(--papel-2);padding:22px 20px 34px;font-size:.8rem;color:va
    Para editar el formulario, toca solo este bloque.
    ============================================================ */
 
-var WHATSAPP = "593998961214";
+/* Aquí ya no se usa WhatsApp: el caso viaja por correo a David y la
+   persona sale de esta página con su link, no con un mensaje que
+   enviar. El número sigue viviendo en caso/ y pago/, donde sí hace
+   falta (el link de PayPhone lo genera David a mano). */
 var CLAVE_GUARDADO = "mivisaec_precalificacion";
 
 /* Dónde se graban los casos completos.
@@ -168,6 +171,34 @@ var CLAVE_GUARDADO = "mivisaec_precalificacion";
    herramientas/cloudflare-worker-casos.js
    Si se deja vacío, el formulario funciona igual pero no guarda nada. */
 var ENDPOINT_GUARDADO = "https://script.google.com/macros/s/AKfycbxB8bkBNzeRVzkzk7QSH-iZ5itcAUm33VRfX2lSaLLb_gzMmhZfU7RHGf_rOob1e2hL/exec";
+
+/* ------------------------------------------------------------
+   EL CÓDIGO DEL CASO SE GENERA AQUÍ, EN EL NAVEGADOR
+
+   Antes lo inventaba el Apps Script. El problema es que el envío
+   contra Google no siempre puede leer la respuesta, así que esta
+   página nunca llegaba a saber cuál era el código del caso, y por eso
+   no podía mostrarle a la persona su propio link: había que esperar a
+   que David lo copiara de la hoja y se lo mandara por WhatsApp.
+
+   Generándolo aquí, la pantalla de resultado ya tiene el link sin
+   depender de nada. El script lo valida y, en el caso improbable de
+   que choque con otro, pone uno distinto (y entonces el que manda es
+   el del correo, no el de la pantalla).
+
+   El alfabeto no tiene O/0, I/1 ni L, para que se pueda dictar por
+   teléfono sin confusiones. Son 31^6 ≈ 887 millones de combinaciones.
+   ------------------------------------------------------------ */
+var ALFABETO_CODIGO = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+
+function codigoNuevo(){
+  var n = new Uint32Array(6);
+  try { crypto.getRandomValues(n); }
+  catch(e){ for (var j=0;j<6;j++) n[j] = Math.floor(Math.random()*4294967296); }
+  var c = "";
+  for (var i=0;i<6;i++) c += ALFABETO_CODIGO.charAt(n[i] % ALFABETO_CODIGO.length);
+  return c;
+}
 
 /* Cada pregunta:
    id        clave con la que se guarda la respuesta
@@ -538,7 +569,7 @@ function pintarContacto(){
   app.innerHTML =
     '<div class="pregunta activa">' +
       '<h1>Listo. ¿A dónde te enviamos el resultado?</h1>' +
-      '<p class="ayuda">Te escribimos por WhatsApp con cómo está tu caso y los siguientes pasos.</p>' +
+      '<p class="ayuda">En la pantalla siguiente ves tu resultado, y al correo te llega tu página personal para seguir tu trámite.</p>' +
       '<label class="campo">Tu nombre y apellido' +
         '<input type="text" id="c-nombre" autocomplete="name" placeholder="Ana Pérez">' +
       '</label>' +
@@ -546,8 +577,9 @@ function pintarContacto(){
         '<input type="tel" id="c-tel" autocomplete="tel" inputmode="numeric" placeholder="09 9999 9999">' +
         '<small>Con el 09 al inicio, como lo marcas normalmente.</small>' +
       '</label>' +
-      '<label class="campo">Tu correo <span style="font-weight:400;color:#4a5a56">(opcional)</span>' +
+      '<label class="campo">Tu correo' +
         '<input type="email" id="c-mail" autocomplete="email" placeholder="ana@correo.com">' +
+        '<small>Ahí te llega el link de tu caso, para que no dependas de que nadie te lo reenvíe.</small>' +
       '</label>' +
       '<label class="consent"><input type="checkbox" id="c-ok">' +
         '<span>Autorizo a MiVisa EC a usar estos datos para revisar mi caso y contactarme. Puedo pedir que los borren cuando quiera. He leído los <a href="../terminos.html" target="_blank">términos</a> y la <a href="../privacidad.html" target="_blank">política de privacidad</a>.</span>' +
@@ -563,9 +595,14 @@ function pintarContacto(){
   var ok = document.getElementById("c-ok");
   var ver = document.getElementById("ver");
 
+  /* El correo pasó a ser obligatorio: es por donde le llega su página
+     personal y, más tarde, el aviso de que ya puede llenar el
+     formulario. Sin correo, la única forma de alcanzarla vuelve a ser
+     que David le escriba a mano, que es justo lo que se quitó. */
   function revisar(){
     var telLimpio = tel.value.replace(/\D/g,"");
-    ver.disabled = !(nombre.value.trim().length > 2 && telLimpio.length >= 9 && ok.checked);
+    var correoOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail.value.trim());
+    ver.disabled = !(nombre.value.trim().length > 2 && telLimpio.length >= 9 && correoOk && ok.checked);
   }
   [nombre, tel, mail].forEach(function(c){ c.addEventListener("input", revisar); });
   ok.addEventListener("change", revisar);
@@ -587,35 +624,20 @@ function pintarContacto(){
 }
 
 /* ---------- resultado ---------- */
-function resumenParaDavid(r){
-  var l = [];
-  l.push("*Caso nuevo · MiVisa EC*");
-  l.push("");
-  l.push(respuestas.nombre);
-  l.push("País destino: " + (NOMBRE_DESTINO[respuestas.destino] || respuestas.destino) +
-         (respuestas.personas && respuestas.personas !== "1" ? " · " + respuestas.personas + " personas" : ""));
-  l.push("Semáforo: " + ({verde:"VERDE", ambar:"ÁMBAR", rojo:"ROJO"})[r.semaforo]);
-  if (r.fuertes.length){
-    l.push("");
-    l.push("A favor:");
-    r.fuertes.forEach(function(b){ l.push("• " + b); });
-  }
-  if (r.mostrar.length){
-    l.push("");
-    l.push("En contra:");
-    r.mostrar.forEach(function(b){ l.push("• " + b); });
-  }
-  l.push("");
-  l.push("El detalle completo está en la hoja de casos.");
-  return l.join(String.fromCharCode(10));
-}
 
-/* Manda el caso completo a la hoja de cálculo.
-   Va en segundo plano: si falla, el usuario no se entera y el flujo sigue. */
-function guardarEnHoja(r){
-  if (!ENDPOINT_GUARDADO) return;
+/* Manda el caso completo a la hoja de cálculo y devuelve una promesa
+   con el código definitivo.
+
+   Se intenta leer la respuesta del script (modo `cors`). El envío no
+   lleva cabeceras raras, así que el navegador no hace preflight y
+   Google contesta con `Access-Control-Allow-Origin: *` desde la
+   redirección: en la práctica se puede leer. Si por lo que sea no se
+   puede, no se rompe nada — se sigue con el código que generó esta
+   página, que es el mismo que el script va a guardar salvo choque. */
+function guardarEnHoja(r, codigo){
   var fila = {
     fecha: new Date().toISOString(),
+    codigo: codigo,
     nombre: respuestas.nombre || "",
     telefono: respuestas.telefono || "",
     correo: respuestas.correo || "",
@@ -634,39 +656,57 @@ function guardarEnHoja(r){
     var op = q.opciones.filter(function(o){ return String(o.v) === String(v); })[0];
     fila[q.id] = op ? op.t : v;
   });
-  /* Contra Apps Script hay que ir en no-cors (Google no manda cabeceras
-     CORS y el navegador bloquearía la lectura). Contra el Worker de
-     Cloudflare sí se puede ir en modo normal y saber si falló. */
-  var directoAGoogle = ENDPOINT_GUARDADO.indexOf("script.google.com") !== -1;
-  try {
-    fetch(ENDPOINT_GUARDADO, {
-      method: "POST",
-      mode: directoAGoogle ? "no-cors" : "cors",
-      headers: {"Content-Type": "text/plain;charset=utf-8"},
-      body: JSON.stringify(fila)
-    })["catch"](function(){});
-  } catch(e){}
+  if (!ENDPOINT_GUARDADO) return Promise.resolve(codigo);
+
+  return fetch(ENDPOINT_GUARDADO, {
+    method: "POST",
+    headers: {"Content-Type": "text/plain;charset=utf-8"},
+    body: JSON.stringify(fila)
+  })
+    .then(function(res){ return res.json(); })
+    .then(function(d){ return (d && d.ok && d.codigo) ? d.codigo : codigo; })
+    ["catch"](function(){ return codigo; });
+}
+
+/* Espera al guardado, pero no para siempre: si el script tarda, se
+   pinta igual con el código local en vez de dejar a la persona
+   mirando un cargando eterno. */
+function conTope(promesa, ms, respaldo){
+  return Promise.race([
+    promesa,
+    new Promise(function(ok){ setTimeout(function(){ ok(respaldo); }, ms); })
+  ]);
 }
 
 function pintarResultado(){
   var r = calcular();
-  guardarEnHoja(r);
-  var textoWa = encodeURIComponent(resumenParaDavid(r));
-  var enlaceWa = "https://wa.me/" + WHATSAPP + "?text=" + textoWa;
+  var codigo = codigoNuevo();
+
+  app.innerHTML =
+    '<div class="pregunta activa"><h1>Revisando tu caso…</h1>' +
+    '<p class="ayuda">Un momento, estamos preparando tu página personal.</p></div>';
+  window.scrollTo(0,0);
+  etiquetaPaso.textContent = "Casi listo";
+
+  conTope(guardarEnHoja(r, codigo), 9000, codigo).then(function(definitivo){
+    dibujarResultado(r, definitivo);
+  });
+}
+
+function dibujarResultado(r, codigo){
+  var linkCaso = "../caso/?c=" + encodeURIComponent(codigo);
   var html = "";
 
   if (r.semaforo === "verde"){
     html += '<div class="res verde">' +
       '<h1>Tu caso se ve sólido</h1>' +
       '<p>' + esc(primerNombre()) + ', por la información que nos compartes, tu perfil reúne lo que el oficial consular evalúa: razones claras para regresar y con qué acreditarlas. No constituye una garantía, porque ninguna existe, pero es un buen punto de partida.</p>' +
-      '<p style="margin-bottom:0"><strong>El siguiente paso es conversar con David</strong> para revisar los detalles y definir juntos cuándo iniciar.</p>' +
+      '<p style="margin-bottom:0"><strong>Ya puedes continuar por tu cuenta.</strong> Abajo tienes tu página personal, con el pago y el formulario detallado.</p>' +
       '</div>';
     if (r.mostrar.length){
       html += '<h2>Aspectos a tener en cuenta</h2>' + listaPuntos(r.mostrar);
     }
-    html += bloqueSiguientesPasos();
-    html += '<a class="btn btn-wa" href="' + enlaceWa + '">Enviarle mi caso a David por WhatsApp</a>';
-    html += '<p class="nota" style="text-align:center;margin-top:14px">Se abre WhatsApp con tu resumen ya redactado. Solo tienes que enviarlo.</p>';
+    html += bloqueTuPagina(codigo, linkCaso);
 
   } else if (r.semaforo === "ambar"){
     html += '<div class="res ambar">' +
@@ -675,9 +715,7 @@ function pintarResultado(){
       '<p style="margin-bottom:0">Puedes presentarte de todos modos y reforzar el caso por otras vías, o esperar un tiempo y llegar en mejores condiciones. Esa decisión es tuya, ahora con la información completa.</p>' +
       '</div>';
     html += '<h2>Aspectos a reforzar</h2>' + listaPuntos(r.mostrar.length ? r.mostrar : ["Tu perfil no muestra puntos fuertes que destaquen"]);
-    html += bloqueSiguientesPasos();
-    html += '<a class="btn btn-wa" href="' + enlaceWa + '">Quiero hablarlo con David</a>';
-    html += '<p class="nota" style="text-align:center;margin-top:14px">Se abre WhatsApp con tu resumen ya escrito. Solo tienes que darle enviar.</p>';
+    html += bloqueTuPagina(codigo, linkCaso);
 
   } else {
     html += '<div class="res rojo">' +
@@ -688,10 +726,14 @@ function pintarResultado(){
     html += '<h2>Aspectos que hoy juegan en contra</h2>' + listaPuntos(r.mostrar.length ? r.mostrar : ["Tu perfil todavía no muestra razones fuertes para regresar"]);
     html += '<div class="recuadro">' +
       '<h2>Cuando esos puntos mejoren, vuelve</h2>' +
-      '<p style="margin-bottom:0;font-size:.97rem;color:#4a5a56">Tu caso se fortalece de forma notable y te acompañamos con mucha mayor confianza. Guarda esta página y vuelve a completar el formulario cuando tu situación cambie.</p>' +
+      '<p style="margin-bottom:0;font-size:.97rem;color:#4a5a56">Tu caso se fortalece de forma notable y te acompañamos con mucha mayor confianza. Guarda tu código y vuelve a completar el formulario cuando tu situación cambie.</p>' +
       '</div>';
-    html += '<a class="btn btn-2" href="' + enlaceWa + '">Quiero que David lo revise igual</a>';
-    html += '<p class="nota" style="text-align:center;margin-top:14px">Si consideras que hay algo de tu situación que el formulario no recogió, coméntaselo.</p>';
+    html += '<div class="recuadro" style="border-color:#e0c9c9;background:#fdf7f7">' +
+      '<h2>Si aun así quieres seguir</h2>' +
+      '<p style="font-size:.97rem;color:#4a5a56">Es tu decisión y la respetamos: nadie puede impedirte presentarte. Pero queremos que la tomes sabiendo esto: el arancel consular <strong>no se devuelve</strong> si te niegan, y David tampoco devuelve el valor de la asesoría por una negativa. Con tu perfil de hoy, la probabilidad no está a tu favor.</p>' +
+      '<p style="margin-bottom:0;font-size:.97rem;color:#4a5a56">Abajo tienes tu página con el pago y el formulario, igual que cualquier otro caso.</p>' +
+      '</div>';
+    html += bloqueTuPagina(codigo, linkCaso);
   }
 
   html += '<p class="nota" style="text-align:center;margin-top:26px"><a href="../">Volver a la página</a></p>';
@@ -712,13 +754,25 @@ function listaPuntos(bs){
   return h + '</ul>';
 }
 
-function bloqueSiguientesPasos(){
+/* La pantalla de resultado ya entrega el caso completo: el código, el
+   link a la página personal y el correo con todo. Antes esto era un
+   botón de WhatsApp y David tenía que ir mandando link por link. */
+function bloqueTuPagina(codigo, linkCaso){
   return '<div class="recuadro"><h2>Qué pasa ahora</h2><ol>' +
-    '<li>Envías tu caso a David por WhatsApp con el botón de abajo.</li>' +
-    '<li>Él lo revisa y te contacta para coordinar una llamada.</li>' +
-    '<li>En la llamada resuelven dudas y definen si continuar.</li>' +
-    '<li>Solo entonces se confirma el servicio y se completa el formulario detallado.</li>' +
-    '</ol></div>';
+      '<li>Abres tu página personal, aquí abajo.</li>' +
+      '<li>Ahí pagas la asesoría, por transferencia o con tarjeta.</li>' +
+      '<li>En cuanto David confirme tu pago, se te abre el formulario detallado en esa misma página.</li>' +
+      '<li>Lo llenas cuando puedas, se guarda solo, y David prepara tu solicitud.</li>' +
+    '</ol></div>' +
+    '<div class="recuadro" style="text-align:center">' +
+      '<p class="nota" style="margin:0 0 4px">Tu código</p>' +
+      '<p style="margin:0 0 4px;font-size:1.9rem;font-weight:700;letter-spacing:.1em">' + esc(codigo) + '</p>' +
+      '<p class="nota" style="margin:0">Anótalo. Con él siempre puedes volver a tu caso.</p>' +
+    '</div>' +
+    '<a class="btn" href="' + linkCaso + '">Abrir mi página y continuar</a>' +
+    '<p class="nota" style="text-align:center;margin-top:14px">' +
+      'También te la enviamos a <strong>' + esc(respuestas.correo || "tu correo") + '</strong>. ' +
+      'Si no la ves, revisa el spam.</p>';
 }
 
 /* arranque */
