@@ -40,24 +40,25 @@ var CORREO_DAVID = "davidubilluz83@gmail.com";
    implementacion en vivo ya tiene los cambios: al abrir la URL /exec
    sin parametros, la respuesta trae este mismo texto. Subirla cada vez
    que se cambie este archivo. */
-var VERSION = "2026-09-09-pago-declarado";
+var VERSION = "2026-09-09-sin-candado";
 
 /* ------------------------------------------------------------
-   QUIÉN ABRE EL FORMULARIO DETALLADO
+   NO HAY CANDADO
 
-   true  — lo abre la propia persona cuando toca "Ya pagué" en su
-           página. La columna "Pagado" de David pasa a ser
-           verificación, no permiso: él confirma con el comprobante
-           cuando puede, sin que nadie se quede esperando.
-   false — lo abre David y solo David, escribiendo cualquier cosa en
-           la columna "Pagado". Es el modo estricto: nadie llena el
-           formulario sin que él lo haya cobrado y comprobado.
+   El formulario detallado está abierto desde el primer momento para
+   cualquiera que tenga su código. No hay nada que David tenga que
+   habilitar y no hay nada que la persona tenga que esperar.
 
-   Está en true a propósito. Con false, David vuelve a ser el cuello
-   de botella del flujo: si se olvida de marcar una fila, esa persona
-   queda parada sin saber por qué.
+   Lo que ordena el trabajo no es un permiso técnico: David se pone a
+   trabajar un caso cuando ve el pago. Que alguien llene el formulario
+   antes de pagar no le cuesta nada — es información que ya estaba
+   ahí para él cuando cobre.
+
+   Las columnas "Pago declarado" y "Pagado" quedan como registro:
+   la primera la escribe la persona desde su página, la segunda la
+   escribe David cuando verifica. Ninguna de las dos abre ni cierra
+   nada.
    ------------------------------------------------------------ */
-var DESBLOQUEO_AUTOMATICO = true;
 
 /* Nombre de la carpeta raíz en Drive donde se guarda cada caso.
    NOMBRE_CARPETA_ANTERIOR es el nombre con el que se creó al inicio del
@@ -226,10 +227,9 @@ function doPost(e) {
  * para que vaya a buscar el comprobante. NO toca la columna "Pagado":
  * esa sigue siendo suya y significa "lo verifiqué".
  *
- * Con DESBLOQUEO_AUTOMATICO en true, esto es lo que le abre a la
- * persona el formulario detallado. El riesgo es que alguien lo declare
- * sin haber pagado; el freno real es que David revisa el comprobante
- * antes de trabajar el caso, no antes de dejar llenar un formulario.
+ * No abre ni cierra nada: el formulario ya estaba abierto. Sirve para
+ * que a David le llegue el aviso de ir a buscar el comprobante, y para
+ * que en la hoja quede la hora en que la persona dijo que pagó.
  */
 function declararPago(datos) {
   var codigo = String(datos.codigo || "").toUpperCase();
@@ -255,7 +255,7 @@ function declararPago(datos) {
     try { avisarPagoDeclarado(fila, codigo); } catch (err) { /* queda escrito igual */ }
   }
 
-  return responder({ ok: true, codigo: codigo, desbloqueado: DESBLOQUEO_AUTOMATICO });
+  return responder({ ok: true, codigo: codigo });
 }
 
 /**
@@ -457,9 +457,8 @@ function doGet(e) {
       servicio:   servicio({ destino: fila.valor("destino"), aplico_antes: fila.valor("aplico_antes") }),
       a_favor:    fila.valor("a_favor"),
       en_contra:  fila.valor("en_contra"),
-      // "pagado" es lo que abre el formulario, no lo que dice que el
-      // dinero entró. Quien confirma el cobro es David, en su columna.
-      pagado:          confirmado || (DESBLOQUEO_AUTOMATICO && declarado),
+      // Los dos son informativos: la página los usa para saber qué
+      // decirle a la persona, no para dejarla pasar o no.
       pagoConfirmado:  confirmado,
       pagoDeclarado:   declarado,
       expediente: String(fila.valor("expediente")).trim() !== ""
@@ -1023,12 +1022,11 @@ function avisarPagoDeclarado(fila, codigo) {
     ]) +
     '<div style="padding:16px 14px;background:#fbf2e0;border-radius:10px;margin-top:14px;' +
     'font-size:14px;line-height:1.6">' +
-      'Debería haberte llegado el comprobante por WhatsApp. ' +
-      (DESBLOQUEO_AUTOMATICO
-        ? 'Ya se le abrió el formulario detallado: no tiene que esperarte. ' +
-          'Cuando compruebes que el dinero entró, escribe cualquier cosa en la columna ' +
-          '<b>Pagado</b> de su fila — eso es tu registro, no su permiso.'
-        : 'Para que pueda seguir, escribe cualquier cosa en la columna <b>Pagado</b> de su fila.') +
+      'Debería haberte llegado el comprobante por WhatsApp, y el cobro ' +
+      'debería estar en tu panel de PayPhone o en tu cuenta del Pichincha. ' +
+      'Cuando lo compruebes, escribe cualquier cosa en la columna <b>Pagado</b> ' +
+      'de su fila: es tu registro de que este caso ya se puede trabajar. ' +
+      'Ella no está esperando permiso de nadie — el formulario lo tiene abierto.' +
     '</div>' +
     '<p style="margin:16px 0 0;font-size:14px">' +
       '<a href="' + SITIO + '/caso/?c=' + escaparHtml(codigo) + '" style="color:#0b6478">Ver su página</a></p>' +
@@ -1163,10 +1161,10 @@ function alEditar(e) {
       'max-width:560px;margin:0 auto;color:#16282c">' +
       '<h2 style="font-size:20px;margin:0 0 12px">Pago confirmado</h2>' +
       '<p style="font-size:15px;line-height:1.6;margin:0 0 18px">' +
-        escaparHtml(val("nombre").split(" ")[0]) + ', David confirmó tu pago. ' +
-        'Si todavía no lo has hecho, el siguiente paso es llenar tu formulario ' +
-        'detallado: es lo que él usa para preparar tu solicitud. Puedes hacerlo ' +
-        'por partes, se guarda solo.</p>' +
+        escaparHtml(val("nombre").split(" ")[0]) + ', David verificó tu pago y ya ' +
+        'está trabajando tu caso. Si todavía no terminaste tu formulario detallado, ' +
+        'ese es el dato que le falta para avanzar: puedes llenarlo por partes, ' +
+        'se guarda solo.</p>' +
       '<p style="margin:0 0 22px"><a href="' + SITIO + '/caso/?c=' + escaparHtml(codigo) + '" ' +
         'style="display:inline-block;background:#0b6478;color:#fff;text-decoration:none;' +
         'padding:14px 22px;border-radius:9px;font-weight:600;font-size:16px">Llenar mi formulario</a></p>' +
@@ -1177,7 +1175,7 @@ function alEditar(e) {
 
     MailApp.sendEmail({
       to: correo,
-      subject: "Pago confirmado · ya puedes llenar tu formulario · " + codigo,
+      subject: "Pago confirmado · David ya está en tu caso · " + codigo,
       htmlBody: cuerpo,
       name: "MiVisa EC",
       replyTo: CORREO_DAVID

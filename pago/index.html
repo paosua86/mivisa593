@@ -86,6 +86,13 @@ ol li{margin-bottom:9px;font-size:.97rem;color:var(--tinta-suave)}
 .copiar{font:inherit;font-size:.8rem;font-weight:700;color:var(--brand-deep);background:#fff;border:1px solid var(--brand-deep);border-radius:7px;padding:5px 10px;cursor:pointer;white-space:nowrap}
 .copiar:active{transform:translateY(1px)}
 
+/* El valor a digitar en PayPhone. Va grande a propósito: el link es
+   abierto y el monto lo teclea la persona. */
+.monto{background:var(--brand-tint);border:2px dashed var(--brand-deep);border-radius:var(--radio);padding:16px;margin:0 0 12px;text-align:center}
+.monto-rot{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--brand-deep);font-weight:700;margin:0 0 2px}
+.monto-num{font-family:var(--display);font-size:2.4rem;font-weight:700;line-height:1;margin:0 0 6px;color:var(--brand-deep)}
+.monto-pie{font-size:.85rem;color:var(--tinta-suave);margin:0}
+
 .checklist{margin:0 0 16px;padding-left:20px}
 .checklist li{margin-bottom:8px;font-size:.97rem}
 
@@ -122,14 +129,14 @@ footer a{color:var(--brand-deep)}
       <li>Eliges cómo pagar: con el link de pago (tarjeta) o por transferencia directa.</li>
       <li>Pagas por el método que prefieras.</li>
       <li>Nos envías tus datos para la factura y el comprobante de pago.</li>
-      <li>Al confirmarlo, te mandamos el link para llenar tu expediente completo.</li>
+      <li>David lo verifica y se pone con tu caso.</li>
     </ol>
   </div>
 
   <div class="metodos">
     <div class="metodo">
       <p class="metodo-tit">💳 Con tarjeta de crédito</p>
-      <p class="nota">Pídenos el link y pagas con tarjeta por PayPhone.</p>
+      <p class="nota">Pago en línea por PayPhone.</p>
       <div id="accion"></div>
     </div>
 
@@ -157,13 +164,13 @@ footer a{color:var(--brand-deep)}
 
   <div class="tarjeta">
     <h2>Para continuar, envía tu comprobante</h2>
-    <p class="nota">Hayas pagado con tarjeta o por transferencia, necesitamos esto para confirmar tu pago y mandarte el siguiente link:</p>
+    <p class="nota">Hayas pagado con tarjeta o por transferencia, necesitamos esto para confirmar tu pago y emitir tu factura:</p>
     <ul class="checklist">
       <li>Tus datos para la factura: nombre completo, cédula o RUC y correo.</li>
       <li>El comprobante: la foto de la transferencia, o la captura de pantalla si pagaste con tarjeta.</li>
     </ul>
     <a class="btn" id="btnComprobante" href="#">Enviar mis datos y comprobante</a>
-    <p class="micro">Al recibirlo, te enviamos el link para llenar tu expediente completo.</p>
+    <p class="micro">Al recibirlo, David verifica el pago y se pone con tu caso.</p>
   </div>
 
   <div class="tarjeta">
@@ -187,21 +194,14 @@ footer a{color:var(--brand-deep)}
 
 var WHATSAPP = "593998961214";
 
-/* Links de pago de PayPhone, uno por monto. David los crea una sola
-   vez en su panel (Links de pago, reutilizables) y aquí solo se pegan
-   las URLs. Mientras uno quede vacío, esa opción sigue pidiéndole el
-   link a David por WhatsApp, como antes.
+/* El link de cobro abierto de PayPhone: uno solo para los cinco
+   precios, la persona digita el valor. Tiene que ser el MISMO que
+   está en caso/index.html, que es la página que la gente usa dentro
+   del flujo; esta queda para cobrar sin pasar por un caso.
 
-   Tienen que ser los MISMOS que están en caso/index.html. Esa es la
-   página que la gente usa dentro del flujo; esta queda para cobrar
-   sin pasar por un caso. */
-var LINKS_PAYPHONE = {
-  "usa-primera":       "",
-  "usa-renovacion":    "",
-  "canada-primera":    "",
-  "canada-renovacion": "",
-  "schengen":          ""
-};
+   Mientras esté vacío, el botón de tarjeta le pide el link a David
+   por WhatsApp, como antes. */
+var LINK_PAYPHONE = "";
 
 var SERVICIOS = [
   {v:"usa-primera",      t:"Visa americana B1/B2 · primera vez", valor:65,  det:"Aparte va el arancel consular de $185, que se paga directo al consulado."},
@@ -239,11 +239,17 @@ function pintar(){
         '<p class="valor">$' + s.valor + '</p>' +
         '<p class="detalle">por persona · ' + esc(s.det) + '</p>' +
       '</div>';
-    var link = LINKS_PAYPHONE[s.v] || "";
-    if (link) {
+    if (LINK_PAYPHONE) {
+      // Link abierto: el monto lo teclea la persona, así que se lo
+      // decimos en grande antes de mandarla a PayPhone.
       accion.innerHTML =
-        '<a class="btn" style="background:#0b6478;box-shadow:0 2px 0 #084d5c" href="' + esc(link) + '" target="_blank" rel="noopener">Pagar $' + s.valor + ' con tarjeta</a>' +
-        '<p class="micro">Se abre PayPhone. Aceptan tarjetas de crédito y de débito.</p>';
+        '<div class="monto">' +
+          '<p class="monto-rot">Digita exactamente este valor</p>' +
+          '<p class="monto-num">$' + s.valor + '</p>' +
+          '<p class="monto-pie">PayPhone no lo pone solo: lo escribes tú al entrar.</p>' +
+        '</div>' +
+        '<a class="btn" style="background:#0b6478;box-shadow:0 2px 0 #084d5c" href="' + esc(LINK_PAYPHONE) + '" target="_blank" rel="noopener">Pagar con tarjeta en PayPhone</a>' +
+        '<p class="micro">Aceptan tarjetas de crédito y de débito. Recuerda: <strong>$' + s.valor + '</strong>.</p>';
     } else {
       var msgLink = "Hola David, quiero el link de pago para " + s.t + " ($" + s.valor + ").";
       accion.innerHTML =

@@ -76,18 +76,34 @@ autoridad correspondiente, no a David.
 **Pagos:** transferencia bancaria o tarjeta de crédito por PayPhone. No
 Stripe (el negocio es solo Ecuador).
 
-**Los links de PayPhone son fijos, uno por monto.** David los crea una
-sola vez en su panel (Links de pago, reutilizables) y se pegan en
-`LINKS_PAYPHONE`, que existe igual en `caso/index.html` y en
-`pago/index.html`. Mientras uno esté vacío, esa opción cae al botón de
-WhatsApp de siempre y David lo genera a mano. Reemplaza a la decisión
-anterior de generarlos uno por uno.
+**Un solo link de PayPhone, abierto.** Es el "Link de cobro abierto":
+la persona entra y digita ella misma el valor. Se pega en
+`LINK_PAYPHONE`, que existe igual en `caso/index.html` y en
+`pago/index.html` y tiene que ser el mismo en los dos. Mientras esté
+vacío, el botón de tarjeta le pide el link a David por WhatsApp.
+Reemplaza a las decisiones anteriores de generarlos uno por uno y de
+tener cinco links fijos por monto.
 
-Contra conocida: un link reutilizable no dice quién pagó. Por eso la
-página pide poner el código del caso en la referencia y mandar el
-comprobante. La conciliación automática sería la API de PayPhone con
+Como el monto lo teclea la persona, las dos páginas se lo muestran en
+grande justo antes del botón y se lo repiten después. Si empiezan a
+llegar pagos con el valor mal, la salida es volver a links fijos por
+monto o pasar a la API.
+
+Contra conocida: PayPhone sí muestra quién pagó (nombre, cédula,
+correo y teléfono en el panel de transacciones), pero no dice a qué
+caso corresponde, y quien paga no siempre es el solicitante. Por eso
+las páginas piden poner el código del caso en la referencia. La
+conciliación automática sería la API de PayPhone con
 `clientTransactionId` = código; hace falta credenciales de comercio y
 no está hecho.
+
+**No hay candado en ninguna parte del flujo.** El formulario detallado
+está abierto desde el primer momento para cualquiera con su código.
+David no habilita nada. Lo que ordena el trabajo es que él se pone con
+un caso cuando ve el pago, no un permiso técnico. Las columnas `Pago
+declarado` (la escribe la persona desde su página) y `Pagado` (la
+escribe David al verificar) son registro, no permiso. No volver a
+proponer un desbloqueo por pago.
 **Agenda:** Horarios de citas de Google Calendar. No Cal.com.
 **Facturación:** electrónica SRI, pendiente de integrar.
 

@@ -80,7 +80,6 @@ a{color:var(--brand-deep)}
 .sem .etiqueta{font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;margin:0 0 4px;opacity:.75}
 
 .tarjeta{background:#fff;border:1px solid var(--borde);border-radius:var(--radio);padding:20px;margin:0 0 14px}
-.tarjeta.bloqueada{opacity:.62}
 .tarjeta h2{font-size:1.08rem}
 .paso-rot{font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;color:var(--tinta-suave);font-weight:700;margin:0 0 4px}
 .nota{font-size:.9rem;color:var(--tinta-suave)}
@@ -119,6 +118,13 @@ ol li{margin-bottom:9px;font-size:.96rem;color:var(--tinta-suave)}
 
 .aviso{background:var(--brand-tint);border-left:4px solid var(--brand-deep);border-radius:0 10px 10px 0;padding:14px 16px;margin:0 0 14px;font-size:.94rem}
 .aviso b{color:var(--brand-deep)}
+
+/* El valor a digitar en PayPhone. Va grande a propósito: el link es
+   abierto y el monto lo teclea la persona. */
+.monto{background:var(--brand-tint);border:2px dashed var(--brand-deep);border-radius:var(--radio);padding:16px;margin:0 0 12px;text-align:center}
+.monto-rot{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--brand-deep);font-weight:700;margin:0 0 2px}
+.monto-num{font-family:var(--display);font-size:2.4rem;font-weight:700;line-height:1;margin:0 0 6px;color:var(--brand-deep)}
+.monto-pie{font-size:.85rem;color:var(--tinta-suave);margin:0}
 
 .campo{display:block;margin:0 0 14px;font-weight:600;font-size:.95rem}
 .campo input{
@@ -166,26 +172,22 @@ var ENDPOINT = "https://script.google.com/macros/s/AKfycbxB8bkBNzeRVzkzk7QSH-iZ5
 var WHATSAPP = "593998961214";
 
 /* ------------------------------------------------------------
-   LINKS DE PAGO DE PAYPHONE — se pegan aquí una sola vez
+   EL LINK DE PAGO DE PAYPHONE — uno solo, abierto
 
-   David los crea en su panel de PayPhone (Links de pago), uno por
-   monto, marcados como reutilizables. Aquí solo se pegan las URLs.
-   Mientras una quede vacía, esa opción cae al botón de WhatsApp de
-   siempre: la persona le pide el link a David y él lo genera a mano.
+   Es el "Link de cobro abierto" de PayPhone: la persona entra y digita
+   ella misma el valor. Un solo link para los cinco precios, en vez de
+   cinco links que hay que mantener sincronizados en dos archivos.
 
-   La contra de los links reutilizables: el cobro llega sin nombre de
-   caso. Por eso la página le pide a la persona que ponga su código en
-   la referencia y que mande el comprobante. Si algún día se quiere
-   conciliación automática, es la API de PayPhone con
-   clientTransactionId = código, no estos links.
+   El costo de esta decisión es que el monto lo teclea la persona, así
+   que se puede equivocar. Por eso la página le dice el valor exacto
+   en grande, justo antes del botón, y se lo repite después. Si un día
+   hay muchos pagos con el monto mal, la salida es volver a links
+   fijos por monto o pasar a la API de PayPhone.
+
+   Mientras esté vacío, el botón de tarjeta le pide el link a David
+   por WhatsApp, como antes.
    ------------------------------------------------------------ */
-var LINKS_PAYPHONE = {
-  "usa-primera":       "",
-  "usa-renovacion":    "",
-  "canada-primera":    "",
-  "canada-renovacion": "",
-  "schengen":          ""
-};
+var LINK_PAYPHONE = "";
 
 var SERVICIOS = {
   "usa-primera":       {t:"Visa americana B1/B2 · primera vez", valor:65,  det:"Aparte va el arancel consular de $185, que se paga directo al consulado."},
@@ -351,14 +353,16 @@ function bloqueFicha(d){
   '</div>';
 }
 
-/* La ruta completa, siempre visible. El punto es que la persona vea de
-   una sola vez todo lo que viene, incluido lo que todavía no puede
-   hacer: así sabe qué le espera y no tiene que preguntar. */
+/* La ruta completa, siempre visible. Ningún paso está cerrado: la
+   persona puede pagar y llenar el formulario en el orden que quiera.
+   Lo que ordena el trabajo es David, que se pone con el caso cuando ve
+   el pago, no un candado en la página. */
 function bloqueRuta(d){
+  var pago = d.pagoDeclarado || d.pagoConfirmado;
   var pasos = [
     {t:"Precalificación", s:"Ya la hiciste.", estado:"hecho"},
-    {t:"Pagar la asesoría", s:"Con tarjeta o por transferencia.", estado: d.desbloqueado ? "hecho" : "ahora"},
-    {t:"Reunir tus documentos", s:"La lista está más abajo.", estado: d.desbloqueado ? (d.expediente ? "hecho" : "ahora") : ""},
+    {t:"Pagar la asesoría", s:"Con tarjeta o por transferencia.", estado: pago ? "hecho" : "ahora"},
+    {t:"Reunir tus documentos", s:"La lista está más abajo.", estado: d.expediente ? "hecho" : (pago ? "ahora" : "")},
     {t:"Llenar tu formulario", s:"Es lo que David usa para preparar tu solicitud.", estado: d.expediente ? "hecho" : ""}
   ];
   return '<div class="ruta">' + pasos.map(function(p, i){
@@ -394,12 +398,20 @@ function bloquePago(d){
         '">Escribirle a David</a></div>';
   }
 
-  var link = LINKS_PAYPHONE[d.servicio] || "";
   var tarjeta;
-  if (link){
+  if (LINK_PAYPHONE){
+    // El link es abierto: el monto lo teclea la persona. Se lo decimos
+    // antes y después del botón, porque equivocarse aquí significa
+    // que David tiene que devolver o cobrar la diferencia.
     tarjeta =
-      '<a class="btn" href="' + esc(link) + '" target="_blank" rel="noopener">Pagar $' + srv.valor + ' con tarjeta</a>' +
-      '<p class="micro">Se abre PayPhone. Aceptan tarjetas de crédito y de débito.</p>';
+      '<div class="monto">' +
+        '<p class="monto-rot">Digita exactamente este valor</p>' +
+        '<p class="monto-num">$' + srv.valor + '</p>' +
+        '<p class="monto-pie">PayPhone no lo pone solo: lo escribes tú al entrar.</p>' +
+      '</div>' +
+      '<a class="btn" href="' + esc(LINK_PAYPHONE) + '" target="_blank" rel="noopener">Pagar con tarjeta en PayPhone</a>' +
+      '<p class="micro">Aceptan tarjetas de crédito y de débito. Recuerda: <strong>$' + srv.valor +
+        '</strong>, y tu código <strong>' + esc(d.codigo) + '</strong> en la referencia.</p>';
   } else {
     var pedir = "Hola David, soy " + d.nombre + " (caso " + d.codigo + "). Quiero el link de pago para " + srv.t + " ($" + srv.valor + ").";
     tarjeta =
@@ -442,18 +454,18 @@ function bloquePago(d){
 
     '<div class="tarjeta">' +
       '<h2>Cuando ya hayas pagado</h2>' +
-      '<p class="nota" style="margin-bottom:14px">Mándale a David el comprobante y tus datos de facturación. Con eso se te abre el formulario detallado aquí mismo.</p>' +
+      '<p class="nota" style="margin-bottom:14px">Mándale a David el comprobante y tus datos de facturación. Es lo que le dice que tu caso ya se puede trabajar.</p>' +
       '<a class="btn btn-wa" id="yaPague" href="' + wa + '">Ya pagué · enviar mi comprobante</a>' +
       '<p class="micro">Se abre WhatsApp con el mensaje escrito. Adjunta la foto de la transferencia o la captura del pago.</p>' +
     '</div>';
 }
 
 /* ---------- paso 3: qué reunir, y por qué ahora ---------- */
-function bloqueDocumentos(d, abierto){
+function bloqueDocumentos(d){
   var k = claveDestino(d.destino);
   var q = k ? QUE_REUNIR[k] : null;
   if (!q) return "";
-  return '<div class="tarjeta' + (abierto ? '' : ' bloqueada') + '">' +
+  return '<div class="tarjeta">' +
     '<p class="paso-rot">Paso 3</p>' +
     '<h2>Lo que tienes que tener a la mano</h2>' +
     '<p class="nota">Reúne esto antes de sentarte a llenar el formulario. Si te falta algo, consíguelo primero: llenar a medias y con datos aproximados es lo que más atrasa un trámite.</p>' +
@@ -479,18 +491,14 @@ function bloqueFormulario(d){
     '</div>' +
     '<a class="btn btn-2" href="../expediente/?caso=' + encodeURIComponent(d.codigo) + '">Volver a abrir mi formulario</a>';
   }
-  if (d.desbloqueado){
-    return '<div class="tarjeta">' +
-      '<p class="paso-rot">Paso 4</p>' +
-      '<h2>Llena tu formulario detallado</h2>' +
-      '<p class="nota" style="margin-bottom:14px">Es largo, pero se guarda solo: puedes cerrarlo y seguir después desde este mismo link. Si viajan varias personas, hay una ficha para cada una.</p>' +
-      '<a class="btn" href="../expediente/?caso=' + encodeURIComponent(d.codigo) + '">Abrir mi formulario</a>' +
-    '</div>';
-  }
-  return '<div class="tarjeta bloqueada">' +
+  var pago = d.pagoDeclarado || d.pagoConfirmado;
+  return '<div class="tarjeta">' +
     '<p class="paso-rot">Paso 4</p>' +
-    '<h2>Tu formulario detallado</h2>' +
-    '<p class="nota" style="margin-bottom:0">Se abre aquí mismo en cuanto registres tu pago. Es el formulario largo, el que David usa para preparar tu solicitud.</p>' +
+    '<h2>Llena tu formulario detallado</h2>' +
+    '<p class="nota" style="margin-bottom:14px">Es largo, pero se guarda solo: puedes cerrarlo y seguir después desde este mismo link. Si viajan varias personas, hay una ficha para cada una.</p>' +
+    (pago ? ''
+          : '<p class="nota" style="margin-bottom:14px">Está abierto desde ya. Puedes empezar a llenarlo aunque todavía no hayas pagado: David se pone con tu caso cuando vea el pago, y para entonces tu información ya va a estar lista.</p>') +
+    '<a class="btn" href="../expediente/?caso=' + encodeURIComponent(d.codigo) + '">Abrir mi formulario</a>' +
   '</div>';
 }
 
@@ -501,7 +509,16 @@ function pintarCaso(d){
   html += bloqueRuta(d);
   html += bloqueSemaforo(d);
 
-  if (!d.desbloqueado){
+  if (d.pagoDeclarado || d.pagoConfirmado){
+    html += '<div class="tarjeta">' +
+      '<p class="paso-rot">Paso 2</p>' +
+      '<h2>Pago registrado</h2>' +
+      '<p class="nota" style="margin-bottom:0">' +
+        (d.pagoConfirmado
+          ? 'David verificó tu pago y ya está trabajando tu caso.'
+          : 'Registramos que ya pagaste. David lo verifica con tu comprobante y se pone con tu caso; tú sigue con lo de abajo sin esperarlo.') +
+      '</p></div>';
+  } else {
     // El encabezado solo tiene sentido si hay un valor que cobrar. Sin
     // destino definido, bloquePago pone su propia tarjeta.
     if (SERVICIOS[d.servicio]){
@@ -512,18 +529,9 @@ function pintarCaso(d){
       '</div>';
     }
     html += bloquePago(d);
-  } else {
-    html += '<div class="tarjeta">' +
-      '<p class="paso-rot">Paso 2</p>' +
-      '<h2>Pago registrado</h2>' +
-      '<p class="nota" style="margin-bottom:0">' +
-        (d.pagoConfirmado
-          ? 'David confirmó tu pago. Ya puedes seguir.'
-          : 'Registramos que ya pagaste. David lo verifica con tu comprobante; mientras tanto puedes avanzar sin esperar.') +
-      '</p></div>';
   }
 
-  html += bloqueDocumentos(d, d.desbloqueado);
+  html += bloqueDocumentos(d);
   html += bloqueFormulario(d);
 
   html += '<div class="tarjeta" style="margin-top:22px">' +
@@ -572,6 +580,10 @@ function conectarYaPague(d){
       })["catch"](function(){});
     } catch(e){}
     try { sessionStorage.setItem("mivisaec_pago_declarado_" + d.codigo, "1"); } catch(e){}
+    // Al volver de WhatsApp la página sigue viva: que refleje ya que
+    // el pago quedó registrado, sin recargar ni consultar de nuevo.
+    d.pagoDeclarado = true;
+    setTimeout(function(){ pintarCaso(d); }, 1200);
   });
 }
 
@@ -591,13 +603,13 @@ function abrir(){
         pintarPedirCodigo("No encontramos ningún caso con el código " + codigo + ". Revísalo y vuelve a intentar.");
         return;
       }
-      // Si acaba de declarar el pago desde este mismo navegador, no le
-      // hacemos esperar a que la hoja se actualice para verlo abierto.
+      // Si acaba de declarar el pago desde este mismo navegador, la
+      // página lo da por hecho sin esperar a que la hoja se actualice.
       try {
-        if (sessionStorage.getItem("mivisaec_pago_declarado_" + codigo) === "1") d.pagado = true;
+        if (sessionStorage.getItem("mivisaec_pago_declarado_" + codigo) === "1") d.pagoDeclarado = true;
       } catch(e){}
       d.pagoConfirmado = !!d.pagoConfirmado;
-      d.desbloqueado = !!d.pagado;
+      d.pagoDeclarado  = !!d.pagoDeclarado;
       pintarCaso(d);
     })
     ["catch"](function(){
