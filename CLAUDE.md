@@ -107,8 +107,11 @@ un solo archivo. El copy del semáforo y el mapa `CONSEJOS` viven en
 `caso/index.html`, que es donde se leen.
 
 **Los avisos de trabajo a David van por Telegram, no por correo.** Un
-bot de Telegram, configurado en `TELEGRAM_TOKEN` y `TELEGRAM_CHAT_ID`
-del Apps Script. Motivo: el correo se lee tarde, y WhatsApp es de donde
+bot de Telegram. **El token NO va en el código: va en Configuración del
+proyecto → Propiedades de la secuencia de comandos**, como
+`TELEGRAM_TOKEN` y `TELEGRAM_CHAT_ID`. El repo es público y el Apps
+Script está copiado en él; un secreto escrito ahí queda publicado. Vale
+para cualquier credencial futura. Motivo: el correo se lee tarde, y WhatsApp es de donde
 este proyecto le está sacando el trabajo — un aviso ahí se pierde entre
 los mensajes de clientes. Telegram es una bandeja que solo tiene esto.
 Mientras las constantes estén vacías, los avisos caen al correo, que no

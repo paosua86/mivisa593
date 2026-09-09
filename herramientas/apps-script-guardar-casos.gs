@@ -50,29 +50,53 @@ var CORREO_DAVID = "davidubilluz83@gmail.com";
    pago) no cambian: siguen saliendo por correo, que es lo que ella
    dio.
 
-   CÓMO SE CONFIGURA, una sola vez:
+   EL TOKEN NO VA EN ESTE ARCHIVO. Este archivo vive en un repositorio
+   público de GitHub; un token escrito aquí queda publicado y
+   cualquiera podría escribir como el bot o leer el chat. Va en las
+   propiedades del script, que son privadas de esta cuenta:
+
+     Configuración del proyecto → Propiedades de la secuencia de
+     comandos → Agregar propiedad
+
+   Dos propiedades: TELEGRAM_TOKEN y TELEGRAM_CHAT_ID.
+
+   CÓMO SE CONSIGUEN, una sola vez:
      1. En Telegram, escríbele a @BotFather → /newbot → nombre y
-        usuario del bot. Devuelve un token largo: va en TELEGRAM_TOKEN.
-     2. Búscale el bot por su usuario y mándale cualquier cosa, aunque
-        sea "hola". Sin ese primer mensaje el bot no puede escribirte.
-     3. Abre https://api.telegram.org/bot<TOKEN>/getUpdates en el
-        navegador y copia el número de "chat":{"id": ...}. Va en
-        TELEGRAM_CHAT_ID. Si es un grupo, el id es negativo; el bot
-        tiene que estar dentro del grupo.
-     4. Ejecuta `probarTelegram` desde el editor. Si llega el mensaje
+        usuario del bot. Devuelve un token largo: esa es
+        TELEGRAM_TOKEN.
+     2. Crea un grupo con David (y con quien más deba ver los casos) y
+        mete al bot al grupo. Un grupo es mejor que un chat privado:
+        sobrevive a un cambio de teléfono y no depende de una sola
+        persona.
+     3. En el grupo escribe `/start@usuario_del_bot`. Tiene que ser un
+        comando con el nombre del bot: por privacidad, en los grupos el
+        bot no ve los mensajes normales.
+     4. Abre https://api.telegram.org/bot<TOKEN>/getUpdates en el
+        navegador y copia el número de "chat":{"id": ...}. En un grupo
+        es negativo, con el signo menos incluido. Esa es
+        TELEGRAM_CHAT_ID.
+     5. Ejecuta `probarTelegram` desde el editor. Si llega el mensaje
         de prueba, está listo.
 
-   MIENTRAS ESTO ESTÉ VACÍO los avisos siguen saliendo por correo, para
-   no quedarse sin ellos en el intermedio. No es el modo final.
+   MIENTRAS ESTO NO ESTÉ CONFIGURADO los avisos siguen saliendo por
+   correo, para no quedarse sin ellos en el intermedio. No es el modo
+   final.
    ------------------------------------------------------------ */
-var TELEGRAM_TOKEN = "";
-var TELEGRAM_CHAT_ID = "";
+
+/** Lee una propiedad del script. Vacío si no está puesta. */
+function propiedad(clave) {
+  try {
+    return String(PropertiesService.getScriptProperties().getProperty(clave) || "").trim();
+  } catch (err) {
+    return "";
+  }
+}
 
 /* Marca de version. Sirve para comprobar desde fuera que la
    implementacion en vivo ya tiene los cambios: al abrir la URL /exec
    sin parametros, la respuesta trae este mismo texto. Subirla cada vez
    que se cambie este archivo. */
-var VERSION = "2026-09-09-telegram";
+var VERSION = "2026-09-09-telegram-2";
 
 /* ------------------------------------------------------------
    NO HAY CANDADO
@@ -992,7 +1016,7 @@ function pintarDocumentos(hoja, datos) {
    ------------------------------------------------------------ */
 
 function telegramListo() {
-  return String(TELEGRAM_TOKEN).trim() !== "" && String(TELEGRAM_CHAT_ID).trim() !== "";
+  return propiedad("TELEGRAM_TOKEN") !== "" && propiedad("TELEGRAM_CHAT_ID") !== "";
 }
 
 /** Escapa lo que Telegram interpreta como HTML. */
@@ -1008,10 +1032,10 @@ function recortar(texto, tope) {
 }
 
 function telegramMensaje(texto) {
-  var res = UrlFetchApp.fetch("https://api.telegram.org/bot" + TELEGRAM_TOKEN + "/sendMessage", {
+  var res = UrlFetchApp.fetch("https://api.telegram.org/bot" + propiedad("TELEGRAM_TOKEN") + "/sendMessage", {
     method: "post",
     payload: {
-      chat_id: TELEGRAM_CHAT_ID,
+      chat_id: propiedad("TELEGRAM_CHAT_ID"),
       text: recortar(texto, 4000),
       parse_mode: "HTML",
       disable_web_page_preview: "true"
@@ -1026,10 +1050,10 @@ function telegramMensaje(texto) {
 /** El mismo aviso, pero con un archivo colgado. El pie va aparte
  *  porque Telegram solo admite 1024 caracteres de descripción. */
 function telegramArchivo(blob, pie) {
-  var res = UrlFetchApp.fetch("https://api.telegram.org/bot" + TELEGRAM_TOKEN + "/sendDocument", {
+  var res = UrlFetchApp.fetch("https://api.telegram.org/bot" + propiedad("TELEGRAM_TOKEN") + "/sendDocument", {
     method: "post",
     payload: {
-      chat_id: TELEGRAM_CHAT_ID,
+      chat_id: propiedad("TELEGRAM_CHAT_ID"),
       document: blob,
       caption: recortar(pie, 1000),
       parse_mode: "HTML"
@@ -1067,7 +1091,7 @@ function avisarDavid(asunto, texto, html, adjuntos) {
  *  entre un caso real. */
 function probarTelegram() {
   if (!telegramListo()) {
-    throw new Error("Falta TELEGRAM_TOKEN o TELEGRAM_CHAT_ID arriba en este archivo.");
+    throw new Error("Faltan TELEGRAM_TOKEN o TELEGRAM_CHAT_ID en Configuracion del proyecto -> Propiedades de la secuencia de comandos.");
   }
   telegramMensaje("✅ <b>MiVisa EC</b>\nLos avisos de casos van a llegar aquí.");
   return "Mensaje enviado. Si no llegó, revisa el token y el chat id.";
