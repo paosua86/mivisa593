@@ -96,7 +96,7 @@ function propiedad(clave) {
    implementacion en vivo ya tiene los cambios: al abrir la URL /exec
    sin parametros, la respuesta trae este mismo texto. Subirla cada vez
    que se cambie este archivo. */
-var VERSION = "2026-09-09-telegram-2";
+var VERSION = "2026-09-10-alias-columnas";
 
 /* ------------------------------------------------------------
    NO HAY CANDADO
@@ -160,6 +160,24 @@ var COLUMNAS = [
   ["cuando",          "Cuándo viaja"],
   ["consentimiento",  "Consentimiento"]
 ];
+
+/* ------------------------------------------------------------
+   TÍTULOS QUE YA EXISTÍAN EN LA HOJA DE DAVID
+
+   David venía llevando la hoja a mano y algunas columnas suyas se
+   llaman distinto de como las llama este script. Antes de crear una
+   columna nueva, se busca si ya hay una equivalente y se usa esa.
+
+   Sin esto pasa lo peor: quedan dos columnas que significan lo mismo,
+   David sigue marcando la suya (que además tiene su desplegable) y el
+   script mira la otra, así que el aviso a la persona no sale nunca y
+   nadie entiende por qué.
+
+   La primera que exista en la hoja gana, empezando por la de David.
+   ------------------------------------------------------------ */
+var ALIAS_COLUMNAS = {
+  pagado: ["¿Pagó?", "Pagado"]
+};
 
 /* Tope de tamaño de un envío, solo para descartar basura.
    Antes estaba en 8000 caracteres, que alcanzaba cuando el expediente
@@ -368,9 +386,12 @@ function asegurarColumnas(hoja) {
   var titulos = hoja.getRange(1, 1, 1, ancho).getValues()[0].map(function (t) {
     return String(t).trim();
   });
-  var faltan = COLUMNAS
-    .map(function (c) { return c[1]; })
-    .filter(function (t) { return titulos.indexOf(t) === -1; });
+  var faltan = COLUMNAS.filter(function (c) {
+    // Si ya hay una columna equivalente con otro nombre, no se crea otra.
+    var nombres = ALIAS_COLUMNAS[c[0]] || [c[1]];
+    if (nombres.indexOf(c[1]) === -1) nombres = nombres.concat([c[1]]);
+    return !nombres.some(function (t) { return titulos.indexOf(t) !== -1; });
+  }).map(function (c) { return c[1]; });
   if (!faltan.length) return;
   hoja.getRange(1, ancho + 1, 1, faltan.length)
       .setValues([faltan])
@@ -395,8 +416,11 @@ function columnasDeLaHoja(hoja) {
   });
 
   COLUMNAS.forEach(function (c) {
-    var pos = porTitulo[c[1]];
-    if (pos) indice[c[0]] = pos;
+    var nombres = ALIAS_COLUMNAS[c[0]] || [c[1]];
+    if (nombres.indexOf(c[1]) === -1) nombres = nombres.concat([c[1]]);
+    for (var i = 0; i < nombres.length; i++) {
+      if (porTitulo[nombres[i]]) { indice[c[0]] = porTitulo[nombres[i]]; return; }
+    }
   });
   return indice;
 }
