@@ -263,12 +263,27 @@ Para agregar o cambiar una pregunta basta con editar el arreglo del
 destino: los encabezados de la hoja, el mapa de etiquetas y la barra de
 progreso salen todos de ahí. No hace falta tocar el Apps Script.
 
-En la hoja de cálculo **cada destino tiene su propia pestaña**
-(`Expedientes EE.UU.`, `Expedientes Canadá`, `Expedientes Europa`),
-porque las columnas no son las mismas y mezclarlas desalinea las filas.
-En cada pestaña la fila 1 lleva el título legible y la fila 2, oculta,
-la clave interna; si después se agrega un campo, el script crea la
-columna al final sin mover lo ya guardado.
+**El expediente se guarda como una hoja por persona**, no como una
+fila. La pestaña se llama `CÓDIGO · Nombre` y lleva el formato de los
+Excel de David: banda de título azul oscuro (`#1f3a5f`), secciones
+numeradas en el orden de `ORDEN_DAVID`, la pregunta a la izquierda y la
+**respuesta en amarillo** (`#fff9c4`) a la derecha, y las tablas con
+cabecera azul media (`#3b6ea5`) sobre filas crema (`#fffde7`). Los
+colores están medidos sobre los `.xlsx` de `referencias/`: en sus
+formularios el amarillo significa "esto lo llena el aplicante", y aquí
+le dice dónde mirar.
+
+Antes cada persona era una fila de más de cien columnas en una pestaña
+por destino. Se guardaba bien y no se podía leer. **No volver a esa
+forma**: si David no puede leer el expediente de un vistazo, no sirve.
+
+El mismo renderizador (`pintarFichaPersona`) arma la pestaña y el
+archivo adjunto, así que no hay dos formatos que mantener. Si la
+persona reenvía el expediente se reescribe su misma pestaña, no se crea
+una segunda. El formato se aplica en bloque (`setBackgrounds` y
+compañía sobre el rango entero), no celda por celda, porque cuatro
+personas son miles de celdas y si no se pasa del límite de seis minutos
+de Apps Script.
 
 ## Idioma
 
