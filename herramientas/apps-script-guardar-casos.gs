@@ -96,7 +96,7 @@ function propiedad(clave) {
    implementacion en vivo ya tiene los cambios: al abrir la URL /exec
    sin parametros, la respuesta trae este mismo texto. Subirla cada vez
    que se cambie este archivo. */
-var VERSION = "2026-09-10-alias-columnas";
+var VERSION = "2026-09-10-ficha-david";
 
 /* ------------------------------------------------------------
    NO HAY CANDADO
@@ -597,36 +597,24 @@ function guardarExpediente(datos) {
   }
 
   var libro = SpreadsheetApp.getActiveSpreadsheet();
-  var hoja = hojaDeExpediente(libro, datos.destinoClave);
-
   var fecha = Utilities.formatDate(new Date(), "America/Guayaquil", "dd/MM/yyyy HH:mm");
 
-  var claves = ["fecha", "codigo", "persona"];
-  datos.personas.forEach(function (per) {
-    Object.keys(per).forEach(function (k) {
-      if (claves.indexOf(k) === -1) claves.push(k);
-    });
-  });
+  /* UNA HOJA POR PERSONA, no una fila larguísima.
 
-  var indice = columnasDeExpediente(hoja, claves, datos);
-  var ancho = hoja.getLastColumn();
-
+     Antes cada persona era una fila de más de cien columnas en una
+     pestaña por destino. Se guardaba bien, pero David no podía
+     leerlo: hay que ir de izquierda a derecha persiguiendo columnas,
+     y es justo lo que sus propios Excel evitan. Ahora cada persona
+     tiene su pestaña, en vertical y con su formato de siempre. */
   datos.personas.forEach(function (per, n) {
     per.fecha = fecha;
     per.codigo = codigo;
     per.persona = String(n + 1) + " de " + datos.personas.length;
-
-    var fila = [];
-    for (var i = 0; i < ancho; i++) fila.push("");
-    claves.forEach(function (k) {
-      var v = per[k];
-      fila[indice[k] - 1] = (v === undefined || v === null) ? "" : v;
-    });
-    hoja.appendRow(fila);
+    pintarFichaPersona(hojaDePersona(libro, codigo, per, n), per, datos);
   });
 
-  // El archivo con el formato de David. Si algo falla aquí, el
-  // expediente ya quedó guardado en la hoja: se avisa, no se pierde.
+  // El archivo adjunto, con el mismo formato. Si algo falla aquí, el
+  // expediente ya quedó en las pestañas: se avisa, no se pierde.
   var archivo = null;
   var urlDoc = "";
   try {
@@ -642,6 +630,30 @@ function guardarExpediente(datos) {
   return responder({ ok: true, codigo: codigo, documento: urlDoc });
 }
 
+/**
+ * La pestaña de una persona dentro del libro de casos.
+ *
+ * Se llama "CÓDIGO · Nombre" para que David la encuentre buscando el
+ * código. Si la persona vuelve a enviar el expediente —se acordó de
+ * algo, corrigió un dato— se reescribe la misma pestaña en vez de
+ * crear una segunda: si no, quedan dos versiones y ninguna dice cuál
+ * es la buena.
+ */
+function hojaDePersona(libro, codigo, per, n) {
+  var nombre = String(per.nombre_ficha ||
+    ((per.personales__nombres || "") + " " + (per.personales__apellidos || "")).trim() ||
+    ("Persona " + (n + 1))).trim();
+
+  var titulo = (codigo + " · " + nombre).substring(0, 45).replace(/[\[\]\*\/\\\?:]/g, " ");
+  var hoja = libro.getSheetByName(titulo);
+  if (hoja) {
+    hoja.clear();
+    hoja.clearFormats();
+    return hoja;
+  }
+  return libro.insertSheet(titulo);
+}
+
 /** Deja constancia en la hoja de casos de que el expediente llegó. */
 function marcarExpedienteRecibido(codigo, fecha) {
   var fila = filaDelCaso(codigo);
@@ -649,105 +661,9 @@ function marcarExpedienteRecibido(codigo, fecha) {
   fila.hoja.getRange(fila.numero, fila.indice.expediente).setValue(fecha);
 }
 
-/**
- * Cada destino tiene su propia hoja, porque las columnas que pide
- * Estados Unidos, Canada y Europa no son las mismas. Mezclarlas en
- * una sola hoja desalinea las filas.
- */
-var HOJAS_EXPEDIENTE = {
-  usa: "Expedientes EE.UU.",
-  canada: "Expedientes Canadá",
-  schengen: "Expedientes Europa"
-};
 
-/* Título de la portada de cada archivo, igual al de los Excel que
-   David venía mandando a mano. */
-var TITULO_ARCHIVO = {
-  usa: "INFORMACIÓN PARA VISA AMERICANA",
-  canada: "INFORMACIÓN PARA VISA CANADIENSE",
-  schengen: "INFORMACIÓN PARA VISA SCHENGEN"
-};
 
-function hojaDeExpediente(libro, clave) {
-  var nombre = HOJAS_EXPEDIENTE[clave] || "Expedientes";
-  var hoja = libro.getSheetByName(nombre);
-  if (!hoja) hoja = libro.insertSheet(nombre);
-  return hoja;
-}
 
-/**
- * Devuelve en que columna va cada clave, creando al final las que
- * falten. La fila 1 lleva el titulo legible y la fila 2, oculta, la
- * clave interna: gracias a eso la hoja se puede ampliar despues sin
- * que se desalineen las filas ya guardadas.
- */
-function columnasDeExpediente(hoja, claves, datos) {
-  function titulo(k) { return etiquetaCampoExpediente(k, datos.etiquetas, datos.secciones); }
-
-  if (hoja.getLastRow() === 0) {
-    hoja.appendRow(claves.map(titulo));
-    hoja.appendRow(claves);
-    hoja.getRange(1, 1, 1, claves.length)
-        .setFontWeight("bold").setBackground("#0b6478").setFontColor("#ffffff");
-    hoja.hideRows(2);
-    hoja.setFrozenRows(2);
-  }
-
-  var ancho = hoja.getLastColumn();
-  var existentes = hoja.getRange(2, 1, 1, ancho).getValues()[0];
-  var indice = {};
-  existentes.forEach(function (k, i) { if (k) indice[String(k)] = i + 1; });
-
-  var nuevas = claves.filter(function (k) { return !indice[k]; });
-  if (nuevas.length) {
-    hoja.getRange(1, ancho + 1, 1, nuevas.length)
-        .setValues([nuevas.map(titulo)])
-        .setFontWeight("bold").setBackground("#0b6478").setFontColor("#ffffff");
-    hoja.getRange(2, ancho + 1, 1, nuevas.length).setValues([nuevas]);
-    nuevas.forEach(function (k, i) { indice[k] = ancho + 1 + i; });
-  }
-
-  return indice;
-}
-
-function etiquetaCampoExpediente(k, etiquetas, secciones) {
-  var especiales = { fecha: "Fecha", codigo: "Codigo del caso", persona: "Persona", nombre_ficha: "Nombre" };
-  if (especiales[k]) return especiales[k];
-
-  var partes = k.split("__");
-  if (partes.length !== 2) return k;
-
-  var seccion = etiquetaSeccion(partes[0], secciones);
-  if (partes[1] === "lista") return seccion + " — detalle";
-
-  var campo = (etiquetas && etiquetas[k]) || partes[1].replace(/_/g, " ");
-  return seccion + " — " + campo;
-}
-
-/**
- * El titulo de la seccion lo manda el formulario en `secciones`, asi
- * no hay que tocar este archivo cada vez que se agrega un destino.
- * El mapa de abajo queda solo como respaldo para expedientes viejos
- * que se enviaron antes de que el formulario mandara los titulos.
- */
-function etiquetaSeccion(clave, secciones) {
-  if (secciones && secciones[clave]) return secciones[clave];
-  var mapa = {
-    personales: "Datos personales",
-    conyuge: "Cónyuge",
-    padres: "Padres",
-    secundaria: "Estudios secundarios",
-    universidad: "Estudios superiores",
-    laboral_anterior: "Situación laboral anterior",
-    laboral: "Situación laboral actual",
-    pasaporte: "Pasaporte",
-    viajes: "Viajes a otros países",
-    viajes_usa: "Viajes a Estados Unidos",
-    redes: "Redes sociales",
-    familia_usa: "Familiares en Estados Unidos"
-  };
-  return mapa[clave] || clave.replace(/_/g, " ");
-}
 
 /* ============================================================
    EL ARCHIVO DEL CASO — el Excel de David, ya lleno
@@ -804,6 +720,14 @@ var ORDEN_DAVID = {
     "viaje", "ruta", "personales", "pasaporte", "laboral",
     "visas_previas", "visas_detalle", "alojamiento", "acompanantes"
   ]
+};
+
+/* Título de la portada de cada archivo, igual al de los Excel que
+   David venía mandando a mano. */
+var TITULO_ARCHIVO = {
+  usa: "INFORMACIÓN PARA VISA AMERICANA",
+  canada: "INFORMACIÓN PARA VISA CANADIENSE",
+  schengen: "INFORMACIÓN PARA VISA SCHENGEN"
 };
 
 var TITULO_EXTRAS = "DATOS ADICIONALES DEL FORMULARIO OFICIAL";
@@ -871,101 +795,197 @@ function nombrePestana(per, n, libro) {
   return nombre;
 }
 
+/* ------------------------------------------------------------
+   EL DISEÑO DE LOS EXCEL DE DAVID
+
+   Los colores y tamaños salen de sus archivos originales, medidos
+   celda por celda sobre los .xlsx de referencias/. No son decoración:
+   es el formato que él ya sabe leer de un vistazo, y el punto de todo
+   esto es que no tenga que aprender a leer otra cosa.
+
+   La celda del dato va en AMARILLO porque en sus formularios el
+   amarillo significa "esto lo llena el aplicante". Aquí ya viene
+   lleno, pero el color le dice dónde mirar.
+
+   Nada se combina a propósito: en Sheets el texto se desborda sobre
+   las celdas vacías de al lado, así que se ve igual que combinado y
+   se evitan cientos de llamadas de merge que harían lento el guardado
+   cuando viajan cuatro personas.
+   ------------------------------------------------------------ */
+var ANCHO_FICHA = 5;                 // columnas A:E, como sus archivos
+var TINTA_BORDE = "#d9e2ec";
+
+var ESTILO_FICHA = {
+  titulo:    { fondo: "#1f3a5f", texto: "#ffffff", tam: 18,   negrita: true  },
+  subtitulo: { fondo: "#142a42", texto: "#ffffff", tam: 11,   negrita: false },
+  banda:     { fondo: "#e7eef5", texto: "#1f3a5f", tam: 9.5,  negrita: false },
+  seccion:   { fondo: "#1f3a5f", texto: "#ffffff", tam: 12,   negrita: true  },
+  extras:    { fondo: "#3b6ea5", texto: "#ffffff", tam: 12,   negrita: true  },
+  etiqueta:  { fondo: "#ffffff", texto: "#16283d", tam: 10.5, negrita: false },
+  valor:     { fondo: "#fff9c4", texto: "#1a1a1a", tam: 10.5, negrita: false },
+  thead:     { fondo: "#3b6ea5", texto: "#ffffff", tam: 10.5, negrita: true  },
+  tfila:     { fondo: "#fffde7", texto: "#1a1a1a", tam: 10.5, negrita: false },
+  vacio:     { fondo: null,      texto: "#16283d", tam: 10.5, negrita: false },
+  pie:       { fondo: null,      texto: "#5b6b6f", tam: 9.5,  negrita: false }
+};
+
 /**
- * Escribe la ficha de una persona en su pestaña: portada, secciones
- * numeradas y, dentro de cada una, etiqueta y respuesta.
+ * Escribe la ficha de una persona con el diseño de los Excel de
+ * David: título, secciones numeradas en su orden, la pregunta a la
+ * izquierda y la respuesta en amarillo a la derecha.
  */
 function pintarFichaPersona(hoja, per, datos) {
   var orden = datos.orden || [];
   var etiquetas = datos.etiquetas || {};
   var secciones = datos.secciones || {};
 
-  var filas = [];
-  var estilos = [];   // {fila, tipo} con tipo "titulo" | "seccion" | "tabla"
+  var filas = [];        // matriz de ANCHO_FICHA columnas
+  var pintadas = [];     // {r, desde, hasta, estilo}
+  var recuadros = [];    // {desde, hasta} para los bordes
 
-  function fila(a, b) {
-    filas.push([a, b === undefined || b === null ? "" : b]);
+  function fila(celdas, estilo, desde, hasta) {
+    var f = [];
+    for (var k = 0; k < ANCHO_FICHA; k++) {
+      f.push(celdas[k] === undefined || celdas[k] === null ? "" : celdas[k]);
+    }
+    filas.push(f);
+    if (estilo) {
+      pintadas.push({
+        r: filas.length,
+        desde: desde === undefined ? 1 : desde,
+        hasta: hasta === undefined ? ANCHO_FICHA : hasta,
+        estilo: estilo
+      });
+    }
     return filas.length;
   }
-  function marcar(n, tipo) { estilos.push({ fila: n, tipo: tipo }); }
+  function vacia() { fila([], "vacio"); }
 
-  marcar(fila(TITULO_ARCHIVO[datos.destinoClave] || "EXPEDIENTE", ""), "titulo");
-  fila("Solicitante:", per.nombre_ficha || "");
-  fila("Código del caso:", datos.codigo || "");
-  fila("Recibido:", per.fecha || "");
-  fila("", "");
+  /* --- portada, igual que la de sus archivos --- */
+  fila([TITULO_ARCHIVO[datos.destinoClave] || "EXPEDIENTE"], "titulo");
+  fila(["Formulario de " + (per.nombre_ficha || "el solicitante")], "subtitulo");
+  fila(["Caso " + (datos.codigo || "") +
+        (per.fecha ? "  ·  recibido " + per.fecha : "") +
+        (datos.destinoNombre ? "  ·  " + datos.destinoNombre : "") +
+        "  ·  Lo llenó la persona en mivisaec.com."], "banda");
+  vacia();
 
-  // Las secciones llegan en el orden en que el formulario se las
-  // presentó a la persona; aquí se reordenan al de los Excel de David.
-  // Si el formulario no manda `orden` (versión antigua), se cae en el
-  // orden natural de las claves.
   var grupos = orden.length ? orden : ordenDeRespaldo(per);
   var repartidos = ordenarComoDavid(grupos, datos.destinoClave);
-
   var numero = 0;
 
-  function pintarGrupo(grupo) {
-    var claves = grupo.campos.filter(function (k) {
+  function tieneDatos(grupo) {
+    return grupo.campos.some(function (k) {
       var v = per[k];
       return v !== "" && v !== undefined && v !== null && v !== "[]";
     });
-    if (!claves.length) return;
+  }
 
+  function pintarGrupo(grupo) {
+    if (!tieneDatos(grupo)) return;
     numero++;
-    marcar(fila(numero + ". " + String(secciones[grupo.id] || grupo.id).toUpperCase(), ""), "seccion");
+    fila([numero + ". " + String(secciones[grupo.id] || grupo.id).toUpperCase()], "seccion");
 
-    claves.forEach(function (k) {
+    var inicioBloque = filas.length + 1;
+    grupo.campos.forEach(function (k) {
+      var v = per[k];
+      if (v === "" || v === undefined || v === null || v === "[]") return;
+
       var partes = k.split("__");
       if (partes.length === 2 && partes[1] === "lista") {
-        var tabla = filasDeLista(per[k]);
+        var tabla = filasDeLista(v);
         if (!tabla.length) return;
-        marcar(fila(tabla[0].join("   ·   "), ""), "tabla");
-        tabla.slice(1).forEach(function (r) { fila(r[0], r.slice(1).join("   ·   ")); });
+        // La tabla rompe el bloque de etiqueta/valor: se cierra el
+        // recuadro anterior y se abre uno propio.
+        if (filas.length >= inicioBloque) {
+          recuadros.push({ desde: inicioBloque, hasta: filas.length });
+        }
+        var cab = tabla[0].map(function (t) {
+          return String(t).charAt(0).toUpperCase() + String(t).slice(1);
+        });
+        var desdeTabla = fila(cab, "thead");
+        tabla.slice(1).forEach(function (r) { fila(r, "tfila"); });
+        recuadros.push({ desde: desdeTabla, hasta: filas.length });
+        inicioBloque = filas.length + 1;
         return;
       }
+
       var etiqueta = etiquetas[k] || (partes.length === 2 ? partes[1].replace(/_/g, " ") : k);
-      fila(etiqueta + ":", String(per[k]));
+      var n = fila([etiqueta + ":", String(v)], "etiqueta", 1, 1);
+      pintadas.push({ r: n, desde: 2, hasta: ANCHO_FICHA, estilo: "valor" });
     });
-    fila("", "");
+    if (filas.length >= inicioBloque) {
+      recuadros.push({ desde: inicioBloque, hasta: filas.length });
+    }
+    vacia();
   }
 
   repartidos.suyas.forEach(pintarGrupo);
 
-  // Lo que su Excel no tiene va al final, en bloque y avisado. Es lo
-  // que el formulario oficial le va a pedir igual, así que conviene
-  // que lo tenga a mano aunque no lo copie de corrido.
-  if (repartidos.extras.length) {
-    var conDatos = repartidos.extras.filter(function (g) {
-      return g.campos.some(function (k) {
-        var v = per[k];
-        return v !== "" && v !== undefined && v !== null && v !== "[]";
-      });
-    });
-    if (conDatos.length) {
-      fila("", "");
-      marcar(fila(TITULO_EXTRAS, ""), "titulo");
-      fila("", "");
-      conDatos.forEach(pintarGrupo);
-    }
+  var extras = repartidos.extras.filter(tieneDatos);
+  if (extras.length) {
+    fila([TITULO_EXTRAS +
+          "  —  no está en tu formato de siempre, lo pide el formulario oficial"], "extras");
+    vacia();
+    extras.forEach(pintarGrupo);
   }
 
-  hoja.getRange(1, 1, filas.length, 2).setValues(filas);
-  hoja.setColumnWidth(1, 320);
-  hoja.setColumnWidth(2, 460);
-  hoja.getRange(1, 1, filas.length, 2).setVerticalAlignment("top").setWrap(true);
+  fila(["Generado por MiVisa EC el " +
+        Utilities.formatDate(new Date(), "America/Guayaquil", "dd/MM/yyyy HH:mm") +
+        ". Las celdas amarillas son las respuestas de la persona."], "pie");
 
-  estilos.forEach(function (e) {
-    var r = hoja.getRange(e.fila, 1, 1, 2);
-    if (e.tipo === "titulo") {
-      r.merge().setFontSize(13).setFontWeight("bold")
-       .setBackground("#0b6478").setFontColor("#ffffff");
-    } else if (e.tipo === "seccion") {
-      r.merge().setFontWeight("bold")
-       .setBackground("#d9edf2").setFontColor("#0b3c48");
-    } else {
-      r.merge().setFontWeight("bold").setBackground("#f0f4f5");
+  volcarFicha(hoja, filas, pintadas, recuadros);
+}
+
+/**
+ * Escribe la matriz y le aplica el formato de una sola pasada. Se
+ * hace con setValues/setBackgrounds/setFontColors en bloque, y no
+ * celda por celda, porque un expediente de cuatro personas son miles
+ * de celdas: de la otra forma el guardado se pasa del límite de seis
+ * minutos de Apps Script y la persona nunca ve la confirmación.
+ */
+function volcarFicha(hoja, filas, pintadas, recuadros) {
+  var alto = filas.length;
+  if (!alto) return;
+
+  var fondos = [], colores = [], tams = [], pesos = [];
+  for (var r = 0; r < alto; r++) {
+    var ff = [], cc = [], tt = [], pp = [];
+    for (var c = 0; c < ANCHO_FICHA; c++) {
+      ff.push(null); cc.push("#16283d"); tt.push(10.5); pp.push("normal");
+    }
+    fondos.push(ff); colores.push(cc); tams.push(tt); pesos.push(pp);
+  }
+  pintadas.forEach(function (p) {
+    var e = ESTILO_FICHA[p.estilo];
+    if (!e) return;
+    for (var c = p.desde - 1; c < p.hasta; c++) {
+      fondos[p.r - 1][c] = e.fondo;
+      colores[p.r - 1][c] = e.texto;
+      tams[p.r - 1][c] = e.tam;
+      pesos[p.r - 1][c] = e.negrita ? "bold" : "normal";
     }
   });
+
+  hoja.getRange(1, 1, alto, ANCHO_FICHA)
+      .setValues(filas)
+      .setBackgrounds(fondos)
+      .setFontColors(colores)
+      .setFontSizes(tams)
+      .setFontWeights(pesos)
+      .setVerticalAlignment("top")
+      .setWrap(true);
+
+  recuadros.forEach(function (b) {
+    if (b.hasta < b.desde) return;
+    hoja.getRange(b.desde, 1, b.hasta - b.desde + 1, ANCHO_FICHA)
+        .setBorder(true, true, true, true, true, true,
+                   TINTA_BORDE, SpreadsheetApp.BorderStyle.SOLID);
+  });
+
+  // Anchos equivalentes a los de sus archivos (34 y 22 caracteres).
+  hoja.setColumnWidth(1, 250);
+  for (var k = 2; k <= ANCHO_FICHA; k++) hoja.setColumnWidth(k, 165);
   hoja.setFrozenRows(1);
 }
 
