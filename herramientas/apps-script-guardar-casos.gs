@@ -103,7 +103,7 @@ function propiedad(clave) {
    implementacion en vivo ya tiene los cambios: al abrir la URL /exec
    sin parametros, la respuesta trae este mismo texto. Subirla cada vez
    que se cambie este archivo. */
-var VERSION = "2026-09-15-correo-negocio";
+var VERSION = "2026-09-15-ficha-legible";
 
 /* ------------------------------------------------------------
    NO HAY CANDADO
@@ -654,6 +654,7 @@ function hojaDePersona(libro, codigo, per, n) {
   var titulo = (codigo + " · " + nombre).substring(0, 45).replace(/[\[\]\*\/\\\?:]/g, " ");
   var hoja = libro.getSheetByName(titulo);
   if (hoja) {
+    hoja.getRange(1, 1, hoja.getMaxRows(), hoja.getMaxColumns()).breakApart();
     hoja.clear();
     hoja.clearFormats();
     return hoja;
@@ -823,7 +824,7 @@ var ANCHO_FICHA = 5;                 // columnas A:E, como sus archivos
 var TINTA_BORDE = "#d9e2ec";
 
 var ESTILO_FICHA = {
-  titulo:    { fondo: "#1f3a5f", texto: "#ffffff", tam: 18,   negrita: true  },
+  titulo:    { fondo: "#1f3a5f", texto: "#ffffff", tam: 15,   negrita: true  },
   subtitulo: { fondo: "#142a42", texto: "#ffffff", tam: 11,   negrita: false },
   banda:     { fondo: "#e7eef5", texto: "#1f3a5f", tam: 9.5,  negrita: false },
   seccion:   { fondo: "#1f3a5f", texto: "#ffffff", tam: 12,   negrita: true  },
@@ -835,6 +836,14 @@ var ESTILO_FICHA = {
   vacio:     { fondo: null,      texto: "#16283d", tam: 10.5, negrita: false },
   pie:       { fondo: null,      texto: "#5b6b6f", tam: 9.5,  negrita: false }
 };
+
+/* Las bandas (título, secciones, avisos) se combinan de A a E y llevan
+   alto fijo. Sin eso el texto grande se salía de su fila y se montaba
+   sobre las de abajo, y un título largo se cortaba dentro de la columna
+   A ("DATOS ADICIONALES DEL..."). Son pocas filas por persona, así que
+   combinarlas no hace lento el guardado; las de pregunta y respuesta no
+   se combinan, para que la fila crezca sola con respuestas largas. */
+var ALTO_BANDA = { titulo: 34, subtitulo: 22, seccion: 24, extras: 24, banda: 20, pie: 18 };
 
 /**
  * Escribe la ficha de una persona con el diseño de los Excel de
@@ -849,6 +858,8 @@ function pintarFichaPersona(hoja, per, datos) {
   var filas = [];        // matriz de ANCHO_FICHA columnas
   var pintadas = [];     // {r, desde, hasta, estilo}
   var recuadros = [];    // {desde, hasta} para los bordes
+  var combinar = [];     // filas de banda, A:E combinadas
+  var altos = {};        // alto fijo de esas filas
 
   function fila(celdas, estilo, desde, hasta) {
     var f = [];
@@ -856,6 +867,10 @@ function pintarFichaPersona(hoja, per, datos) {
       f.push(celdas[k] === undefined || celdas[k] === null ? "" : celdas[k]);
     }
     filas.push(f);
+    if (ALTO_BANDA[estilo]) {
+      combinar.push(filas.length);
+      altos[filas.length] = ALTO_BANDA[estilo];
+    }
     if (estilo) {
       pintadas.push({
         r: filas.length,
@@ -900,25 +915,50 @@ function pintarFichaPersona(hoja, per, datos) {
 
       var partes = k.split("__");
       if (partes.length === 2 && partes[1] === "lista") {
-        var tabla = filasDeLista(v);
-        if (!tabla.length) return;
-        // La tabla rompe el bloque de etiqueta/valor: se cierra el
+        var items = leerLista(v);
+        if (!items.length) return;
+        // La tabla rompe el bloque de pregunta/respuesta: se cierra el
         // recuadro anterior y se abre uno propio.
         if (filas.length >= inicioBloque) {
           recuadros.push({ desde: inicioBloque, hasta: filas.length });
         }
-        var cab = tabla[0].map(function (t) {
-          return String(t).charAt(0).toUpperCase() + String(t).slice(1);
-        });
-        var desdeTabla = fila(cab, "thead");
-        tabla.slice(1).forEach(function (r) { fila(r, "tfila"); });
-        recuadros.push({ desde: desdeTabla, hasta: filas.length });
+        var cols = columnasDeLista(items, etiquetas, grupo.id);
+        var titulo = function (c) {
+          return etiquetas[grupo.id + "__lista__" + c] ||
+                 (c.charAt(0).toUpperCase() + c.slice(1).replace(/_/g, " "));
+        };
+
+        if (cols.length + 1 <= ANCHO_FICHA) {
+          // Angosta: cabe entera a lo ancho, como las tablas de sus Excel.
+          var desdeTabla = fila(["N.º"].concat(cols.map(titulo)), "thead");
+          items.forEach(function (it, n) {
+            fila([n + 1].concat(cols.map(function (c) { return fechaDavid(it[c]); })), "tfila");
+          });
+          recuadros.push({ desde: desdeTabla, hasta: filas.length });
+        } else {
+          /* Ancha (trabajos anteriores, familiares): no cabe en cinco
+             columnas y antes se cortaba, perdiendo el jefe, el teléfono
+             y las funciones. Cada elemento va en vertical, con la
+             pregunta a la izquierda y la respuesta en amarillo, igual
+             que el resto de la ficha. */
+          var nombre = String(etiquetas[grupo.id + "__lista__etiqueta"] || "registro");
+          nombre = nombre.charAt(0).toUpperCase() + nombre.slice(1);
+          items.forEach(function (it, n) {
+            var cab = fila([nombre + " " + (n + 1)], "thead");
+            combinar.push(cab);
+            cols.forEach(function (c) {
+              var r = fila([titulo(c) + ":", fechaDavid(it[c])], "etiqueta", 1, 1);
+              pintadas.push({ r: r, desde: 2, hasta: ANCHO_FICHA, estilo: "valor" });
+            });
+            recuadros.push({ desde: cab, hasta: filas.length });
+          });
+        }
         inicioBloque = filas.length + 1;
         return;
       }
 
       var etiqueta = etiquetas[k] || (partes.length === 2 ? partes[1].replace(/_/g, " ") : k);
-      var n = fila([etiqueta + ":", String(v)], "etiqueta", 1, 1);
+      var n = fila([etiqueta + ":", fechaDavid(v)], "etiqueta", 1, 1);
       pintadas.push({ r: n, desde: 2, hasta: ANCHO_FICHA, estilo: "valor" });
     });
     if (filas.length >= inicioBloque) {
@@ -931,8 +971,8 @@ function pintarFichaPersona(hoja, per, datos) {
 
   var extras = repartidos.extras.filter(tieneDatos);
   if (extras.length) {
-    fila([TITULO_EXTRAS +
-          "  —  no está en tu formato de siempre, lo pide el formulario oficial"], "extras");
+    fila([TITULO_EXTRAS], "extras");
+    fila(["Esto no está en tu formato de siempre: lo pide el formulario oficial."], "banda");
     vacia();
     extras.forEach(pintarGrupo);
   }
@@ -941,7 +981,7 @@ function pintarFichaPersona(hoja, per, datos) {
         Utilities.formatDate(new Date(), "America/Guayaquil", "dd/MM/yyyy HH:mm") +
         ". Las celdas amarillas son las respuestas de la persona."], "pie");
 
-  volcarFicha(hoja, filas, pintadas, recuadros);
+  volcarFicha(hoja, filas, pintadas, recuadros, combinar, altos);
 }
 
 /**
@@ -951,7 +991,7 @@ function pintarFichaPersona(hoja, per, datos) {
  * de celdas: de la otra forma el guardado se pasa del límite de seis
  * minutos de Apps Script y la persona nunca ve la confirmación.
  */
-function volcarFicha(hoja, filas, pintadas, recuadros) {
+function volcarFicha(hoja, filas, pintadas, recuadros, combinar, altos) {
   var alto = filas.length;
   if (!alto) return;
 
@@ -993,7 +1033,51 @@ function volcarFicha(hoja, filas, pintadas, recuadros) {
   // Anchos equivalentes a los de sus archivos (34 y 22 caracteres).
   hoja.setColumnWidth(1, 250);
   for (var k = 2; k <= ANCHO_FICHA; k++) hoja.setColumnWidth(k, 165);
-  hoja.setFrozenRows(1);
+
+  (combinar || []).forEach(function (r) {
+    hoja.getRange(r, 1, 1, ANCHO_FICHA).merge();
+  });
+  Object.keys(altos || {}).forEach(function (r) {
+    hoja.setRowHeight(Number(r), altos[r]);
+  });
+
+  /* Sin fila congelada. Congelar el título lo hacía repetirse al
+     imprimir o ver el archivo en el celular, montado encima de lo que
+     hubiera en esa página. */
+  hoja.setFrozenRows(0);
+}
+
+/* El formulario guarda las fechas como AAAA-MM-DD, que es lo que da el
+   calendario del celular. Los Excel de David piden DD/MM/AAAA, y es lo
+   que él copia al formulario oficial: se convierten al escribir la
+   ficha. Lo que no sea una fecha pasa tal cual. */
+function fechaDavid(v) {
+  var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(v === undefined || v === null ? "" : v).trim());
+  return m ? m[3] + "/" + m[2] + "/" + m[1] : (v === undefined || v === null ? "" : String(v));
+}
+
+/** La lista de una tabla, ya como arreglo de objetos. */
+function leerLista(v) {
+  var arr;
+  try { arr = typeof v === "string" ? JSON.parse(v) : v; } catch (e) { return []; }
+  return arr && arr.length ? arr : [];
+}
+
+/** Las columnas de una tabla en el orden del formulario (que llega en
+ *  las etiquetas), no en el orden en que la persona las fue llenando.
+ *  Cualquier dato suelto que no esté ahí va al final: no se pierde. */
+function columnasDeLista(items, etiquetas, id) {
+  var pref = id + "__lista__";
+  var cols = [];
+  Object.keys(etiquetas || {}).forEach(function (k) {
+    if (k.indexOf(pref) === 0 && k !== pref + "etiqueta") cols.push(k.slice(pref.length));
+  });
+  items.forEach(function (o) {
+    Object.keys(o).forEach(function (k) { if (cols.indexOf(k) === -1) cols.push(k); });
+  });
+  return cols.filter(function (c) {
+    return items.some(function (o) { return o[c] !== undefined && o[c] !== null && String(o[c]) !== ""; });
+  });
 }
 
 /** Convierte la lista JSON de viajes o familiares en filas. */

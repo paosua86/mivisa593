@@ -279,6 +279,13 @@ no tienen el botón: son los que siempre aplican. **No volver a marcar
 campos como `opcional`.** La revisión final lleva a la persona a la
 primera sección con huecos antes de dar la ficha por completa.
 
+**Trabajos anteriores: mínimo dos, en los tres destinos** (tres con el
+actual). La tabla abre dos espacios de entrada; si no tuvo trabajos,
+«No aplica · no tengo ninguno» para la sección entera; si tuvo uno
+solo, «Este no aplica» en el segundo. Lo controla `minimo` en la
+definición de la tabla, y sirve para cualquier otra tabla que lo
+necesite.
+
 **Siempre con un ejemplo.** Cada pregunta del expediente trae un ejemplo
 concreto: dentro de la casilla vacía ("Ej: ...") y repetido en el
 mensaje de error si la dejan en blanco. Viven en `EJEMPLOS`, en
@@ -299,6 +306,15 @@ paso a paso vive en `GUIA_REDES`; si hay un video, su URL va en
 Para agregar o cambiar una pregunta basta con editar el arreglo del
 destino: los encabezados de la hoja, el mapa de etiquetas y la barra de
 progreso salen todos de ahí. No hace falta tocar el Apps Script.
+
+**En la ficha de David las fechas van en DD/MM/AAAA**, como piden sus
+Excel: el formulario las guarda como AAAA-MM-DD (lo que da el
+calendario del celular) y `fechaDavid` las convierte al escribir. Las
+tablas de más de cuatro columnas salen en vertical, un bloque por
+elemento ("Trabajo 1", "Trabajo 2"); antes se cortaban a cinco
+columnas y se perdían datos. Las bandas se combinan de A a E con alto
+fijo y **no hay fila congelada**: congelar el título lo repetía encima
+del contenido al ver el archivo en el celular.
 
 **El expediente se guarda como una hoja por persona**, no como una
 fila. La pestaña se llama `CÓDIGO · Nombre` y lleva el formato de los

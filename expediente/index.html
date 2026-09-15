@@ -79,6 +79,8 @@ label.campo input.na{color:var(--tinta-suave);font-style:italic;background:#f1f3
 }
 .na-btn[aria-pressed="true"]{color:var(--brand-deep);border-style:solid;border-color:var(--brand-deep);background:var(--brand-tint)}
 .na-lista{margin:0 0 14px}
+.fila-tit{font-weight:700;color:var(--brand-deep);margin:0 0 6px;font-size:.95rem;padding-right:36px}
+.na-fila{margin:0 0 14px}
 .na-seccion{
   display:block;width:100%;font:inherit;font-size:.95rem;font-weight:600;color:var(--brand-deep);
   background:#fff;border:2px dashed var(--brand-deep);border-radius:var(--radio);
@@ -332,18 +334,23 @@ var SECCIONES_USA = [
   },
   {
     id: "laboral_anterior",
-    titulo: "Tu trabajo anterior",
-    ayuda: "Solo si tuviste otro empleo relevante antes. Si no, toca «Esta sección no aplica para mí».",
-    campos: [
-      {id:"empresa",  t:"Nombre de la empresa", tipo:"texto"},
-      {id:"inicio",   t:"Fecha de inicio", tipo:"fecha"},
-      {id:"fin",      t:"Fecha de salida", tipo:"fecha"},
-      {id:"direccion",t:"Dirección", tipo:"texto"},
-      {id:"ciudad",   t:"Ciudad", tipo:"texto"},
-      {id:"telefono", t:"Teléfono", tipo:"tel"},
-      {id:"jefe",     t:"Nombre de tu jefe o jefa", tipo:"texto"},
-      {id:"funciones",t:"¿Qué hacías ahí?", tipo:"larga"}
-    ]
+    titulo: "Tus trabajos anteriores",
+    ayuda: "Tus dos trabajos anteriores al actual, empezando por el más reciente. Si no tuviste trabajos antes, toca «No aplica · no tengo ninguno». Si solo tuviste uno, en el segundo toca «Este no aplica».",
+    repetible: {
+      etiqueta: "trabajo",
+      minimo: 2,
+      campos: [
+        {id:"empresa",  t:"Nombre de la empresa", tipo:"texto"},
+        {id:"cargo",    t:"Cargo", tipo:"texto"},
+        {id:"inicio",   t:"Fecha de inicio", tipo:"fecha"},
+        {id:"fin",      t:"Fecha de salida", tipo:"fecha"},
+        {id:"direccion",t:"Dirección", tipo:"texto"},
+        {id:"ciudad",   t:"Ciudad", tipo:"texto"},
+        {id:"telefono", t:"Teléfono", tipo:"tel"},
+        {id:"jefe",     t:"Nombre de tu jefe o jefa", tipo:"texto"},
+        {id:"funciones",t:"¿Qué hacías ahí?", tipo:"larga"}
+      ]
+    }
   },
   {
     id: "pasaporte",
@@ -602,9 +609,10 @@ var SECCIONES_CANADA = [
   {
     id: "laboral_anterior",
     titulo: "Tus trabajos anteriores",
-    ayuda: "Canadá pide los últimos diez años. Agrega uno por cada empleo, incluyendo estudios o desempleo si hubo.",
+    ayuda: "Canadá pide los últimos diez años. Pon por lo menos los dos anteriores al actual, del más reciente al más antiguo; si hubo más, agrégalos. Incluye estudios o desempleo si hubo. Si no tuviste trabajos antes, toca «No aplica · no tengo ninguno».",
     repetible: {
       etiqueta: "trabajo",
+      minimo: 2,
       campos: [
         {id:"empresa",  t:"Empresa o actividad", tipo:"texto"},
         {id:"cargo",    t:"Cargo u ocupación", tipo:"texto"},
@@ -843,6 +851,26 @@ var SECCIONES_SCHENGEN = [
       {id:"telefono", t:"Teléfono del trabajo", tipo:"tel", req:true},
       {id:"sueldo",   t:"Sueldo mensual aproximado (USD)", tipo:"numero", req:true}
     ]
+  },
+  {
+    id: "laboral_anterior",
+    titulo: "Tus trabajos anteriores",
+    ayuda: "Tus dos trabajos anteriores al actual, empezando por el más reciente. Si no tuviste trabajos antes, toca «No aplica · no tengo ninguno». Si solo tuviste uno, en el segundo toca «Este no aplica».",
+    repetible: {
+      etiqueta: "trabajo",
+      minimo: 2,
+      campos: [
+        {id:"empresa",  t:"Nombre de la empresa", tipo:"texto"},
+        {id:"cargo",    t:"Cargo", tipo:"texto"},
+        {id:"inicio",   t:"Fecha de inicio", tipo:"fecha"},
+        {id:"fin",      t:"Fecha de salida", tipo:"fecha"},
+        {id:"direccion",t:"Dirección", tipo:"texto"},
+        {id:"ciudad",   t:"Ciudad y país", tipo:"texto"},
+        {id:"telefono", t:"Teléfono", tipo:"tel"},
+        {id:"jefe",     t:"Nombre de tu jefe o jefa", tipo:"texto"},
+        {id:"funciones",t:"¿Qué hacías ahí?", tipo:"larga"}
+      ]
+    }
   },
   {
     id: "viaje",
@@ -1092,7 +1120,15 @@ var ANIMOS = [
 function mapaEtiquetas(){
   var m = {};
   seccionesDelDestino().forEach(function(s){
-    if (s.repetible) { m[s.id + "__lista"] = "Detalle (tabla)"; m[s.id + "__na"] = "Esta sección"; return; }
+    if (s.repetible) {
+      m[s.id + "__lista"] = "Detalle (tabla)";
+      m[s.id + "__na"] = "Esta sección";
+      // El nombre de cada columna, para que en la ficha de David se lea
+      // "Nombre de la empresa" y no "empresa".
+      m[s.id + "__lista__etiqueta"] = s.repetible.etiqueta;
+      s.repetible.campos.forEach(function(c){ m[s.id + "__lista__" + c.id] = c.t; });
+      return;
+    }
     s.campos.forEach(function(c){ m[s.id + "__" + c.id] = c.t; });
   });
   return m;
@@ -1526,6 +1562,7 @@ var EJEMPLOS = {
   "Nombre de la empresa, negocio o centro de estudios": "Distribuidora Andina S.A.",
   "Empresa o actividad": "Distribuidora Andina S.A. (o «Estudiante», «Desempleado»)",
   "Tu cargo": "Asistente contable",
+  "Cargo": "Vendedora",
   "Tu cargo u ocupación": "Jefa de ventas",
   "Cargo u ocupación": "Vendedora",
   "Tu ocupación actual": "Comerciante",
@@ -1880,6 +1917,7 @@ function faltanEn(s, datos){
     if (datos[s.id + "__na"] === NA) return 0;
     var lista = datos[s.id + "__lista"] || [];
     if (!lista.length) return 1;
+    if (lista.length < (s.repetible.minimo || 0)) return 1;
     var n = 0;
     lista.forEach(function(f){
       s.repetible.campos.forEach(function(c){ if (!String(f[c.id] || "").trim()) n++; });
@@ -1906,6 +1944,17 @@ function pintarRepetible(s, per){
   var kLista = s.id + "__lista";
   var kNA = s.id + "__na";
   var lista = per.datos[kLista] || [];
+  var minimo = s.repetible.minimo || 0;
+
+  /* Si la sección pide un mínimo (trabajos anteriores: dos), se abren
+     esos espacios de entrada. Ver dos casillas vacías dice "se esperan
+     dos" mejor que cualquier texto. */
+  function abrirMinimo(){
+    if (lista.length || per.datos[kNA] === NA || !minimo) return;
+    for (var q = 0; q < minimo; q++) lista.push({});
+    per.datos[kLista] = lista;
+  }
+  abrirMinimo();
 
   function estado(){
     var na = per.datos[kNA] === NA;
@@ -1918,6 +1967,11 @@ function pintarRepetible(s, per){
   function dibujar(){
     cont.innerHTML = lista.map(function(fila, i){
       var h = '<div class="fila-rep"><button class="quitar" type="button" data-i="' + i + '" aria-label="Quitar">×</button>';
+      var filaNA = s.repetible.campos.every(function(c){ return fila[c.id] === NA; });
+      var nombre = s.repetible.etiqueta.charAt(0).toUpperCase() + s.repetible.etiqueta.slice(1);
+      h += '<p class="fila-tit">' + esc(nombre) + ' ' + (i + 1) + '</p>';
+      h += '<button class="na-btn na-fila" type="button" data-fila="' + i + '" aria-pressed="' + filaNA + '">' +
+           (filaNA ? "✓ Este no aplica" : "Este no aplica") + '</button>';
       s.repetible.campos.forEach(function(c){
         var v = fila[c.id] || "";
         h += '<label class="campo">' + esc(c.t);
@@ -1926,6 +1980,8 @@ function pintarRepetible(s, per){
                c.opciones.map(function(o){
                  return '<option value="' + esc(o) + '"' + (v === o ? " selected" : "") + '>' + esc(o) + '</option>';
                }).join("") + '</select>';
+        } else if (c.tipo === "larga") {
+          h += '<textarea data-i="' + i + '" data-c="' + c.id + '"' + placeholderDe(c) + '>' + esc(v) + '</textarea>';
         } else {
           // Si la persona escribió "No aplica" en una fecha, se muestra
           // como texto: un campo de fecha no puede contenerlo.
@@ -1956,6 +2012,19 @@ function pintarRepetible(s, per){
         dibujar();
       });
     });
+    // «Este no aplica»: para quien tuvo un solo trabajo anterior y el
+    // segundo espacio le sobra. Llena la fila con "No aplica" de un toque.
+    [].forEach.call(cont.querySelectorAll(".na-fila"), function(b){
+      b.addEventListener("click", function(){
+        var f = lista[parseInt(b.dataset.fila,10)];
+        var todas = s.repetible.campos.every(function(c){ return f[c.id] === NA; });
+        s.repetible.campos.forEach(function(c){ f[c.id] = todas ? "" : NA; });
+        per.datos[kLista] = lista;
+        guardar();
+        quitarBanner();
+        dibujar();
+      });
+    });
   }
 
   btnMas.addEventListener("click", function(){
@@ -1969,9 +2038,13 @@ function pintarRepetible(s, per){
   btnNA.addEventListener("click", function(){
     if (per.datos[kNA] === NA) {
       per.datos[kNA] = "";
+      abrirMinimo();
+      dibujar();
     } else {
+      // "No aplica" no es un dato que se pierda: solo se pregunta si
+      // hay algo escrito de verdad.
       var hayAlgo = lista.some(function(f){
-        return Object.keys(f).some(function(c){ return String(f[c] || "").trim(); });
+        return Object.keys(f).some(function(c){ var x = String(f[c] || "").trim(); return x && x !== NA; });
       });
       if (hayAlgo && !confirm("Se van a borrar los datos que ya pusiste aquí. ¿Seguro que no aplica?")) return;
       lista = [];
@@ -2001,6 +2074,14 @@ function validarRepetible(s, per){
   if (!lista.length) {
     ponerBanner("Agrega por lo menos uno con «+ Agregar " + s.repetible.etiqueta +
                 "», o toca «No aplica · no tengo ninguno» si no es tu caso.");
+    document.getElementById("faltan").scrollIntoView({ behavior: "smooth", block: "center" });
+    return false;
+  }
+
+  var minimo = s.repetible.minimo || 0;
+  if (minimo && lista.length < minimo) {
+    ponerBanner("Aquí van por lo menos " + minimo + ". Agrega otro con «+ Agregar " + s.repetible.etiqueta +
+                "»; si no tuviste tantos, agrégalo igual y toca «Este no aplica».");
     document.getElementById("faltan").scrollIntoView({ behavior: "smooth", block: "center" });
     return false;
   }
