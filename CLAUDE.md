@@ -118,6 +118,14 @@ Mientras las constantes estén vacías, los avisos caen al correo, que no
 es el modo final. Los correos a la PERSONA (su código, su página, la
 confirmación de pago) no cambian.
 
+**La bandeja del negocio es `Visatour.ec@proton.me`** (`CORREO_DAVID`
+en el Apps Script), no el Gmail personal de David. Ahí caen los avisos
+mientras no esté Telegram, y las respuestas de las personas a sus
+correos (`replyTo`). Los correos igual **salen** desde
+`davidubilluz83@gmail.com`, que es la cuenta que ejecuta el script:
+Apps Script no deja cambiar el remitente. Cualquier cambio al script se
+hace con la sesión de `davidubilluz83@gmail.com` abierta en Chrome.
+
 WhatsApp quedó descartado por dos razones concretas: la Cloud API exige
 plantillas aprobadas por Meta para mensajes que inicia el negocio, y el
 número que se registra en la API deja de servir en la app normal — el
