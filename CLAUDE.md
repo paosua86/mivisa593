@@ -259,6 +259,26 @@ que genera el Apps Script** para que salga en el orden de sus
 secciones, con los campos extra al final en un bloque "Datos
 adicionales del formulario oficial".
 
+**En el expediente nada es opcional.** Todo campo visible se responde.
+Si no es su caso, la persona toca **«No aplica»** debajo del campo (o
+«Esta sección no aplica para mí» arriba, en secciones enteras como
+universidad o postgrado; o «No aplica · no tengo ninguno» en las
+tablas). David recibe "No aplica" escrito, nunca un hueco: un hueco no
+le dice si el dato no aplica o si la persona no se tomó el trabajo, y
+averiguarlo es una llamada. Es un botón y no texto a mano porque los
+campos de fecha en el celular no dejan teclear. Los campos `req:true`
+no tienen el botón: son los que siempre aplican. **No volver a marcar
+campos como `opcional`.** La revisión final lleva a la persona a la
+primera sección con huecos antes de dar la ficha por completa.
+
+**Redes sociales: enlace completo, no el usuario** (`tipo:"url"`, se
+valida que sea un perfil de esa red; `instagram.com/x` se completa solo
+a `https://`). Se le pide dejar el perfil en público mientras dura el
+trámite — **es un pedido de David, no un requisito oficial para la visa
+de turismo**, y la página no dice que el consulado lo exija. La guía
+paso a paso vive en `GUIA_REDES`; si hay un video, su URL va en
+`VIDEO_REDES`.
+
 Para agregar o cambiar una pregunta basta con editar el arreglo del
 destino: los encabezados de la hoja, el mapa de etiquetas y la barra de
 progreso salen todos de ahí. No hace falta tocar el Apps Script.

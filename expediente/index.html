@@ -68,6 +68,33 @@ label.campo input,label.campo select,label.campo textarea{
 label.campo textarea{min-height:88px;resize:vertical}
 label.campo input:focus,label.campo select:focus,label.campo textarea:focus{outline:none;border-color:var(--brand-deep)}
 label.campo small{display:block;font-weight:400;color:var(--tinta-suave);font-size:.85rem;margin-top:5px}
+/* «No aplica» y datos que faltan */
+.campo-wrap{margin-bottom:18px}
+.campo-wrap label.campo{margin-bottom:0}
+label.campo input.na{color:var(--tinta-suave);font-style:italic;background:#f1f3f1}
+.na-btn{
+  display:inline-flex;align-items:center;gap:6px;margin-top:8px;font:inherit;font-size:.86rem;font-weight:600;
+  color:var(--tinta-suave);background:transparent;border:1.5px dashed var(--borde);border-radius:999px;
+  padding:11px 16px;min-height:44px;cursor:pointer;
+}
+.na-btn[aria-pressed="true"]{color:var(--brand-deep);border-style:solid;border-color:var(--brand-deep);background:var(--brand-tint)}
+.na-lista{margin:0 0 14px}
+.na-seccion{
+  display:block;width:100%;font:inherit;font-size:.95rem;font-weight:600;color:var(--brand-deep);
+  background:#fff;border:2px dashed var(--brand-deep);border-radius:var(--radio);
+  padding:13px 16px;margin:0 0 20px;cursor:pointer;text-align:center;
+}
+.na-seccion[aria-pressed="true"]{border-style:solid;background:var(--brand-tint)}
+.campo-wrap.falta input,.campo-wrap.falta select,.campo-wrap.falta textarea{border-color:#8a2f2f}
+.error{display:block;color:#8a2f2f;font-size:.85rem;font-weight:600;margin-top:6px}
+.faltan{background:#f8ecec;border:1px solid #e5c4c4;border-radius:var(--radio);padding:14px 16px;margin-bottom:20px;font-size:.94rem;color:#6e2626}
+.fila-rep .falta-celda{border-color:#8a2f2f !important}
+details.guia{background:#fff;border:1px solid var(--borde);border-radius:var(--radio);padding:14px 16px;margin:0 0 20px;font-size:.93rem}
+details.guia summary{cursor:pointer;font-weight:700;color:var(--brand-deep)}
+details.guia h3{font-size:.95rem;margin:14px 0 4px}
+details.guia ol{margin:0;padding-left:20px}
+details.guia li{margin-bottom:5px}
+
 
 .ops{display:grid;gap:10px;margin-bottom:20px}
 .op{
@@ -178,6 +205,43 @@ var CLAVE = "mivisaec_expediente_";
 
 /* Tipos de campo: texto, fecha, tel, correo, numero, larga, opcion */
 
+/* ------------------------------------------------------------
+   REDES SOCIALES
+
+   David necesita el ENLACE completo de cada perfil, no el nombre de
+   usuario: con el enlace abre el perfil de un toque y no hay dudas de
+   cuál es. Y le pide a la persona que lo deje en público mientras dura
+   el trámite.
+
+   Ojo al redactar: dejar el perfil en público es un pedido de David,
+   no un requisito oficial para la visa de turismo. La página no dice
+   que el consulado lo exija.
+
+   VIDEO_REDES: si algún día hay un video corto que muestre cómo se
+   hace (idealmente grabado por MiVisa EC, que no desaparece ni cambia
+   sin aviso), se pega aquí la URL y aparece un enlace dentro de la
+   guía. Vacío, no se muestra nada.
+   ------------------------------------------------------------ */
+var VIDEO_REDES = "";
+
+var GUIA_REDES =
+  '<details class="guia"><summary>¿Cómo copio el enlace y pongo mi perfil en público?</summary>' +
+  '<p>Hazlo desde la app en tu celular. Los menús pueden cambiar un poco según tu versión.</p>' +
+  '<h3>Instagram</h3><ol>' +
+    '<li><b>Enlace:</b> ve a tu perfil → «Compartir perfil» → «Copiar enlace».</li>' +
+    '<li><b>Público:</b> menú ☰ → «Privacidad de la cuenta» → apaga «Cuenta privada».</li></ol>' +
+  '<h3>Facebook</h3><ol>' +
+    '<li><b>Enlace:</b> ve a tu perfil → los tres puntos (···) → «Copiar enlace del perfil».</li>' +
+    '<li><b>Público:</b> menú ☰ → «Configuración y privacidad» → «Configuración» → busca «¿Quién puede ver tus publicaciones futuras?» y elige «Público».</li></ol>' +
+  '<h3>TikTok</h3><ol>' +
+    '<li><b>Enlace:</b> ve a tu perfil → el ícono de compartir → «Copiar enlace».</li>' +
+    '<li><b>Público:</b> menú ☰ → «Ajustes y privacidad» → «Privacidad» → apaga «Cuenta privada».</li></ol>' +
+  '<h3>X (antes Twitter)</h3><ol>' +
+    '<li><b>Enlace:</b> es https://x.com/ seguido de tu usuario, sin el @.</li>' +
+    '<li><b>Público:</b> «Configuración y privacidad» → «Privacidad y seguridad» → «Audiencia y etiquetado» → apaga «Proteger tus posts».</li></ol>' +
+  (VIDEO_REDES ? '<p><a href="' + VIDEO_REDES + '" target="_blank" rel="noopener">Ver el video paso a paso</a></p>' : '') +
+  '</details>';
+
 var SECCIONES_USA = [
   {
     id: "personales",
@@ -190,7 +254,7 @@ var SECCIONES_USA = [
       {id:"lugar_nacimiento", t:"Lugar de nacimiento", tipo:"texto", ayuda:"Ciudad y país", req:true},
       {id:"cedula",      t:"Número de cédula", tipo:"texto", req:true},
       {id:"direccion",   t:"Dirección de tu domicilio", tipo:"larga", req:true},
-      {id:"tel_casa",    t:"Teléfono de tu domicilio", tipo:"tel", opcional:true},
+      {id:"tel_casa",    t:"Teléfono de tu domicilio", tipo:"tel"},
       {id:"celular",     t:"Teléfono celular", tipo:"tel", req:true},
       {id:"correo",      t:"Correo electrónico", tipo:"correo", req:true},
       {id:"estado_civil",t:"Estado civil", tipo:"opcion", req:true,
@@ -206,8 +270,8 @@ var SECCIONES_USA = [
       {id:"nombre",       t:"Nombre completo de tu cónyuge", tipo:"texto", req:true},
       {id:"nacimiento",   t:"Su fecha de nacimiento", tipo:"fecha"},
       {id:"lugar",        t:"Su ciudad y país de nacimiento", tipo:"texto"},
-      {id:"matrimonio",   t:"Fecha de matrimonio", tipo:"fecha", opcional:true},
-      {id:"divorcio",     t:"Fecha de divorcio", tipo:"fecha", opcional:true}
+      {id:"matrimonio",   t:"Fecha de matrimonio", tipo:"fecha"},
+      {id:"divorcio",     t:"Fecha de divorcio", tipo:"fecha"}
     ]
   },
   {
@@ -216,9 +280,9 @@ var SECCIONES_USA = [
     ayuda: "Si alguno falleció, escríbelo en el nombre.",
     campos: [
       {id:"madre",           t:"Nombre completo de tu madre", tipo:"texto", req:true},
-      {id:"madre_nacimiento",t:"Su fecha de nacimiento", tipo:"fecha", opcional:true},
+      {id:"madre_nacimiento",t:"Su fecha de nacimiento", tipo:"fecha"},
       {id:"padre",           t:"Nombre completo de tu padre", tipo:"texto", req:true},
-      {id:"padre_nacimiento",t:"Su fecha de nacimiento", tipo:"fecha", opcional:true},
+      {id:"padre_nacimiento",t:"Su fecha de nacimiento", tipo:"fecha"},
       {id:"en_usa",          t:"¿Alguno se encuentra en Estados Unidos?", tipo:"opcion",
        opciones:["No","Sí, mi madre","Sí, mi padre","Sí, los dos"], req:true}
     ]
@@ -228,24 +292,24 @@ var SECCIONES_USA = [
     titulo: "Tus estudios secundarios",
     campos: [
       {id:"colegio",  t:"Nombre del colegio", tipo:"texto", req:true},
-      {id:"direccion",t:"Dirección del colegio", tipo:"texto", opcional:true},
+      {id:"direccion",t:"Dirección del colegio", tipo:"texto"},
       {id:"ciudad",   t:"Ciudad", tipo:"texto", req:true},
-      {id:"inicio",   t:"Fecha de inicio", tipo:"fecha", opcional:true},
-      {id:"fin",      t:"Fecha de culminación", tipo:"fecha", opcional:true},
-      {id:"titulo",   t:"Título obtenido", tipo:"texto", opcional:true}
+      {id:"inicio",   t:"Fecha de inicio", tipo:"fecha"},
+      {id:"fin",      t:"Fecha de culminación", tipo:"fecha"},
+      {id:"titulo",   t:"Título obtenido", tipo:"texto"}
     ]
   },
   {
     id: "universidad",
     titulo: "Tus estudios superiores",
-    ayuda: "Universidad o instituto. Si no aplica, puedes saltar esta sección.",
+    ayuda: "Universidad o instituto. Si no aplica, toca «Esta sección no aplica para mí».",
     campos: [
-      {id:"institucion",t:"Nombre de la universidad o instituto", tipo:"texto", opcional:true},
-      {id:"direccion",  t:"Dirección", tipo:"texto", opcional:true},
-      {id:"ciudad",     t:"Ciudad", tipo:"texto", opcional:true},
-      {id:"inicio",     t:"Fecha de inicio", tipo:"fecha", opcional:true},
-      {id:"fin",        t:"Fecha de culminación", tipo:"fecha", opcional:true},
-      {id:"titulo",     t:"Título obtenido", tipo:"texto", opcional:true}
+      {id:"institucion",t:"Nombre de la universidad o instituto", tipo:"texto"},
+      {id:"direccion",  t:"Dirección", tipo:"texto"},
+      {id:"ciudad",     t:"Ciudad", tipo:"texto"},
+      {id:"inicio",     t:"Fecha de inicio", tipo:"fecha"},
+      {id:"fin",        t:"Fecha de culminación", tipo:"fecha"},
+      {id:"titulo",     t:"Título obtenido", tipo:"texto"}
     ]
   },
   {
@@ -259,26 +323,26 @@ var SECCIONES_USA = [
       {id:"direccion",t:"Dirección del trabajo", tipo:"larga", req:true},
       {id:"ciudad",   t:"Ciudad", tipo:"texto", req:true},
       {id:"telefono", t:"Teléfono del trabajo", tipo:"tel", req:true},
-      {id:"jefe",     t:"Nombre de tu jefe o jefa", tipo:"texto", opcional:true},
+      {id:"jefe",     t:"Nombre de tu jefe o jefa", tipo:"texto"},
       {id:"funciones",t:"¿Qué haces en tu trabajo?", tipo:"larga", req:true,
        ayuda:"Al menos cinco tareas, separadas por comas."},
-      {id:"fin",      t:"Fecha de culminación, si ya no trabajas ahí", tipo:"fecha", opcional:true},
+      {id:"fin",      t:"Fecha de culminación, si ya no trabajas ahí", tipo:"fecha"},
       {id:"sueldo",   t:"Sueldo mensual aproximado (USD)", tipo:"numero", req:true}
     ]
   },
   {
     id: "laboral_anterior",
     titulo: "Tu trabajo anterior",
-    ayuda: "Solo si tuviste otro empleo relevante antes. Si no, salta esta sección.",
+    ayuda: "Solo si tuviste otro empleo relevante antes. Si no, toca «Esta sección no aplica para mí».",
     campos: [
-      {id:"empresa",  t:"Nombre de la empresa", tipo:"texto", opcional:true},
-      {id:"inicio",   t:"Fecha de inicio", tipo:"fecha", opcional:true},
-      {id:"fin",      t:"Fecha de salida", tipo:"fecha", opcional:true},
-      {id:"direccion",t:"Dirección", tipo:"texto", opcional:true},
-      {id:"ciudad",   t:"Ciudad", tipo:"texto", opcional:true},
-      {id:"telefono", t:"Teléfono", tipo:"tel", opcional:true},
-      {id:"jefe",     t:"Nombre de tu jefe o jefa", tipo:"texto", opcional:true},
-      {id:"funciones",t:"¿Qué hacías ahí?", tipo:"larga", opcional:true}
+      {id:"empresa",  t:"Nombre de la empresa", tipo:"texto"},
+      {id:"inicio",   t:"Fecha de inicio", tipo:"fecha"},
+      {id:"fin",      t:"Fecha de salida", tipo:"fecha"},
+      {id:"direccion",t:"Dirección", tipo:"texto"},
+      {id:"ciudad",   t:"Ciudad", tipo:"texto"},
+      {id:"telefono", t:"Teléfono", tipo:"tel"},
+      {id:"jefe",     t:"Nombre de tu jefe o jefa", tipo:"texto"},
+      {id:"funciones",t:"¿Qué hacías ahí?", tipo:"larga"}
     ]
   },
   {
@@ -294,7 +358,7 @@ var SECCIONES_USA = [
   {
     id: "viajes",
     titulo: "Viajes a otros países",
-    ayuda: "De los últimos cinco años, sin contar Estados Unidos. Si no has viajado, sigue de largo.",
+    ayuda: "De los últimos cinco años, sin contar Estados Unidos. Si no has viajado, toca «No aplica».",
     repetible: {
       etiqueta: "viaje",
       campos: [
@@ -308,7 +372,7 @@ var SECCIONES_USA = [
   {
     id: "viajes_usa",
     titulo: "Viajes a Estados Unidos",
-    ayuda: "Tus últimas entradas. Si nunca has ido, sigue de largo.",
+    ayuda: "Tus últimas entradas. Si nunca has ido, toca «No aplica».",
     repetible: {
       etiqueta: "entrada",
       campos: [
@@ -321,18 +385,19 @@ var SECCIONES_USA = [
   {
     id: "redes",
     titulo: "Tus redes sociales",
-    ayuda: "Escribe tu nombre de usuario, sin el arroba. Solo las que uses.",
+    ayuda: "Pega el enlace completo de cada perfil, no solo tu nombre de usuario. Si no tienes alguna de estas redes, toca «No aplica». Te pedimos que dejes tus perfiles en público mientras dura tu trámite.",
+    guia: GUIA_REDES,
     campos: [
-      {id:"facebook", t:"Facebook", tipo:"texto", opcional:true},
-      {id:"instagram",t:"Instagram", tipo:"texto", opcional:true},
-      {id:"tiktok",   t:"TikTok", tipo:"texto", opcional:true},
-      {id:"x",        t:"X (antes Twitter)", tipo:"texto", opcional:true}
+      {id:"facebook", t:"Facebook", tipo:"url", ayuda:"Ejemplo: https://www.facebook.com/tu.usuario"},
+      {id:"instagram",t:"Instagram", tipo:"url", ayuda:"Ejemplo: https://www.instagram.com/tuusuario"},
+      {id:"tiktok",   t:"TikTok", tipo:"url", ayuda:"Ejemplo: https://www.tiktok.com/@tuusuario"},
+      {id:"x",        t:"X (antes Twitter)", tipo:"url", ayuda:"Ejemplo: https://x.com/tuusuario"}
     ]
   },
   {
     id: "familia_usa",
     titulo: "Familiares en Estados Unidos",
-    ayuda: "Si no tienes familiares allá, sigue de largo.",
+    ayuda: "Si no tienes familiares allá, toca «No aplica».",
     repetible: {
       etiqueta: "familiar",
       campos: [
@@ -368,18 +433,18 @@ var SECCIONES_CANADA = [
     campos: [
       {id:"nombres",     t:"Nombres completos", tipo:"texto", req:true},
       {id:"apellidos",   t:"Apellidos completos", tipo:"texto", req:true},
-      {id:"otros_nombres", t:"Otros nombres que hayas usado", tipo:"texto", opcional:true,
+      {id:"otros_nombres", t:"Otros nombres que hayas usado", tipo:"texto",
        ayuda:"Apellido de soltera, nombre anterior, cualquier variante que aparezca en documentos."},
       {id:"sexo",        t:"Sexo", tipo:"opcion", req:true, opciones:["Femenino","Masculino","Otro"]},
       {id:"nacimiento",  t:"Fecha de nacimiento", tipo:"fecha", req:true},
       {id:"lugar_nacimiento", t:"Lugar de nacimiento", tipo:"texto", ayuda:"Ciudad y país", req:true},
       {id:"ciudadania",  t:"País o países de tu ciudadanía", tipo:"texto", req:true},
       {id:"cedula",      t:"Número de cédula", tipo:"texto", req:true},
-      {id:"cedula_emision", t:"Fecha de emisión de tu cédula", tipo:"fecha", opcional:true},
+      {id:"cedula_emision", t:"Fecha de emisión de tu cédula", tipo:"fecha"},
       {id:"direccion",   t:"Dirección de tu domicilio", tipo:"larga", req:true},
-      {id:"codigo_postal", t:"Código postal", tipo:"texto", opcional:true,
+      {id:"codigo_postal", t:"Código postal", tipo:"texto",
        ayuda:"Si no lo sabes, déjalo en blanco."},
-      {id:"tel_casa",    t:"Teléfono de tu domicilio", tipo:"tel", opcional:true},
+      {id:"tel_casa",    t:"Teléfono de tu domicilio", tipo:"tel"},
       {id:"celular",     t:"Teléfono celular", tipo:"tel", req:true},
       {id:"correo",      t:"Correo electrónico", tipo:"correo", req:true},
       {id:"estado_civil",t:"Estado civil", tipo:"opcion", req:true,
@@ -393,14 +458,14 @@ var SECCIONES_CANADA = [
     campos: [
       {id:"otra_nac",      t:"¿Tienes otra nacionalidad además de la ecuatoriana?", tipo:"opcion", req:true,
        opciones:["No","Sí"]},
-      {id:"otra_nac_pais", t:"País o países de esa nacionalidad", tipo:"texto", opcional:true},
-      {id:"otra_nac_doc",  t:"Número de pasaporte o documento de esa nacionalidad", tipo:"texto", opcional:true},
+      {id:"otra_nac_pais", t:"País o países de esa nacionalidad", tipo:"texto"},
+      {id:"otra_nac_doc",  t:"Número de pasaporte o documento de esa nacionalidad", tipo:"texto"},
       {id:"residente",     t:"¿Eres o has sido residente permanente de otro país?", tipo:"opcion", req:true,
        opciones:["No","Sí"], ayuda:"Estados Unidos, España, Chile, el que sea."},
-      {id:"residente_pais",t:"País de esa residencia", tipo:"texto", opcional:true},
-      {id:"residente_doc", t:"Tipo y número del documento de residencia", tipo:"texto", opcional:true,
+      {id:"residente_pais",t:"País de esa residencia", tipo:"texto"},
+      {id:"residente_doc", t:"Tipo y número del documento de residencia", tipo:"texto",
        ayuda:"Por ejemplo Green Card, TRP, NIE."},
-      {id:"residente_hasta", t:"Fecha de expiración de esa residencia", tipo:"fecha", opcional:true}
+      {id:"residente_hasta", t:"Fecha de expiración de esa residencia", tipo:"fecha"}
     ]
   },
   {
@@ -412,12 +477,12 @@ var SECCIONES_CANADA = [
       {id:"nombre",       t:"Nombre completo de tu cónyuge", tipo:"texto", req:true},
       {id:"nacimiento",   t:"Su fecha de nacimiento", tipo:"fecha"},
       {id:"lugar",        t:"Su ciudad y país de nacimiento", tipo:"texto"},
-      {id:"ocupacion",    t:"Su ocupación actual", tipo:"texto", opcional:true},
-      {id:"matrimonio",   t:"Fecha de matrimonio o unión", tipo:"fecha", opcional:true},
-      {id:"divorcio",     t:"Fecha de divorcio o separación", tipo:"fecha", opcional:true},
+      {id:"ocupacion",    t:"Su ocupación actual", tipo:"texto"},
+      {id:"matrimonio",   t:"Fecha de matrimonio o unión", tipo:"fecha"},
+      {id:"divorcio",     t:"Fecha de divorcio o separación", tipo:"fecha"},
       {id:"acompana",     t:"¿Viaja contigo a Canadá?", tipo:"opcion", opciones:["Sí","No"], req:true},
-      {id:"ex_nombre",    t:"Si tuviste un matrimonio anterior, nombre de esa persona", tipo:"texto", opcional:true},
-      {id:"ex_fechas",    t:"Fechas de ese matrimonio anterior", tipo:"texto", opcional:true,
+      {id:"ex_nombre",    t:"Si tuviste un matrimonio anterior, nombre de esa persona", tipo:"texto"},
+      {id:"ex_fechas",    t:"Fechas de ese matrimonio anterior", tipo:"texto",
        ayuda:"Desde cuándo hasta cuándo. Ejemplo: 2010 a 2015."}
     ]
   },
@@ -427,23 +492,23 @@ var SECCIONES_CANADA = [
     ayuda: "Canadá los pide completos, aunque hayan fallecido.",
     campos: [
       {id:"madre",             t:"Nombre completo de tu madre", tipo:"texto", req:true},
-      {id:"madre_nacimiento",  t:"Su fecha de nacimiento", tipo:"fecha", opcional:true},
-      {id:"madre_lugar",       t:"Su ciudad y país de nacimiento", tipo:"texto", opcional:true},
+      {id:"madre_nacimiento",  t:"Su fecha de nacimiento", tipo:"fecha"},
+      {id:"madre_lugar",       t:"Su ciudad y país de nacimiento", tipo:"texto"},
       {id:"madre_situacion",   t:"¿Vive actualmente?", tipo:"opcion", opciones:["Sí","Falleció"], req:true},
-      {id:"madre_direccion",   t:"Dónde vive ahora (ciudad y país)", tipo:"texto", opcional:true},
-      {id:"madre_ocupacion",   t:"Su ocupación", tipo:"texto", opcional:true},
+      {id:"madre_direccion",   t:"Dónde vive ahora (ciudad y país)", tipo:"texto"},
+      {id:"madre_ocupacion",   t:"Su ocupación", tipo:"texto"},
       {id:"padre",             t:"Nombre completo de tu padre", tipo:"texto", req:true},
-      {id:"padre_nacimiento",  t:"Su fecha de nacimiento", tipo:"fecha", opcional:true},
-      {id:"padre_lugar",       t:"Su ciudad y país de nacimiento", tipo:"texto", opcional:true},
+      {id:"padre_nacimiento",  t:"Su fecha de nacimiento", tipo:"fecha"},
+      {id:"padre_lugar",       t:"Su ciudad y país de nacimiento", tipo:"texto"},
       {id:"padre_situacion",   t:"¿Vive actualmente?", tipo:"opcion", opciones:["Sí","Falleció"], req:true},
-      {id:"padre_direccion",   t:"Dónde vive ahora (ciudad y país)", tipo:"texto", opcional:true},
-      {id:"padre_ocupacion",   t:"Su ocupación", tipo:"texto", opcional:true}
+      {id:"padre_direccion",   t:"Dónde vive ahora (ciudad y país)", tipo:"texto"},
+      {id:"padre_ocupacion",   t:"Su ocupación", tipo:"texto"}
     ]
   },
   {
     id: "familia",
     titulo: "Tus hijos y hermanos",
-    ayuda: "Canadá pide a todos, vivan donde vivan y sin importar la edad. Si no tienes, sigue de largo.",
+    ayuda: "Canadá pide a todos, vivan donde vivan y sin importar la edad. Si no tienes, toca «No aplica».",
     repetible: {
       etiqueta: "familiar",
       campos: [
@@ -486,35 +551,35 @@ var SECCIONES_CANADA = [
     campos: [
       {id:"colegio",  t:"Nombre del colegio", tipo:"texto", req:true},
       {id:"ciudad",   t:"Ciudad y país", tipo:"texto", req:true},
-      {id:"inicio",   t:"Fecha de inicio", tipo:"fecha", opcional:true},
-      {id:"fin",      t:"Fecha de culminación", tipo:"fecha", opcional:true},
-      {id:"titulo",   t:"Título obtenido", tipo:"texto", opcional:true}
+      {id:"inicio",   t:"Fecha de inicio", tipo:"fecha"},
+      {id:"fin",      t:"Fecha de culminación", tipo:"fecha"},
+      {id:"titulo",   t:"Título obtenido", tipo:"texto"}
     ]
   },
   {
     id: "universidad",
     titulo: "Tus estudios superiores",
-    ayuda: "Universidad o instituto. Si no aplica, puedes saltar esta sección.",
+    ayuda: "Universidad o instituto. Si no aplica, toca «Esta sección no aplica para mí».",
     campos: [
-      {id:"institucion",t:"Nombre de la universidad o instituto", tipo:"texto", opcional:true},
-      {id:"campo",      t:"Carrera o campo de estudio", tipo:"texto", opcional:true},
-      {id:"direccion",  t:"Dirección", tipo:"texto", opcional:true},
-      {id:"ciudad",     t:"Ciudad y país", tipo:"texto", opcional:true},
-      {id:"inicio",     t:"Fecha de inicio", tipo:"fecha", opcional:true},
-      {id:"fin",        t:"Fecha de culminación", tipo:"fecha", opcional:true},
-      {id:"titulo",     t:"Título obtenido", tipo:"texto", opcional:true}
+      {id:"institucion",t:"Nombre de la universidad o instituto", tipo:"texto"},
+      {id:"campo",      t:"Carrera o campo de estudio", tipo:"texto"},
+      {id:"direccion",  t:"Dirección", tipo:"texto"},
+      {id:"ciudad",     t:"Ciudad y país", tipo:"texto"},
+      {id:"inicio",     t:"Fecha de inicio", tipo:"fecha"},
+      {id:"fin",        t:"Fecha de culminación", tipo:"fecha"},
+      {id:"titulo",     t:"Título obtenido", tipo:"texto"}
     ]
   },
   {
     id: "postgrado",
     titulo: "Tu postgrado",
-    ayuda: "Maestría, especialización o doctorado. Si no tienes, sigue de largo.",
+    ayuda: "Maestría, especialización o doctorado. Si no tienes, toca «No aplica».",
     campos: [
-      {id:"institucion",t:"Nombre de la institución", tipo:"texto", opcional:true},
-      {id:"direccion",  t:"Dirección", tipo:"texto", opcional:true},
-      {id:"inicio",     t:"Fecha de inicio", tipo:"fecha", opcional:true},
-      {id:"fin",        t:"Fecha de culminación", tipo:"fecha", opcional:true},
-      {id:"titulo",     t:"Título obtenido", tipo:"texto", opcional:true}
+      {id:"institucion",t:"Nombre de la institución", tipo:"texto"},
+      {id:"direccion",  t:"Dirección", tipo:"texto"},
+      {id:"inicio",     t:"Fecha de inicio", tipo:"fecha"},
+      {id:"fin",        t:"Fecha de culminación", tipo:"fecha"},
+      {id:"titulo",     t:"Título obtenido", tipo:"texto"}
     ]
   },
   {
@@ -528,7 +593,7 @@ var SECCIONES_CANADA = [
       {id:"direccion",t:"Dirección del trabajo", tipo:"larga", req:true},
       {id:"ciudad",   t:"Ciudad y país", tipo:"texto", req:true},
       {id:"telefono", t:"Teléfono del trabajo", tipo:"tel", req:true},
-      {id:"jefe",     t:"Nombre de tu jefe o jefa", tipo:"texto", opcional:true},
+      {id:"jefe",     t:"Nombre de tu jefe o jefa", tipo:"texto"},
       {id:"funciones",t:"¿Qué haces en tu trabajo?", tipo:"larga", req:true,
        ayuda:"Al menos cinco tareas, separadas por comas."},
       {id:"sueldo",   t:"Sueldo mensual aproximado (USD)", tipo:"numero", req:true}
@@ -556,7 +621,7 @@ var SECCIONES_CANADA = [
   {
     id: "estancias_largas",
     titulo: "Países donde estuviste más de seis meses",
-    ayuda: "De los últimos cinco años. Canadá lo pregunta expresamente. Si no aplica, sigue de largo.",
+    ayuda: "De los últimos cinco años. Canadá lo pregunta expresamente. Si no aplica, toca «No aplica».",
     repetible: {
       etiqueta: "país",
       campos: [
@@ -578,13 +643,13 @@ var SECCIONES_CANADA = [
       {id:"fondos",   t:"Dinero disponible para el viaje (CAD)", tipo:"numero", req:true},
       {id:"donde",    t:"Dónde te vas a quedar", tipo:"larga", req:true,
        ayuda:"Nombre y dirección del hotel, o de la persona que te recibe."},
-      {id:"quien",    t:"A quién visitas y qué parentesco tienes", tipo:"texto", opcional:true}
+      {id:"quien",    t:"A quién visitas y qué parentesco tienes", tipo:"texto"}
     ]
   },
   {
     id: "viajes",
     titulo: "Viajes a otros países",
-    ayuda: "De los últimos cinco años, sin contar Canadá. Si no has viajado, sigue de largo.",
+    ayuda: "De los últimos cinco años, sin contar Canadá. Si no has viajado, toca «No aplica».",
     repetible: {
       etiqueta: "viaje",
       campos: [
@@ -598,7 +663,7 @@ var SECCIONES_CANADA = [
   {
     id: "familia_canada",
     titulo: "Familiares o contactos en Canadá",
-    ayuda: "Si no tienes a nadie allá, sigue de largo.",
+    ayuda: "Si no tienes a nadie allá, toca «No aplica».",
     repetible: {
       etiqueta: "contacto",
       campos: [
@@ -623,13 +688,13 @@ var SECCIONES_CANADA = [
     campos: [
       {id:"visa_negada",   t:"¿Alguna vez te han negado una visa o la entrada a Canadá u otro país?", tipo:"opcion", req:true,
        opciones:["No","Sí"]},
-      {id:"detalle_negada",t:"Si respondiste que sí, cuenta qué pasó", tipo:"larga", opcional:true,
+      {id:"detalle_negada",t:"Si respondiste que sí, cuenta qué pasó", tipo:"larga",
        ayuda:"País, año y motivo que te dieron."},
       {id:"permanencia",   t:"¿Alguna vez te quedaste más tiempo del permitido en otro país?", tipo:"opcion", req:true,
        opciones:["No","Sí"]},
       {id:"penales",       t:"¿Has sido arrestado, acusado o condenado por algún delito, en cualquier país?", tipo:"opcion", req:true,
        opciones:["No","Sí"]},
-      {id:"detalle_penal", t:"Si respondiste que sí, cuenta qué pasó", tipo:"larga", opcional:true},
+      {id:"detalle_penal", t:"Si respondiste que sí, cuenta qué pasó", tipo:"larga"},
       {id:"tuberculosis",  t:"¿Has tenido tuberculosis o convivido de cerca con alguien que la tuvo?", tipo:"opcion", req:true,
        opciones:["No","Sí"]},
       {id:"militar",       t:"¿Has prestado servicio militar?", tipo:"opcion", req:true,
@@ -639,12 +704,13 @@ var SECCIONES_CANADA = [
   {
     id: "redes",
     titulo: "Tus redes sociales",
-    ayuda: "Escribe tu nombre de usuario, sin el arroba. Solo las que uses.",
+    ayuda: "Pega el enlace completo de cada perfil, no solo tu nombre de usuario. Si no tienes alguna de estas redes, toca «No aplica». Te pedimos que dejes tus perfiles en público mientras dura tu trámite.",
+    guia: GUIA_REDES,
     campos: [
-      {id:"facebook", t:"Facebook", tipo:"texto", opcional:true},
-      {id:"instagram",t:"Instagram", tipo:"texto", opcional:true},
-      {id:"tiktok",   t:"TikTok", tipo:"texto", opcional:true},
-      {id:"x",        t:"X (antes Twitter)", tipo:"texto", opcional:true}
+      {id:"facebook", t:"Facebook", tipo:"url", ayuda:"Ejemplo: https://www.facebook.com/tu.usuario"},
+      {id:"instagram",t:"Instagram", tipo:"url", ayuda:"Ejemplo: https://www.instagram.com/tuusuario"},
+      {id:"tiktok",   t:"TikTok", tipo:"url", ayuda:"Ejemplo: https://www.tiktok.com/@tuusuario"},
+      {id:"x",        t:"X (antes Twitter)", tipo:"url", ayuda:"Ejemplo: https://x.com/tuusuario"}
     ]
   }
 ];
@@ -676,17 +742,17 @@ var SECCIONES_SCHENGEN = [
     ayuda: "Como aparecen en tu pasaporte, tal cual.",
     campos: [
       {id:"apellidos",   t:"Apellidos completos", tipo:"texto", req:true},
-      {id:"apellido_soltera", t:"Apellido de soltera o apellido anterior", tipo:"texto", opcional:true},
+      {id:"apellido_soltera", t:"Apellido de soltera o apellido anterior", tipo:"texto"},
       {id:"nombres",     t:"Nombres completos", tipo:"texto", req:true},
       {id:"sexo",        t:"Sexo", tipo:"opcion", req:true, opciones:["Femenino","Masculino","Otro"]},
       {id:"nacimiento",  t:"Fecha de nacimiento", tipo:"fecha", req:true},
       {id:"lugar_nacimiento", t:"Ciudad de nacimiento", tipo:"texto", req:true},
       {id:"pais_nacimiento",  t:"País de nacimiento", tipo:"texto", req:true},
       {id:"nacionalidad",     t:"Nacionalidad actual", tipo:"texto", req:true},
-      {id:"nacionalidad_nacimiento", t:"Nacionalidad al nacer, si es distinta", tipo:"texto", opcional:true},
+      {id:"nacionalidad_nacimiento", t:"Nacionalidad al nacer, si es distinta", tipo:"texto"},
       {id:"cedula",      t:"Número de cédula", tipo:"texto", req:true},
       {id:"direccion",   t:"Dirección de tu domicilio", tipo:"larga", req:true},
-      {id:"codigo_postal", t:"Código postal", tipo:"texto", opcional:true,
+      {id:"codigo_postal", t:"Código postal", tipo:"texto",
        ayuda:"Si no lo sabes, déjalo en blanco."},
       {id:"ciudad_residencia", t:"Ciudad de residencia", tipo:"texto", req:true},
       {id:"celular",     t:"Teléfono celular", tipo:"tel", req:true},
@@ -704,8 +770,8 @@ var SECCIONES_SCHENGEN = [
       {id:"nombre",     t:"Nombre completo de tu cónyuge", tipo:"texto", req:true},
       {id:"nacimiento", t:"Su fecha de nacimiento", tipo:"fecha"},
       {id:"lugar",      t:"Su ciudad y país de nacimiento", tipo:"texto"},
-      {id:"matrimonio", t:"Fecha de matrimonio o unión", tipo:"fecha", opcional:true},
-      {id:"divorcio",   t:"Fecha de divorcio o separación", tipo:"fecha", opcional:true},
+      {id:"matrimonio", t:"Fecha de matrimonio o unión", tipo:"fecha"},
+      {id:"divorcio",   t:"Fecha de divorcio o separación", tipo:"fecha"},
       {id:"acompana",   t:"¿Viaja contigo a Europa?", tipo:"opcion", opciones:["Sí","No"], req:true}
     ]
   },
@@ -715,9 +781,9 @@ var SECCIONES_SCHENGEN = [
     ayuda: "Si alguno falleció, escríbelo en el nombre.",
     campos: [
       {id:"madre",           t:"Nombre completo de tu madre", tipo:"texto", req:true},
-      {id:"madre_nacimiento",t:"Su fecha de nacimiento", tipo:"fecha", opcional:true},
+      {id:"madre_nacimiento",t:"Su fecha de nacimiento", tipo:"fecha"},
       {id:"padre",           t:"Nombre completo de tu padre", tipo:"texto", req:true},
-      {id:"padre_nacimiento",t:"Su fecha de nacimiento", tipo:"fecha", opcional:true}
+      {id:"padre_nacimiento",t:"Su fecha de nacimiento", tipo:"fecha"}
     ]
   },
   {
@@ -735,12 +801,12 @@ var SECCIONES_SCHENGEN = [
   {
     id: "residencia",
     titulo: "Residencia en otro país",
-    ayuda: "Solo si vives en un país distinto al de tu nacionalidad. Si vives en Ecuador y eres ecuatoriano, salta esta sección.",
+    ayuda: "Solo si vives en un país distinto al de tu nacionalidad. Si vives en Ecuador y eres ecuatoriano, toca «Esta sección no aplica para mí».",
     campos: [
       {id:"otro_pais",   t:"¿Vives en un país distinto al de tu nacionalidad?", tipo:"opcion", req:true,
        opciones:["No","Sí"]},
-      {id:"permiso",     t:"Número de tu permiso de residencia", tipo:"texto", opcional:true},
-      {id:"permiso_hasta", t:"Válido hasta", tipo:"fecha", opcional:true}
+      {id:"permiso",     t:"Número de tu permiso de residencia", tipo:"texto"},
+      {id:"permiso_hasta", t:"Válido hasta", tipo:"fecha"}
     ]
   },
   {
@@ -749,19 +815,19 @@ var SECCIONES_SCHENGEN = [
     campos: [
       {id:"colegio",  t:"Nombre del colegio", tipo:"texto", req:true},
       {id:"ciudad",   t:"Ciudad y país", tipo:"texto", req:true},
-      {id:"fin",      t:"Fecha de culminación", tipo:"fecha", opcional:true},
-      {id:"titulo",   t:"Título obtenido", tipo:"texto", opcional:true}
+      {id:"fin",      t:"Fecha de culminación", tipo:"fecha"},
+      {id:"titulo",   t:"Título obtenido", tipo:"texto"}
     ]
   },
   {
     id: "universidad",
     titulo: "Tus estudios superiores",
-    ayuda: "Universidad o instituto. Si no aplica, puedes saltar esta sección.",
+    ayuda: "Universidad o instituto. Si no aplica, toca «Esta sección no aplica para mí».",
     campos: [
-      {id:"institucion",t:"Nombre de la universidad o instituto", tipo:"texto", opcional:true},
-      {id:"ciudad",     t:"Ciudad y país", tipo:"texto", opcional:true},
-      {id:"fin",        t:"Fecha de culminación", tipo:"fecha", opcional:true},
-      {id:"titulo",     t:"Título obtenido", tipo:"texto", opcional:true}
+      {id:"institucion",t:"Nombre de la universidad o instituto", tipo:"texto"},
+      {id:"ciudad",     t:"Ciudad y país", tipo:"texto"},
+      {id:"fin",        t:"Fecha de culminación", tipo:"fecha"},
+      {id:"titulo",     t:"Título obtenido", tipo:"texto"}
     ]
   },
   {
@@ -812,7 +878,7 @@ var SECCIONES_SCHENGEN = [
   {
     id: "acompanantes",
     titulo: "Familiares que viajan contigo",
-    ayuda: "Solo los que viajan en el mismo grupo. Si viajas solo o sola, sigue de largo.",
+    ayuda: "Solo los que viajan en el mismo grupo. Si viajas solo o sola, toca «No aplica».",
     repetible: {
       etiqueta: "acompañante",
       campos: [
@@ -831,8 +897,8 @@ var SECCIONES_SCHENGEN = [
        opciones:["Hotel","Casa de un familiar o amigo","Departamento alquilado o Airbnb","Otro"]},
       {id:"nombre",    t:"Nombre del hotel, o de la persona que te recibe", tipo:"texto", req:true},
       {id:"direccion", t:"Dirección completa", tipo:"larga", req:true},
-      {id:"telefono",  t:"Teléfono", tipo:"tel", opcional:true},
-      {id:"correo",    t:"Correo electrónico", tipo:"correo", opcional:true}
+      {id:"telefono",  t:"Teléfono", tipo:"tel"},
+      {id:"correo",    t:"Correo electrónico", tipo:"correo"}
     ]
   },
   {
@@ -843,7 +909,7 @@ var SECCIONES_SCHENGEN = [
        opciones:["Yo mismo/a","Un patrocinador (familiar, amigo o empresa)"]},
       {id:"medios",     t:"¿Con qué medios?", tipo:"opcion", req:true,
        opciones:["Efectivo","Tarjeta de crédito","Cheques de viaje","Alojamiento ya pagado","Transporte ya pagado","Varios de los anteriores"]},
-      {id:"patrocinador", t:"Si te patrocinan, nombre de esa persona o empresa y su relación contigo", tipo:"texto", opcional:true}
+      {id:"patrocinador", t:"Si te patrocinan, nombre de esa persona o empresa y su relación contigo", tipo:"texto"}
     ]
   },
   {
@@ -853,7 +919,7 @@ var SECCIONES_SCHENGEN = [
     campos: [
       {id:"tuvo",     t:"¿Has tenido visa Schengen en los últimos tres años?", tipo:"opcion", req:true,
        opciones:["No","Sí"]},
-      {id:"validez",  t:"Fechas de validez de esa visa", tipo:"texto", opcional:true,
+      {id:"validez",  t:"Fechas de validez de esa visa", tipo:"texto",
        ayuda:"Desde cuándo hasta cuándo. Míralo en el sticker del pasaporte."},
       {id:"huellas",  t:"¿Te tomaron las huellas antes para una visa Schengen?", tipo:"opcion", req:true,
        opciones:["No","Sí","No lo sé"]}
@@ -862,7 +928,7 @@ var SECCIONES_SCHENGEN = [
   {
     id: "visas_detalle",
     titulo: "Detalle de tus visas Schengen",
-    ayuda: "Una por cada visa que hayas tenido, aunque sea de hace años. Si nunca has tenido, sigue de largo.",
+    ayuda: "Una por cada visa que hayas tenido, aunque sea de hace años. Si nunca has tenido, toca «No aplica».",
     repetible: {
       etiqueta: "visa",
       campos: [
@@ -875,7 +941,7 @@ var SECCIONES_SCHENGEN = [
   {
     id: "viajes",
     titulo: "Viajes a otros países",
-    ayuda: "De los últimos cinco años. Si no has viajado, sigue de largo.",
+    ayuda: "De los últimos cinco años. Si no has viajado, toca «No aplica».",
     repetible: {
       etiqueta: "viaje",
       campos: [
@@ -892,23 +958,24 @@ var SECCIONES_SCHENGEN = [
     ayuda: "Solo si tienes cónyuge, hijo o padre con ciudadanía de la UE, Suiza, Noruega o Islandia. Si no, responde que no y sigue.",
     campos: [
       {id:"tiene",       t:"¿Tienes un familiar así?", tipo:"opcion", req:true, opciones:["No","Sí"]},
-      {id:"nombre",      t:"Su nombre completo", tipo:"texto", opcional:true},
-      {id:"nacimiento",  t:"Su fecha de nacimiento", tipo:"fecha", opcional:true},
-      {id:"nacionalidad",t:"Su nacionalidad", tipo:"texto", opcional:true},
-      {id:"parentesco",  t:"Parentesco contigo", tipo:"opcion", opcional:true,
+      {id:"nombre",      t:"Su nombre completo", tipo:"texto"},
+      {id:"nacimiento",  t:"Su fecha de nacimiento", tipo:"fecha"},
+      {id:"nacionalidad",t:"Su nacionalidad", tipo:"texto"},
+      {id:"parentesco",  t:"Parentesco contigo", tipo:"opcion",
        opciones:["Cónyuge","Hijo/a","Nieto/a","Padre o madre a mi cargo"]},
-      {id:"pasaporte",   t:"Número de su pasaporte o documento de identidad", tipo:"texto", opcional:true}
+      {id:"pasaporte",   t:"Número de su pasaporte o documento de identidad", tipo:"texto"}
     ]
   },
   {
     id: "redes",
     titulo: "Tus redes sociales",
-    ayuda: "Escribe tu nombre de usuario, sin el arroba. Solo las que uses.",
+    ayuda: "Pega el enlace completo de cada perfil, no solo tu nombre de usuario. Si no tienes alguna de estas redes, toca «No aplica». Te pedimos que dejes tus perfiles en público mientras dura tu trámite.",
+    guia: GUIA_REDES,
     campos: [
-      {id:"facebook", t:"Facebook", tipo:"texto", opcional:true},
-      {id:"instagram",t:"Instagram", tipo:"texto", opcional:true},
-      {id:"tiktok",   t:"TikTok", tipo:"texto", opcional:true},
-      {id:"x",        t:"X (antes Twitter)", tipo:"texto", opcional:true}
+      {id:"facebook", t:"Facebook", tipo:"url", ayuda:"Ejemplo: https://www.facebook.com/tu.usuario"},
+      {id:"instagram",t:"Instagram", tipo:"url", ayuda:"Ejemplo: https://www.instagram.com/tuusuario"},
+      {id:"tiktok",   t:"TikTok", tipo:"url", ayuda:"Ejemplo: https://www.tiktok.com/@tuusuario"},
+      {id:"x",        t:"X (antes Twitter)", tipo:"url", ayuda:"Ejemplo: https://x.com/tuusuario"}
     ]
   }
 ];
@@ -1025,7 +1092,7 @@ var ANIMOS = [
 function mapaEtiquetas(){
   var m = {};
   seccionesDelDestino().forEach(function(s){
-    if (s.repetible) { m[s.id + "__lista"] = "Detalle (tabla)"; return; }
+    if (s.repetible) { m[s.id + "__lista"] = "Detalle (tabla)"; m[s.id + "__na"] = "Esta sección"; return; }
     s.campos.forEach(function(c){ m[s.id + "__" + c.id] = c.t; });
   });
   return m;
@@ -1048,7 +1115,7 @@ function ordenSecciones(){
     return {
       id: s.id,
       campos: s.repetible
-        ? [s.id + "__lista"]
+        ? [s.id + "__lista", s.id + "__na"]
         : s.campos.map(function(c){ return s.id + "__" + c.id; })
     };
   });
@@ -1276,7 +1343,7 @@ function pantallaPreparate(){
    ============================================================ */
 
 function pantallaPersonas(){
-  var listas = E.personas.filter(function(p){ return p.completa; }).length;
+  var listas = E.personas.filter(function(p){ return personaCompleta(p); }).length;
   progreso(2 + listas, 3 + E.personas.length, "Solicitantes");
 
   var html = '<div class="seccion">' +
@@ -1286,18 +1353,18 @@ function pantallaPersonas(){
   E.personas.forEach(function(p, i){
     html += '<div class="persona">' +
       '<span>' + esc(p.nombre || ("Persona " + (i+1))) + '</span>' +
-      (p.completa
+      (personaCompleta(p)
         ? '<span class="est listo">Completa</span>'
         : '<button type="button" data-i="' + i + '" class="abrir">Llenar</button>') +
       '</div>';
-    if (p.completa) {
+    if (personaCompleta(p)) {
       html += '<div style="margin:-6px 0 12px"><button class="atras" type="button" data-i="' + i + '">Revisar o corregir</button></div>';
     }
   });
 
   html += '<button class="mas" type="button" id="agregar">+ Agregar otra persona</button>';
 
-  var todasListas = E.personas.length > 0 && E.personas.every(function(p){ return p.completa; });
+  var todasListas = E.personas.length > 0 && E.personas.every(function(p){ return personaCompleta(p); });
   if (todasListas) {
     html += '<button class="btn" type="button" id="seguir">Continuar a los documentos</button>';
   }
@@ -1346,6 +1413,115 @@ function seccionesQueAplican(datos){
   return seccionesDelDestino().filter(function(s){ return !s.si || s.si(datos); });
 }
 
+/* ------------------------------------------------------------
+   NADA ES OPCIONAL
+
+   Antes solo se exigían los campos marcados `req`, y 165 de 285 se
+   podían dejar en blanco. La gente los dejaba en blanco: veía
+   "(opcional)" y seguía. David recibía huecos y no sabía si el dato no
+   aplicaba o si la persona no se tomó el trabajo — y para saberlo tenía
+   que llamar, que es justo lo que este formulario le quita.
+
+   Ahora todo campo visible se tiene que responder. Si no es su caso, la
+   persona lo dice con el botón «No aplica», y David ve "No aplica"
+   escrito en vez de un espacio vacío.
+
+   Es un botón y no un texto que se escriba a mano por dos razones: los
+   campos de fecha abren un calendario en el celular y no dejan
+   teclear, y escribir "No aplica" seis veces seguidas en un teléfono
+   es la clase de fricción que hace abandonar el formulario.
+
+   Los campos `req:true` no tienen el botón: son los que siempre
+   aplican (nombre, cédula, estado civil…).
+   ------------------------------------------------------------ */
+var NA = "No aplica";
+
+function admiteNA(c){ return !c.req; }
+
+/* Una sección entera puede no aplicar (no fue a la universidad, no
+   tiene postgrado). Para eso hay un solo botón arriba, en vez de
+   obligar a tocar «No aplica» campo por campo. */
+function seccionAdmiteNA(s){
+  return !s.repetible && s.campos.length > 1 && s.campos.every(admiteNA);
+}
+
+/* ---------- redes sociales: enlace completo, no el usuario ---------- */
+
+var DOMINIOS_RED = {
+  facebook:  /(^|\.)(facebook\.com|fb\.com)$/i,
+  instagram: /(^|\.)instagram\.com$/i,
+  tiktok:    /(^|\.)tiktok\.com$/i,
+  x:         /(^|\.)(x\.com|twitter\.com)$/i
+};
+
+/* Mucha gente pega "instagram.com/usuario" sin el https://. Eso sí es
+   un enlace; se completa solo en vez de rechazarlo. */
+function normalizarUrl(v){
+  v = String(v || "").replace(/\s+/g, "");
+  if (!/^https?:\/\//i.test(v) && /^(www\.|m\.)?[a-z0-9-]+\.(com|me)\//i.test(v)) v = "https://" + v;
+  return v;
+}
+
+/* Tiene que ser un enlace a un perfil de ESA red, no a su portada ni a
+   otra red. Un "@usuario" o solo el nombre no pasa. */
+function urlDeRed(id, v){
+  var m = /^https?:\/\/([^\/?#]+)(\/[^?#]*)?/i.exec(String(v || ""));
+  if (!m) return false;
+  var host = m[1].toLowerCase();
+  var ruta = (m[2] || "").replace(/\/+$/, "");
+  var re = DOMINIOS_RED[id];
+  if (re && !re.test(host)) return false;
+  return ruta.length > 1;
+}
+
+function errorDeCampo(c, v){
+  if (!v) return c.req ? "Este dato es obligatorio."
+                       : "Llénalo, o toca «No aplica» si no es tu caso.";
+  if (c.tipo === "url" && v !== NA && !urlDeRed(c.id, v)) {
+    return "Pega el enlace completo de tu perfil (empieza con https://), no solo tu nombre de usuario.";
+  }
+  return "";
+}
+
+/* ---------- pintar ---------- */
+
+function controlHtml(k, c, v){
+  if (v === NA) {
+    return '<input type="text" id="c_' + k + '" value="' + NA + '" class="na" disabled>';
+  }
+  if (c.tipo === "opcion") {
+    var h = '<select id="c_' + k + '"><option value="">Elige una opción</option>';
+    c.opciones.forEach(function(o){
+      h += '<option value="' + esc(o) + '"' + (v === o ? " selected" : "") + '>' + esc(o) + '</option>';
+    });
+    return h + '</select>';
+  }
+  if (c.tipo === "larga") return '<textarea id="c_' + k + '">' + esc(v) + '</textarea>';
+
+  var t = c.tipo === "fecha" ? "date" :
+          c.tipo === "tel" ? "tel" :
+          c.tipo === "correo" ? "email" :
+          c.tipo === "numero" ? "number" :
+          c.tipo === "url" ? "url" : "text";
+  var extra = c.tipo === "url"
+    ? ' inputmode="url" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="https://"'
+    : "";
+  return '<input type="' + t + '" id="c_' + k + '" value="' + esc(v) + '"' + extra + '>';
+}
+
+function campoHtml(seccion, c, datos){
+  var k = seccion + "__" + c.id;
+  var v = datos[k] === undefined ? "" : String(datos[k]);
+  var h = '<div class="campo-wrap" data-k="' + k + '"><label class="campo">' + esc(c.t) + controlHtml(k, c, v);
+  if (c.ayuda) h += '<small>' + esc(c.ayuda) + '</small>';
+  h += '</label>';
+  if (admiteNA(c)) {
+    h += '<button type="button" class="na-btn" data-na="' + k + '" aria-pressed="' + (v === NA) + '">' +
+         (v === NA ? "✓ No aplica" : "No aplica") + '</button>';
+  }
+  return h + '</div>';
+}
+
 function pintarSeccion(){
   var per = E.personas[E.actual];
   var secciones = seccionesQueAplican(per.datos);
@@ -1356,15 +1532,19 @@ function pintarSeccion(){
 
   var html = '<div class="seccion"><h1>' + esc(s.titulo) + '</h1>';
   if (s.ayuda) html += '<p class="ayuda">' + esc(s.ayuda) + '</p>';
+  if (s.guia) html += s.guia;                 // HTML escrito en este mismo archivo
+  html += '<div id="faltan"></div>';
   if (E.seccion > 0 && E.seccion % 3 === 0) {
     var animo = ANIMOS[(Math.floor(E.seccion / 3) - 1) % ANIMOS.length];
     html += '<div class="animo">' + esc(animo) + '</div>';
   }
 
   if (s.repetible) {
+    html += '<button class="na-btn na-lista" type="button" id="naLista" aria-pressed="false">No aplica · no tengo ninguno</button>';
     html += '<div id="filas"></div>';
     html += '<button class="mas" type="button" id="mas">+ Agregar ' + esc(s.repetible.etiqueta) + '</button>';
   } else {
+    if (seccionAdmiteNA(s)) html += '<button class="na-seccion" type="button" id="naSeccion" aria-pressed="false"></button>';
     s.campos.forEach(function(c){ html += campoHtml(s.id, c, per.datos); });
   }
 
@@ -1374,10 +1554,16 @@ function pintarSeccion(){
   html += '</div>';
   ir(html);
 
-  if (s.repetible) pintarRepetible(s, per);
+  if (s.repetible) {
+    pintarRepetible(s, per);
+  } else {
+    conectarNA(s);
+    conectarSeccionNA(s);
+  }
 
   document.getElementById("siguiente").addEventListener("click", function(){
-    if (!s.repetible && !recogerCampos(s, per)) return;
+    var ok = s.repetible ? validarRepetible(s, per) : recogerCampos(s, per);
+    if (!ok) return;
     E.seccion++;
     guardar();
     pintarSeccion();
@@ -1389,54 +1575,192 @@ function pintarSeccion(){
   });
 }
 
-function campoHtml(seccion, c, datos){
-  var k = seccion + "__" + c.id;
-  var v = datos[k] === undefined ? "" : datos[k];
-  var etiqueta = esc(c.t) + (c.opcional ? ' <span class="opt">(opcional)</span>' : "");
-  var h = '<label class="campo" data-k="' + k + '">' + etiqueta;
+/* ---------- «No aplica» ---------- */
 
-  if (c.tipo === "opcion") {
-    h += '<select id="c_' + k + '">';
-    h += '<option value="">Elige una opción</option>';
-    c.opciones.forEach(function(o){
-      h += '<option value="' + esc(o) + '"' + (v === o ? " selected" : "") + '>' + esc(o) + '</option>';
+function conectarNA(s){
+  var porK = {};
+  s.campos.forEach(function(c){ porK[s.id + "__" + c.id] = c; });
+
+  [].forEach.call(document.querySelectorAll(".na-btn[data-na]"), function(b){
+    b.addEventListener("click", function(){
+      var k = b.getAttribute("data-na");
+      alternarNA(k, porK[k]);
     });
-    h += '</select>';
-  } else if (c.tipo === "larga") {
-    h += '<textarea id="c_' + k + '">' + esc(v) + '</textarea>';
-  } else {
-    var t = c.tipo === "fecha" ? "date" :
-            c.tipo === "tel" ? "tel" :
-            c.tipo === "correo" ? "email" :
-            c.tipo === "numero" ? "number" : "text";
-    h += '<input type="' + t + '" id="c_' + k + '" value="' + esc(v) + '">';
-  }
-  if (c.ayuda) h += '<small>' + esc(c.ayuda) + '</small>';
-  h += '</label>';
-  return h;
+  });
+
+  // En cuanto la persona empieza a corregir un campo marcado en rojo,
+  // se le quita la marca: no hace falta esperar a que toque Continuar.
+  [].forEach.call(document.querySelectorAll(".campo-wrap"), function(w){
+    w.addEventListener("input", function(){ limpiarFalta(w); });
+    w.addEventListener("change", function(){ limpiarFalta(w); });
+  });
 }
 
+/* Cambia un campo entre "lo lleno" y "No aplica" sin volver a pintar
+   la sección entera: si se repintara, la pantalla saltaría arriba y en
+   una sección larga la persona perdería dónde estaba. */
+function alternarNA(k, c, forzar){
+  var el = document.getElementById("c_" + k);
+  if (!el || !c) return;
+  var esNA = el.disabled && el.value === NA;
+  var poner = forzar === undefined ? !esNA : forzar;
+  if (poner === esNA) return;
+
+  var nuevo = poner ? NA : "";
+  var tmp = document.createElement("div");
+  tmp.innerHTML = controlHtml(k, c, nuevo);
+  el.parentNode.replaceChild(tmp.firstChild, el);
+
+  var b = document.querySelector('.na-btn[data-na="' + k + '"]');
+  if (b) {
+    b.setAttribute("aria-pressed", String(poner));
+    b.textContent = poner ? "✓ No aplica" : "No aplica";
+  }
+  var w = document.querySelector('.campo-wrap[data-k="' + k + '"]');
+  if (w) limpiarFalta(w);
+
+  E.personas[E.actual].datos[k] = nuevo;
+  guardar();
+
+  if (!poner && forzar === undefined) {
+    var n = document.getElementById("c_" + k);
+    if (n) n.focus();
+  }
+}
+
+function conectarSeccionNA(s){
+  var b = document.getElementById("naSeccion");
+  if (!b) return;
+
+  function todas(){
+    return s.campos.every(function(c){
+      var el = document.getElementById("c_" + s.id + "__" + c.id);
+      return el && el.disabled && el.value === NA;
+    });
+  }
+  function pintar(){
+    var t = todas();
+    b.setAttribute("aria-pressed", String(t));
+    b.textContent = t ? "✓ Esta sección no aplica para mí · tocar para llenarla"
+                      : "Esta sección no aplica para mí";
+  }
+
+  b.addEventListener("click", function(){
+    var t = todas();
+    s.campos.forEach(function(c){ alternarNA(s.id + "__" + c.id, c, !t); });
+    quitarBanner();
+    pintar();
+  });
+  [].forEach.call(document.querySelectorAll(".na-btn[data-na]"), function(x){
+    x.addEventListener("click", function(){ setTimeout(pintar, 0); });
+  });
+  pintar();
+}
+
+/* ---------- validar ---------- */
+
 function recogerCampos(s, per, silencioso){
-  var falta = null;
+  var faltan = [];
   s.campos.forEach(function(c){
     var k = s.id + "__" + c.id;
     var el = document.getElementById("c_" + k);
     if (!el) return;
     var v = el.value.trim();
+    if (c.tipo === "url" && v && v !== NA) { v = normalizarUrl(v); el.value = v; }
     per.datos[k] = v;
-    if (c.req && !v && !falta) falta = el;
+    var msg = errorDeCampo(c, v);
+    if (msg) faltan.push({ k: k, msg: msg });
   });
-  if (falta && !silencioso) {
-    falta.focus();
-    falta.style.borderColor = "#8a2f2f";
-    return false;
-  }
-  return true;
+  if (silencioso) return true;
+  return mostrarFaltantes(faltan);
 }
+
+function limpiarFalta(w){
+  w.classList.remove("falta");
+  var e = w.querySelector(".error");
+  if (e) e.parentNode.removeChild(e);
+}
+
+function quitarBanner(){
+  var b = document.getElementById("faltan");
+  if (b) { b.className = ""; b.innerHTML = ""; }
+}
+
+function ponerBanner(texto){
+  var b = document.getElementById("faltan");
+  if (!b) return;
+  b.className = "faltan";
+  b.textContent = texto;
+}
+
+function mostrarFaltantes(faltan){
+  [].forEach.call(document.querySelectorAll(".campo-wrap.falta"), limpiarFalta);
+  if (!faltan.length) { quitarBanner(); return true; }
+
+  faltan.forEach(function(f){
+    var w = document.querySelector('.campo-wrap[data-k="' + f.k + '"]');
+    if (!w) return;
+    w.classList.add("falta");
+    var e = document.createElement("small");
+    e.className = "error";
+    e.textContent = f.msg;
+    w.appendChild(e);
+  });
+
+  ponerBanner((faltan.length === 1 ? "Te falta 1 dato" : "Te faltan " + faltan.length + " datos") +
+    " en esta sección. Aquí todo se responde: si algo no es tu caso, toca «No aplica» debajo del campo.");
+
+  var primero = document.querySelector(".campo-wrap.falta");
+  if (primero) {
+    primero.scrollIntoView({ behavior: "smooth", block: "center" });
+    var ctl = primero.querySelector("input:not([disabled]),select,textarea");
+    if (ctl) setTimeout(function(){ ctl.focus({ preventScroll: true }); }, 350);
+  }
+  return false;
+}
+
+/* Cuántos datos le faltan a una sección, mirando lo guardado y no la
+   pantalla. Lo usa la revisión final para no dar por completa una
+   ficha que se empezó antes de que existiera esta regla. */
+function faltanEn(s, datos){
+  if (s.repetible) {
+    if (datos[s.id + "__na"] === NA) return 0;
+    var lista = datos[s.id + "__lista"] || [];
+    if (!lista.length) return 1;
+    var n = 0;
+    lista.forEach(function(f){
+      s.repetible.campos.forEach(function(c){ if (!String(f[c.id] || "").trim()) n++; });
+    });
+    return n;
+  }
+  var m = 0;
+  s.campos.forEach(function(c){
+    if (errorDeCampo(c, String(datos[s.id + "__" + c.id] || "").trim())) m++;
+  });
+  return m;
+}
+
+function personaCompleta(per){
+  return seccionesQueAplican(per.datos).every(function(s){ return !faltanEn(s, per.datos); });
+}
+
+/* ---------- tablas (viajes, hijos, contactos…) ---------- */
 
 function pintarRepetible(s, per){
   var cont = document.getElementById("filas");
-  var lista = per.datos[s.id + "__lista"] || [];
+  var btnMas = document.getElementById("mas");
+  var btnNA = document.getElementById("naLista");
+  var kLista = s.id + "__lista";
+  var kNA = s.id + "__na";
+  var lista = per.datos[kLista] || [];
+
+  function estado(){
+    var na = per.datos[kNA] === NA;
+    cont.hidden = na;
+    btnMas.hidden = na;
+    btnNA.setAttribute("aria-pressed", String(na));
+    btnNA.textContent = na ? "✓ No aplica · tocar para agregar" : "No aplica · no tengo ninguno";
+  }
 
   function dibujar(){
     cont.innerHTML = lista.map(function(fila, i){
@@ -1450,7 +1774,10 @@ function pintarRepetible(s, per){
                  return '<option value="' + esc(o) + '"' + (v === o ? " selected" : "") + '>' + esc(o) + '</option>';
                }).join("") + '</select>';
         } else {
-          h += '<input type="' + (c.tipo === "fecha" ? "date" : "text") + '" data-i="' + i + '" data-c="' + c.id + '" value="' + esc(v) + '">';
+          // Si la persona escribió "No aplica" en una fecha, se muestra
+          // como texto: un campo de fecha no puede contenerlo.
+          var tipo = (c.tipo === "fecha" && v !== NA) ? "date" : (c.tipo === "numero" ? "number" : "text");
+          h += '<input type="' + tipo + '" data-i="' + i + '" data-c="' + c.id + '" value="' + esc(v) + '">';
         }
         h += '</label>';
       });
@@ -1458,34 +1785,90 @@ function pintarRepetible(s, per){
     }).join("");
 
     [].forEach.call(cont.querySelectorAll("[data-c]"), function(el){
-      el.addEventListener("input", function(){
+      function tomar(){
         lista[parseInt(el.dataset.i,10)][el.dataset.c] = el.value.trim();
-        per.datos[s.id + "__lista"] = lista;
+        per.datos[kLista] = lista;
+        el.classList.remove("falta-celda");
         guardar();
-      });
-      el.addEventListener("change", function(){
-        lista[parseInt(el.dataset.i,10)][el.dataset.c] = el.value.trim();
-        per.datos[s.id + "__lista"] = lista;
-        guardar();
-      });
+      }
+      el.addEventListener("input", tomar);
+      el.addEventListener("change", tomar);
     });
     [].forEach.call(cont.querySelectorAll(".quitar"), function(b){
       b.addEventListener("click", function(){
         lista.splice(parseInt(b.dataset.i,10), 1);
-        per.datos[s.id + "__lista"] = lista;
+        per.datos[kLista] = lista;
         guardar();
         dibujar();
       });
     });
   }
 
-  dibujar();
-  document.getElementById("mas").addEventListener("click", function(){
+  btnMas.addEventListener("click", function(){
     lista.push({});
-    per.datos[s.id + "__lista"] = lista;
+    per.datos[kLista] = lista;
     guardar();
     dibujar();
+    quitarBanner();
   });
+
+  btnNA.addEventListener("click", function(){
+    if (per.datos[kNA] === NA) {
+      per.datos[kNA] = "";
+    } else {
+      var hayAlgo = lista.some(function(f){
+        return Object.keys(f).some(function(c){ return String(f[c] || "").trim(); });
+      });
+      if (hayAlgo && !confirm("Se van a borrar los datos que ya pusiste aquí. ¿Seguro que no aplica?")) return;
+      lista = [];
+      per.datos[kLista] = lista;
+      per.datos[kNA] = NA;
+      dibujar();
+    }
+    guardar();
+    quitarBanner();
+    estado();
+  });
+
+  dibujar();
+  estado();
+}
+
+function validarRepetible(s, per){
+  var kLista = s.id + "__lista";
+  if (per.datos[s.id + "__na"] === NA) {
+    per.datos[kLista] = [];
+    quitarBanner();
+    return true;
+  }
+  var lista = per.datos[kLista] || [];
+  [].forEach.call(document.querySelectorAll(".falta-celda"), function(el){ el.classList.remove("falta-celda"); });
+
+  if (!lista.length) {
+    ponerBanner("Agrega por lo menos uno con «+ Agregar " + s.repetible.etiqueta +
+                "», o toca «No aplica · no tengo ninguno» si no es tu caso.");
+    document.getElementById("faltan").scrollIntoView({ behavior: "smooth", block: "center" });
+    return false;
+  }
+
+  var huecos = 0, primera = null;
+  lista.forEach(function(f, i){
+    s.repetible.campos.forEach(function(c){
+      if (String(f[c.id] || "").trim()) return;
+      huecos++;
+      var el = document.querySelector('[data-i="' + i + '"][data-c="' + c.id + '"]');
+      if (el) { el.classList.add("falta-celda"); if (!primera) primera = el; }
+    });
+  });
+  if (!huecos) { quitarBanner(); return true; }
+
+  ponerBanner((huecos === 1 ? "Falta 1 dato" : "Faltan " + huecos + " datos") +
+    " en la tabla. Si alguno no aplica, escribe «No aplica». Si agregaste uno de más, quítalo con la ×.");
+  if (primera) {
+    primera.scrollIntoView({ behavior: "smooth", block: "center" });
+    setTimeout(function(){ primera.focus({ preventScroll: true }); }, 350);
+  }
+  return false;
 }
 
 /* ============================================================
@@ -1494,6 +1877,22 @@ function pintarRepetible(s, per){
 
 function revisarPersona(){
   var per = E.personas[E.actual];
+
+  /* Si una sección quedó con datos sin responder —por ejemplo, una
+     ficha que se empezó antes de que todo fuera obligatorio— se lleva
+     a la persona ahí, con lo que falta marcado, en vez de darla por
+     completa. */
+  var secs = seccionesQueAplican(per.datos);
+  for (var i = 0; i < secs.length; i++) {
+    if (faltanEn(secs[i], per.datos)) {
+      E.seccion = i;
+      guardar();
+      pintarSeccion();
+      if (secs[i].repetible) validarRepetible(secs[i], per); else recogerCampos(secs[i], per);
+      return;
+    }
+  }
+
   per.completa = true;
   guardar();
   progreso(1, 1, per.nombre);
