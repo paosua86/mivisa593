@@ -388,10 +388,10 @@ var SECCIONES_USA = [
     ayuda: "Pega el enlace completo de cada perfil, no solo tu nombre de usuario. Si no tienes alguna de estas redes, toca «No aplica». Te pedimos que dejes tus perfiles en público mientras dura tu trámite.",
     guia: GUIA_REDES,
     campos: [
-      {id:"facebook", t:"Facebook", tipo:"url", ayuda:"Ejemplo: https://www.facebook.com/tu.usuario"},
-      {id:"instagram",t:"Instagram", tipo:"url", ayuda:"Ejemplo: https://www.instagram.com/tuusuario"},
-      {id:"tiktok",   t:"TikTok", tipo:"url", ayuda:"Ejemplo: https://www.tiktok.com/@tuusuario"},
-      {id:"x",        t:"X (antes Twitter)", tipo:"url", ayuda:"Ejemplo: https://x.com/tuusuario"}
+      {id:"facebook", t:"Facebook", tipo:"url", ayuda:"Ejemplo: https://www.facebook.com/maria.perez"},
+      {id:"instagram",t:"Instagram", tipo:"url", ayuda:"Ejemplo: https://www.instagram.com/mariaperez"},
+      {id:"tiktok",   t:"TikTok", tipo:"url", ayuda:"Ejemplo: https://www.tiktok.com/@mariaperez"},
+      {id:"x",        t:"X (antes Twitter)", tipo:"url", ayuda:"Ejemplo: https://x.com/mariaperez"}
     ]
   },
   {
@@ -707,10 +707,10 @@ var SECCIONES_CANADA = [
     ayuda: "Pega el enlace completo de cada perfil, no solo tu nombre de usuario. Si no tienes alguna de estas redes, toca «No aplica». Te pedimos que dejes tus perfiles en público mientras dura tu trámite.",
     guia: GUIA_REDES,
     campos: [
-      {id:"facebook", t:"Facebook", tipo:"url", ayuda:"Ejemplo: https://www.facebook.com/tu.usuario"},
-      {id:"instagram",t:"Instagram", tipo:"url", ayuda:"Ejemplo: https://www.instagram.com/tuusuario"},
-      {id:"tiktok",   t:"TikTok", tipo:"url", ayuda:"Ejemplo: https://www.tiktok.com/@tuusuario"},
-      {id:"x",        t:"X (antes Twitter)", tipo:"url", ayuda:"Ejemplo: https://x.com/tuusuario"}
+      {id:"facebook", t:"Facebook", tipo:"url", ayuda:"Ejemplo: https://www.facebook.com/maria.perez"},
+      {id:"instagram",t:"Instagram", tipo:"url", ayuda:"Ejemplo: https://www.instagram.com/mariaperez"},
+      {id:"tiktok",   t:"TikTok", tipo:"url", ayuda:"Ejemplo: https://www.tiktok.com/@mariaperez"},
+      {id:"x",        t:"X (antes Twitter)", tipo:"url", ayuda:"Ejemplo: https://x.com/mariaperez"}
     ]
   }
 ];
@@ -972,10 +972,10 @@ var SECCIONES_SCHENGEN = [
     ayuda: "Pega el enlace completo de cada perfil, no solo tu nombre de usuario. Si no tienes alguna de estas redes, toca «No aplica». Te pedimos que dejes tus perfiles en público mientras dura tu trámite.",
     guia: GUIA_REDES,
     campos: [
-      {id:"facebook", t:"Facebook", tipo:"url", ayuda:"Ejemplo: https://www.facebook.com/tu.usuario"},
-      {id:"instagram",t:"Instagram", tipo:"url", ayuda:"Ejemplo: https://www.instagram.com/tuusuario"},
-      {id:"tiktok",   t:"TikTok", tipo:"url", ayuda:"Ejemplo: https://www.tiktok.com/@tuusuario"},
-      {id:"x",        t:"X (antes Twitter)", tipo:"url", ayuda:"Ejemplo: https://x.com/tuusuario"}
+      {id:"facebook", t:"Facebook", tipo:"url", ayuda:"Ejemplo: https://www.facebook.com/maria.perez"},
+      {id:"instagram",t:"Instagram", tipo:"url", ayuda:"Ejemplo: https://www.instagram.com/mariaperez"},
+      {id:"tiktok",   t:"TikTok", tipo:"url", ayuda:"Ejemplo: https://www.tiktok.com/@mariaperez"},
+      {id:"x",        t:"X (antes Twitter)", tipo:"url", ayuda:"Ejemplo: https://x.com/mariaperez"}
     ]
   }
 ];
@@ -1436,6 +1436,148 @@ function seccionesQueAplican(datos){
    ------------------------------------------------------------ */
 var NA = "No aplica";
 
+/* ------------------------------------------------------------
+   SIEMPRE CON UN EJEMPLO
+
+   Cada pregunta trae un ejemplo concreto: aparece dentro de la casilla
+   vacía ("Ej: ...") y se repite en el mensaje si la persona la deja en
+   blanco. Una pregunta sin ejemplo se contesta a medias —"Quito" en vez
+   de la dirección completa, "vendedora" en vez de las funciones— y eso
+   es otra llamada para David.
+
+   La clave es el texto de la pregunta (`t`), así un mismo ejemplo sirve
+   para los tres destinos. Los datos son inventados pero con forma
+   ecuatoriana: cédula de 10 dígitos, celular 09, dirección de Quito.
+   Si se agrega una pregunta nueva, se le agrega su ejemplo aquí.
+   ------------------------------------------------------------ */
+var EJEMPLOS = {
+  "Nombres completos": "María José",
+  "Apellidos completos": "Pérez Villacís",
+  "Nombre completo": "Andrea Pérez Villacís",
+  "Su nombre completo": "Javier Martínez López",
+  "Nombre completo de tu madre": "Rosa Elena Villacís Andrade",
+  "Nombre completo de tu padre": "Luis Alberto Pérez Mora",
+  "Nombre completo de tu cónyuge": "Carlos Andrés Salas Ruiz",
+  "Nombre de su cónyuge, si tiene": "Michael Brown",
+  "Si tuviste un matrimonio anterior, nombre de esa persona": "Juan Carlos Mena Ortiz",
+  "Otros nombres que hayas usado": "María José Pérez de Salas (nombre de casada)",
+  "Apellido de soltera o apellido anterior": "Villacís",
+
+  "Número de cédula": "1712345678",
+  "Número de pasaporte": "A1234567 (cópialo tal cual de tu pasaporte)",
+  "Número de pasaporte o documento de esa nacionalidad": "AB1234567",
+  "Número de su pasaporte o documento de identidad": "PAB123456",
+  "Número de tu permiso de residencia": "Y1234567X",
+  "Tipo y número del documento de residencia": "Green Card IOE0123456789",
+  "Vigencia o número de visa": "Del 15/03/2023 al 14/03/2024",
+  "Fechas de validez de esa visa": "Del 15/03/2023 al 14/03/2024",
+
+  "Correo electrónico": "maria.perez@gmail.com",
+  "Teléfono celular": "0991234567",
+  "Teléfono de tu domicilio": "022345678",
+  "Teléfono del trabajo": "022345678",
+  "Teléfono": "0991234567",
+  "Teléfono del cónyuge": "+1 416 555 0134",
+  "Código postal": "170135",
+
+  "Dirección de tu domicilio": "Av. Amazonas N34-120 y Av. Atahualpa, Quito",
+  "Dirección": "Av. 10 de Agosto N25-30 y Colón, Quito",
+  "Dirección del trabajo": "Av. 10 de Agosto N25-30 y Colón, Quito",
+  "Dirección del trabajo o centro de estudios": "Av. 10 de Agosto N25-30 y Colón, Quito",
+  "Dirección del colegio": "Av. Vargas y Antonio Ante, Quito",
+  "Dirección en Canadá": "45 Queen St W, Toronto, ON M5H 2M9",
+  "Dirección completa": "Calle Gran Vía 28, 28013 Madrid, España",
+  "Dónde te vas a quedar": "Casa de mi hermana, 45 Queen St W, Toronto",
+  "Nombre del hotel, o de la persona que te recibe": "Hotel Ibis Madrid Centro",
+
+  "Ciudad": "Quito",
+  "Ciudad de nacimiento": "Ambato",
+  "Ciudad de residencia": "Quito",
+  "Ciudad donde lo emitieron": "Quito",
+  "Ciudad y país": "Guayaquil, Ecuador",
+  "Ciudad y estado": "Miami, Florida",
+  "Ciudad y provincia": "Toronto, Ontario",
+  "Lugar de nacimiento": "Riobamba, Ecuador",
+  "Su ciudad y país de nacimiento": "Loja, Ecuador",
+  "Dónde vive ahora (ciudad y país)": "Cuenca, Ecuador",
+
+  "País": "España",
+  "País visitado": "Colombia",
+  "País de destino principal": "España",
+  "País por el que entras a Europa": "España",
+  "País que la emitió": "Italia",
+  "País que lo emitió": "Ecuador",
+  "País de nacimiento": "Ecuador",
+  "País de esa residencia": "Estados Unidos",
+  "País o países de esa nacionalidad": "Colombia",
+  "País o países de tu ciudadanía": "Ecuador",
+  "Nacionalidad actual": "Ecuatoriana",
+  "Nacionalidad al nacer, si es distinta": "Colombiana",
+  "Su nacionalidad": "Española",
+  "Tu idioma materno": "Español",
+
+  "Nombre de la empresa": "Distribuidora Andina S.A.",
+  "Nombre de la empresa o negocio": "Distribuidora Andina S.A. (o el nombre de tu negocio)",
+  "Nombre de la empresa, negocio o centro de estudios": "Distribuidora Andina S.A.",
+  "Empresa o actividad": "Distribuidora Andina S.A. (o «Estudiante», «Desempleado»)",
+  "Tu cargo": "Asistente contable",
+  "Tu cargo u ocupación": "Jefa de ventas",
+  "Cargo u ocupación": "Vendedora",
+  "Tu ocupación actual": "Comerciante",
+  "Ocupación actual": "Docente",
+  "Su ocupación": "Jubilado",
+  "Su ocupación actual": "Ingeniero civil",
+  "Nombre de tu jefe o jefa": "Ing. Jorge Castillo",
+  "Nombre del jefe o jefa": "Ing. Jorge Castillo",
+  "¿Qué haces en tu trabajo?": "Atiendo clientes, preparo cotizaciones, controlo el inventario, coordino entregas y reporto las ventas del mes",
+  "¿Qué hacías ahí?": "Atendía clientes, cobraba en caja, hacía inventario, abría el local y capacitaba al personal nuevo",
+  "Funciones (al menos cinco, separadas por comas)": "Atender clientes, cobrar en caja, hacer inventario, abrir el local, capacitar personal",
+  "Sueldo mensual aproximado (USD)": "850",
+
+  "Nombre del colegio": "Colegio Nacional Mejía",
+  "Nombre de la universidad o instituto": "Universidad Central del Ecuador",
+  "Nombre de la institución": "Universidad Andina Simón Bolívar",
+  "Carrera o campo de estudio": "Ingeniería Comercial",
+  "Título obtenido": "Licenciada en Contabilidad y Auditoría",
+
+  "Parentesco": "Hermana",
+  "A quién visitas y qué parentesco tienes": "A mi hermana, Andrea Pérez",
+  "Situación migratoria del cónyuge": "Residente permanente",
+  "Si te patrocinan, nombre de esa persona o empresa y su relación contigo": "Andrea Pérez, mi hermana, que vive en Madrid",
+
+  "Motivo del viaje": "Turismo",
+  "Motivo de la estadía": "Estudios de maestría",
+  "Período": "De enero de 2021 a julio de 2021",
+  "Días que vas a estar en total": "15",
+  "Noches": "4",
+  "Dinero disponible para el viaje (CAD)": "3000",
+
+  "Si respondiste que sí, cuenta qué pasó": "Qué pasó, cuándo (mes y año) y cómo terminó. Ej: en marzo de 2019 me negaron la visa de EE.UU."
+};
+
+/* En redes el ejemplo es el enlace completo de esa red, que es
+   justamente lo que la gente no sabe cómo se ve. */
+var EJEMPLO_RED = {
+  facebook:  "https://www.facebook.com/maria.perez",
+  instagram: "https://www.instagram.com/mariaperez",
+  tiktok:    "https://www.tiktok.com/@mariaperez",
+  x:         "https://x.com/mariaperez"
+};
+
+function ejemploDe(c){
+  if (c.tipo === "url") return EJEMPLO_RED[c.id] || "";
+  if (EJEMPLOS[c.t]) return EJEMPLOS[c.t];
+  var m = /Ejemplo:\s*([^\n]+)/.exec(c.ayuda || "");
+  return m ? m[1].trim() : "";
+}
+
+function placeholderDe(c){
+  var ej = ejemploDe(c);
+  return ej ? ' placeholder="Ej: ' + esc(ej) + '"' : "";
+}
+
+
+
 function admiteNA(c){ return !c.req; }
 
 /* Una sección entera puede no aplicar (no fue a la universidad, no
@@ -1475,10 +1617,15 @@ function urlDeRed(id, v){
 }
 
 function errorDeCampo(c, v){
-  if (!v) return c.req ? "Este dato es obligatorio."
-                       : "Llénalo, o toca «No aplica» si no es tu caso.";
+  var ej = ejemploDe(c);
+  if (!v) {
+    var pista = ej ? " Por ejemplo: «" + ej + "»." : "";
+    return c.req ? "Este dato es obligatorio." + pista
+                 : "Llénalo." + pista + " Si no es tu caso, toca «No aplica».";
+  }
   if (c.tipo === "url" && v !== NA && !urlDeRed(c.id, v)) {
-    return "Pega el enlace completo de tu perfil (empieza con https://), no solo tu nombre de usuario.";
+    return "Pega el enlace completo de tu perfil, no solo tu nombre de usuario. Por ejemplo: " +
+           (EJEMPLO_RED[c.id] || "https://www.instagram.com/mariaperez");
   }
   return "";
 }
@@ -1496,7 +1643,7 @@ function controlHtml(k, c, v){
     });
     return h + '</select>';
   }
-  if (c.tipo === "larga") return '<textarea id="c_' + k + '">' + esc(v) + '</textarea>';
+  if (c.tipo === "larga") return '<textarea id="c_' + k + '"' + placeholderDe(c) + '>' + esc(v) + '</textarea>';
 
   var t = c.tipo === "fecha" ? "date" :
           c.tipo === "tel" ? "tel" :
@@ -1504,8 +1651,8 @@ function controlHtml(k, c, v){
           c.tipo === "numero" ? "number" :
           c.tipo === "url" ? "url" : "text";
   var extra = c.tipo === "url"
-    ? ' inputmode="url" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="https://"'
-    : "";
+    ? ' inputmode="url" autocapitalize="off" autocorrect="off" spellcheck="false"' + placeholderDe(c)
+    : (t === "date" ? "" : placeholderDe(c));
   return '<input type="' + t + '" id="c_' + k + '" value="' + esc(v) + '"' + extra + '>';
 }
 
@@ -1708,7 +1855,8 @@ function mostrarFaltantes(faltan){
   });
 
   ponerBanner((faltan.length === 1 ? "Te falta 1 dato" : "Te faltan " + faltan.length + " datos") +
-    " en esta sección. Aquí todo se responde: si algo no es tu caso, toca «No aplica» debajo del campo.");
+    " en esta sección. Aquí todo se responde: si algo no es tu caso, toca «No aplica» debajo del campo " +
+    "(por ejemplo, si no tienes TikTok o no fuiste a la universidad).");
 
   var primero = document.querySelector(".campo-wrap.falta");
   if (primero) {
@@ -1777,7 +1925,8 @@ function pintarRepetible(s, per){
           // Si la persona escribió "No aplica" en una fecha, se muestra
           // como texto: un campo de fecha no puede contenerlo.
           var tipo = (c.tipo === "fecha" && v !== NA) ? "date" : (c.tipo === "numero" ? "number" : "text");
-          h += '<input type="' + tipo + '" data-i="' + i + '" data-c="' + c.id + '" value="' + esc(v) + '">';
+          h += '<input type="' + tipo + '" data-i="' + i + '" data-c="' + c.id + '" value="' + esc(v) + '"' +
+               (tipo === "date" ? "" : placeholderDe(c)) + '>';
         }
         h += '</label>';
       });
@@ -1863,7 +2012,8 @@ function validarRepetible(s, per){
   if (!huecos) { quitarBanner(); return true; }
 
   ponerBanner((huecos === 1 ? "Falta 1 dato" : "Faltan " + huecos + " datos") +
-    " en la tabla. Si alguno no aplica, escribe «No aplica». Si agregaste uno de más, quítalo con la ×.");
+    " en la tabla. Si alguno no aplica, escribe «No aplica» (por ejemplo, si no recuerdas el motivo de un viaje de hace años). " +
+    "Si agregaste uno de más, quítalo con la ×.");
   if (primera) {
     primera.scrollIntoView({ behavior: "smooth", block: "center" });
     setTimeout(function(){ primera.focus({ preventScroll: true }); }, 350);

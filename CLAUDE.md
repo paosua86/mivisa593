@@ -279,6 +279,15 @@ no tienen el botón: son los que siempre aplican. **No volver a marcar
 campos como `opcional`.** La revisión final lleva a la persona a la
 primera sección con huecos antes de dar la ficha por completa.
 
+**Siempre con un ejemplo.** Cada pregunta del expediente trae un ejemplo
+concreto: dentro de la casilla vacía ("Ej: ...") y repetido en el
+mensaje de error si la dejan en blanco. Viven en `EJEMPLOS`, en
+`expediente/index.html`, con el texto de la pregunta como clave (un
+mismo ejemplo sirve para los tres destinos). Datos inventados con forma
+ecuatoriana: cédula de 10 dígitos, celular 09, dirección de Quito. **Al
+agregar una pregunta, agregar su ejemplo.** La regla vale para todo
+mensaje que le pida algo a la persona: si pide un formato, lo muestra.
+
 **Redes sociales: enlace completo, no el usuario** (`tipo:"url"`, se
 valida que sea un perfil de esa red; `instagram.com/x` se completa solo
 a `https://`). Se le pide dejar el perfil en público mientras dura el
