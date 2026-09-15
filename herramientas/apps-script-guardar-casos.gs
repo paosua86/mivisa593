@@ -34,7 +34,14 @@ var SITIO = "https://mivisaec.com";
 /* A quién le llegan los avisos de casos nuevos y los expedientes.
    Es la bandeja de trabajo de David: aquí ya no entra nada por
    WhatsApp. */
-var CORREO_DAVID = "davidubilluz83@gmail.com";
+/* Bandeja del negocio. Ahí llegan los avisos a David mientras no esté
+   Telegram, y ahí caen las respuestas de las personas a sus correos
+   (replyTo). No es la cuenta personal de David.
+
+   Ojo: los correos igual SALEN desde la cuenta que ejecuta el script
+   (davidubilluz83@gmail.com); Apps Script no deja cambiar el
+   remitente. Lo que cambia es a dónde llegan y a dónde se responde. */
+var CORREO_DAVID = "Visatour.ec@proton.me";
 
 /* ------------------------------------------------------------
    TELEGRAM — por dónde le llegan los avisos a David
@@ -96,7 +103,7 @@ function propiedad(clave) {
    implementacion en vivo ya tiene los cambios: al abrir la URL /exec
    sin parametros, la respuesta trae este mismo texto. Subirla cada vez
    que se cambie este archivo. */
-var VERSION = "2026-09-10-ficha-david";
+var VERSION = "2026-09-15-correo-negocio";
 
 /* ------------------------------------------------------------
    NO HAY CANDADO
