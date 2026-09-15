@@ -291,9 +291,9 @@ var SECCIONES_USA = [
     id: "secundaria",
     titulo: "Tus estudios secundarios",
     campos: [
-      {id:"colegio",  t:"Nombre del colegio", tipo:"texto", req:true},
+      {id:"colegio",  t:"Nombre del colegio", tipo:"texto"},
       {id:"direccion",t:"Dirección del colegio", tipo:"texto"},
-      {id:"ciudad",   t:"Ciudad", tipo:"texto", req:true},
+      {id:"ciudad",   t:"Ciudad", tipo:"texto"},
       {id:"inicio",   t:"Fecha de inicio", tipo:"fecha"},
       {id:"fin",      t:"Fecha de culminación", tipo:"fecha"},
       {id:"titulo",   t:"Título obtenido", tipo:"texto"}
@@ -549,8 +549,8 @@ var SECCIONES_CANADA = [
     id: "secundaria",
     titulo: "Tus estudios secundarios",
     campos: [
-      {id:"colegio",  t:"Nombre del colegio", tipo:"texto", req:true},
-      {id:"ciudad",   t:"Ciudad y país", tipo:"texto", req:true},
+      {id:"colegio",  t:"Nombre del colegio", tipo:"texto"},
+      {id:"ciudad",   t:"Ciudad y país", tipo:"texto"},
       {id:"inicio",   t:"Fecha de inicio", tipo:"fecha"},
       {id:"fin",      t:"Fecha de culminación", tipo:"fecha"},
       {id:"titulo",   t:"Título obtenido", tipo:"texto"}
@@ -813,8 +813,8 @@ var SECCIONES_SCHENGEN = [
     id: "secundaria",
     titulo: "Tus estudios secundarios",
     campos: [
-      {id:"colegio",  t:"Nombre del colegio", tipo:"texto", req:true},
-      {id:"ciudad",   t:"Ciudad y país", tipo:"texto", req:true},
+      {id:"colegio",  t:"Nombre del colegio", tipo:"texto"},
+      {id:"ciudad",   t:"Ciudad y país", tipo:"texto"},
       {id:"fin",      t:"Fecha de culminación", tipo:"fecha"},
       {id:"titulo",   t:"Título obtenido", tipo:"texto"}
     ]
@@ -1366,7 +1366,12 @@ function pantallaPersonas(){
 
   var todasListas = E.personas.length > 0 && E.personas.every(function(p){ return personaCompleta(p); });
   if (todasListas) {
-    html += '<button class="btn" type="button" id="seguir">Continuar a los documentos</button>';
+    /* "Completa" no significa "enviado": falta marcar los documentos
+       y tocar Enviar. Sin este aviso la gente cerraba aquí creyendo que
+       había terminado, y a David no le llegaba nada. */
+    html += '<div class="aviso"><strong>Tu expediente todavía no se ha enviado.</strong> ' +
+            'Falta un último paso: marcar qué documentos tienes y tocar «Enviar mi expediente».</div>';
+    html += '<button class="btn" type="button" id="seguir">Siguiente: documentos y enviar</button>';
   }
   html += '</div>';
   ir(html);
