@@ -841,7 +841,23 @@ var SECCIONES_SCHENGEN = [
   {
     id: "laboral",
     titulo: "Tu trabajo actual",
-    ayuda: "Si eres estudiante, pon el nombre y la dirección de tu centro de estudios.",
+    ayuda: "Si eres estudiante, pon el nombre y la dirección de tu centro de estudios. Del trabajo necesitamos un correo por donde se pueda confirmar que trabajas ahí: el de tu jefe directo, el de Recursos Humanos, o los dos.",
+    /* Al menos uno de los dos correos tiene que ser real. Los consulados
+       Schengen verifican el empleo escribiendo a la empresa, y si el
+       único contacto que hay es un teléfono que nadie contesta, el caso
+       se atrasa o se cae. Si los dos quedan en "No aplica" no hay a
+       quién escribir, y eso es una llamada de David preguntándolo. */
+    regla: function(datos){
+      var j = String(datos["laboral__correo_jefe"] || "").trim();
+      var h = String(datos["laboral__correo_rrhh"] || "").trim();
+      if (!j && !h) return null;   // los huecos ya los marca cada campo
+      if (j !== NA || h !== NA) return null;
+      return {
+        k: "laboral__correo_jefe",
+        regla: true,
+        msg: "Hace falta por lo menos uno de los dos correos: el de tu jefe o el de Recursos Humanos. Es por donde se confirma que trabajas ahí. Si trabajas por tu cuenta, pon aquí tu propio correo de negocio."
+      };
+    },
     campos: [
       {id:"ocupacion",t:"Tu ocupación actual", tipo:"texto", req:true},
       {id:"empresa",  t:"Nombre de la empresa, negocio o centro de estudios", tipo:"texto", req:true},
@@ -849,6 +865,11 @@ var SECCIONES_SCHENGEN = [
       {id:"direccion",t:"Dirección del trabajo o centro de estudios", tipo:"larga", req:true},
       {id:"ciudad",   t:"Ciudad y país", tipo:"texto", req:true},
       {id:"telefono", t:"Teléfono del trabajo", tipo:"tel", req:true},
+      {id:"jefe",     t:"Nombre de tu jefe o jefa inmediato", tipo:"texto"},
+      {id:"correo_jefe", t:"Correo de tu jefe o jefa inmediato", tipo:"correo",
+       ayuda:"El correo de la empresa, no uno personal, si lo tienes."},
+      {id:"correo_rrhh", t:"Correo de Recursos Humanos de la empresa", tipo:"correo",
+       ayuda:"Si la empresa es pequeña y no tiene Recursos Humanos, toca «No aplica» aquí y deja el correo de tu jefe."},
       {id:"sueldo",   t:"Sueldo mensual aproximado (USD)", tipo:"numero", req:true}
     ]
   },
@@ -1533,6 +1554,9 @@ var EJEMPLOS = {
   "Teléfono celular": "0991234567",
   "Teléfono de tu domicilio": "022345678",
   "Teléfono del trabajo": "022345678",
+  "Nombre de tu jefe o jefa inmediato": "Carlos Andrade Vera",
+  "Correo de tu jefe o jefa inmediato": "carlos.andrade@empresa.com.ec",
+  "Correo de Recursos Humanos de la empresa": "talentohumano@empresa.com.ec",
   "Teléfono": "0991234567",
   "Teléfono del cónyuge": "+1 416 555 0134",
   "Código postal": "170135",
@@ -1674,6 +1698,17 @@ function urlDeRed(id, v){
   return ruta.length > 1;
 }
 
+function correoValido(v){
+  return /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/.test(String(v).toLowerCase());
+}
+
+/* Los descuidos que no cambian el dato se arreglan solos: espacios (el
+   teclado del celular los mete al autocompletar), mayúsculas y el punto
+   o la coma pegada al final. Lo que falta no se inventa. */
+function limpiarCorreo(v){
+  return String(v).replace(/\s/g, "").replace(/[.,;:]+$/, "").toLowerCase();
+}
+
 function errorDeCampo(c, v){
   var ej = ejemploDe(c);
   if (!v) {
@@ -1684,6 +1719,15 @@ function errorDeCampo(c, v){
   if (c.tipo === "url" && v !== NA && !urlDeRed(c.id, v)) {
     return "Pega el enlace completo de tu perfil, no solo tu nombre de usuario. Por ejemplo: " +
            (EJEMPLO_RED[c.id] || "https://www.instagram.com/mariaperez");
+  }
+  /* Un correo con un espacio o sin el ".com" se guarda igual y no sirve
+     para nada: David escribe y el mensaje rebota semanas después. */
+  if (c.tipo === "correo" && v !== NA && !correoValido(v)) {
+    if (v.indexOf("@") === -1) {
+      return "A este correo le falta la arroba. Se escribe así: " + (ej || "nombre@empresa.com") + ".";
+    }
+    return "Ese correo está incompleto: después de la arroba va el punto y lo que sigue. Se escribe así: " +
+           (ej || "nombre@empresa.com") + ".";
   }
   return "";
 }
@@ -1710,7 +1754,9 @@ function controlHtml(k, c, v){
           c.tipo === "url" ? "url" : "text";
   var extra = c.tipo === "url"
     ? ' inputmode="url" autocapitalize="off" autocorrect="off" spellcheck="false"' + placeholderDe(c)
-    : (t === "date" ? "" : placeholderDe(c));
+    : c.tipo === "correo"
+      ? ' inputmode="email" autocapitalize="off" autocorrect="off" spellcheck="false"' + placeholderDe(c)
+      : (t === "date" ? "" : placeholderDe(c));
   return '<input type="' + t + '" id="c_' + k + '" value="' + esc(v) + '"' + extra + '>';
 }
 
@@ -1872,10 +1918,18 @@ function recogerCampos(s, per, silencioso){
     if (!el) return;
     var v = el.value.trim();
     if (c.tipo === "url" && v && v !== NA) { v = normalizarUrl(v); el.value = v; }
+    if (c.tipo === "correo" && v && v !== NA) { v = limpiarCorreo(v); el.value = v; }
     per.datos[k] = v;
     var msg = errorDeCampo(c, v);
     if (msg) faltan.push({ k: k, msg: msg });
   });
+  /* Reglas que miran más de un campo a la vez (por ejemplo: de estos
+     dos correos, al menos uno tiene que ser real). Van después de los
+     campos, para que primero se señale lo que está en blanco. */
+  if (s.regla && !faltan.length) {
+    var extra = s.regla(per.datos);
+    if (extra) faltan.push(extra);
+  }
   if (silencioso) return true;
   return mostrarFaltantes(faltan);
 }
@@ -1912,9 +1966,13 @@ function mostrarFaltantes(faltan){
     w.appendChild(e);
   });
 
-  ponerBanner((faltan.length === 1 ? "Te falta 1 dato" : "Te faltan " + faltan.length + " datos") +
-    " en esta sección. Aquí todo se responde: si algo no es tu caso, toca «No aplica» debajo del campo " +
-    "(por ejemplo, si no tienes TikTok o no fuiste a la universidad).");
+  if (faltan.length === 1 && faltan[0].regla) {
+    ponerBanner(faltan[0].msg);
+  } else {
+    ponerBanner((faltan.length === 1 ? "Te falta 1 dato" : "Te faltan " + faltan.length + " datos") +
+      " en esta sección. Aquí todo se responde: si algo no es tu caso, toca «No aplica» debajo del campo " +
+      "(por ejemplo, si no tienes TikTok o no fuiste a la universidad).");
+  }
 
   var primero = document.querySelector(".campo-wrap.falta");
   if (primero) {
@@ -1944,6 +2002,7 @@ function faltanEn(s, datos){
   s.campos.forEach(function(c){
     if (errorDeCampo(c, String(datos[s.id + "__" + c.id] || "").trim())) m++;
   });
+  if (!m && s.regla && s.regla(datos)) m++;
   return m;
 }
 

@@ -370,6 +370,29 @@ ecuatoriana: cédula de 10 dígitos, celular 09, dirección de Quito. **Al
 agregar una pregunta, agregar su ejemplo.** La regla vale para todo
 mensaje que le pida algo a la persona: si pide un formato, lo muestra.
 
+**Schengen pide un correo por donde confirmar el trabajo.** En su
+sección `laboral` van el nombre del jefe inmediato, su correo y el de
+Recursos Humanos, y **al menos uno de los dos correos tiene que ser
+real**: si los dos quedan en «No aplica», la sección no pasa. Los
+consulados Schengen verifican el empleo escribiendo a la empresa, y un
+teléfono que nadie contesta atrasa o tumba el caso. Es un pedido de
+David (septiembre de 2026) y de momento solo para Schengen; EE.UU. y
+Canadá siguen con el nombre del jefe y el teléfono.
+
+Lo controla `regla` en la definición de la sección: una función que
+recibe todos los datos de la persona y devuelve `{k, msg, regla:true}`
+cuando algo que depende de **varios campos a la vez** no cuadra. Se
+revisa después de los campos en blanco, y si es lo único que falla su
+mensaje reemplaza al aviso de arriba (que diría «toca No aplica», que
+es justo lo que la persona acaba de hacer). Sirve para cualquier otra
+regla cruzada que haga falta.
+
+**Los campos `tipo:"correo"` revisan el formato**, no solo que estén
+llenos: un correo con un espacio o sin el ".com" se guardaba igual y
+David se enteraba semanas después, cuando el mensaje rebotaba. Se
+limpian solos los espacios, las mayúsculas y el punto final; lo que
+falta no se inventa. Misma regla que en `empezar/`.
+
 **Redes sociales: enlace completo, no el usuario** (`tipo:"url"`, se
 valida que sea un perfil de esa red; `instagram.com/x` se completa solo
 a `https://`). Se le pide dejar el perfil en público mientras dura el
