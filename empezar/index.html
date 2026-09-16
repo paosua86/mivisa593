@@ -88,6 +88,15 @@ label.campo input{
 }
 label.campo input:focus{outline:none;border-color:var(--brand-deep)}
 label.campo small{display:block;font-weight:400;color:var(--tinta-suave);font-size:.87rem;margin-top:5px}
+/* El error de un campo va pegado a ese campo, no arriba de todo: en el
+   celular la persona no ve el mensaje si le queda fuera de pantalla. */
+.error-campo{
+  display:none;color:var(--rojo);background:var(--rojo-fondo);
+  border-radius:10px;padding:10px 12px;margin:7px 0 0;
+  font-size:.9rem;font-weight:400;line-height:1.45;
+}
+.error-campo.se-ve{display:block}
+label.campo input.mal{border-color:var(--rojo)}
 .consent{display:flex;gap:12px;align-items:flex-start;font-size:.9rem;color:var(--tinta-suave);line-height:1.45;margin:6px 0 20px;font-weight:400}
 .consent input{flex:0 0 22px;width:22px;height:22px;margin:2px 0 0;accent-color:var(--brand-deep)}
 
@@ -651,19 +660,23 @@ function pintarContacto(){
       '<p class="ayuda">En la pantalla siguiente ves tu resultado, y al correo te llega tu página personal para seguir tu trámite.</p>' +
       '<label class="campo">Tu nombre y apellido' +
         '<input type="text" id="c-nombre" autocomplete="name" placeholder="Ana Pérez">' +
+        '<p class="error-campo" id="e-nombre" role="alert"></p>' +
       '</label>' +
       '<label class="campo">Tu WhatsApp' +
         '<input type="tel" id="c-tel" autocomplete="tel" inputmode="numeric" placeholder="09 9999 9999">' +
         '<small>Con el 09 al inicio, como lo marcas normalmente.</small>' +
+        '<p class="error-campo" id="e-tel" role="alert"></p>' +
       '</label>' +
       '<label class="campo">Tu correo' +
-        '<input type="email" id="c-mail" autocomplete="email" placeholder="ana@correo.com">' +
+        '<input type="email" id="c-mail" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false" placeholder="ana@correo.com">' +
         '<small>Ahí te llega el link de tu caso, para que no dependas de que nadie te lo reenvíe.</small>' +
+        '<p class="error-campo" id="e-mail" role="alert"></p>' +
       '</label>' +
       '<label class="consent"><input type="checkbox" id="c-ok">' +
         '<span>Autorizo a MiVisa EC a usar estos datos para revisar mi caso y contactarme. Puedo pedir que los borren cuando quiera. He leído los <a href="../terminos.html" target="_blank">términos</a> y la <a href="../privacidad.html" target="_blank">política de privacidad</a>.</span>' +
       '</label>' +
-      '<button class="btn" type="button" id="ver" disabled>Ver el resultado de mi caso</button>' +
+      '<button class="btn" type="button" id="ver">Ver el resultado de mi caso</button>' +
+      '<p class="error-campo" id="e-ok" role="alert"></p>' +
       '<div class="pie-nav"><button class="atras" type="button" id="atras">← Volver a la anterior</button></div>' +
     '</div>';
   window.scrollTo(0,0);
@@ -674,22 +687,111 @@ function pintarContacto(){
   var ok = document.getElementById("c-ok");
   var ver = document.getElementById("ver");
 
-  /* El correo pasó a ser obligatorio: es por donde le llega su página
-     personal y, más tarde, el aviso de que ya puede llenar el
-     formulario. Sin correo, la única forma de alcanzarla vuelve a ser
-     que David le escriba a mano, que es justo lo que se quitó. */
-  function revisar(){
-    var telLimpio = tel.value.replace(/\D/g,"");
-    var correoOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail.value.trim());
-    ver.disabled = !(nombre.value.trim().length > 2 && telLimpio.length >= 9 && correoOk && ok.checked);
+  /* El correo es obligatorio: es por donde le llega su página personal
+     y, más tarde, el aviso de que ya puede llenar el formulario. Sin
+     correo, la única forma de alcanzarla vuelve a ser que David le
+     escriba a mano, que es justo lo que se quitó.
+
+     Pero el botón NO se deshabilita mientras algo esté mal. Estaba así
+     y la gente se quedaba trancada en esta pantalla sin saber por qué:
+     escribían el correo con un espacio al final, o sin el ".com", y el
+     botón simplemente no reaccionaba — nada les decía qué arreglar.
+
+     Ahora el botón siempre se puede tocar, y al tocarlo se revisa y se
+     dice exactamente qué está mal y cómo se escribe bien, junto al
+     campo que lo tiene. */
+
+  var campos = [
+    {campo: nombre, error: document.getElementById("e-nombre")},
+    {campo: tel,    error: document.getElementById("e-tel")},
+    {campo: mail,   error: document.getElementById("e-mail")}
+  ];
+
+  function limpiarErrores(){
+    campos.forEach(function(c){
+      c.error.className = "error-campo";
+      c.campo.classList.remove("mal");
+    });
+    document.getElementById("e-ok").className = "error-campo";
   }
-  [nombre, tel, mail].forEach(function(c){ c.addEventListener("input", revisar); });
-  ok.addEventListener("change", revisar);
+
+  function marcar(campo, error, texto){
+    error.textContent = texto;
+    error.className = "error-campo se-ve";
+    if (campo) campo.classList.add("mal");
+  }
+
+  // Al volver a escribir en un campo, su error se va: el mensaje viejo
+  // sobre lo que ya corrigió solo confunde.
+  campos.forEach(function(c){
+    c.campo.addEventListener("input", function(){
+      c.error.className = "error-campo";
+      c.campo.classList.remove("mal");
+    });
+  });
+  ok.addEventListener("change", function(){
+    document.getElementById("e-ok").className = "error-campo";
+  });
+
+  /* Se arreglan solos los descuidos de tecleo que no cambian el dato:
+     espacios (los mete el teclado del celular al autocompletar),
+     mayúsculas, y el punto o la coma que queda pegada al final. Lo que
+     no se toca es el contenido: si falta el ".com", eso se le dice, no
+     se inventa. */
+  function limpiarCorreo(v){
+    return String(v).replace(/\s/g, "").replace(/[.,;:]+$/, "").toLowerCase();
+  }
 
   ver.addEventListener("click", function(){
+    limpiarErrores();
+    var falla = null;
+
+    var palabras = nombre.value.trim().split(/\s+/).filter(function(x){ return x.length > 1; });
+    if (palabras.length < 2) {
+      marcar(nombre, campos[0].error, "Falta tu apellido. Escríbelo como en tu cédula. Por ejemplo: Ana Pérez.");
+      falla = falla || nombre;
+    }
+
+    var telLimpio = tel.value.replace(/\D/g, "");
+    if (telLimpio.length < 9) {
+      marcar(tel, campos[1].error, "Falta tu número. Son 10 dígitos y empieza con 09. Por ejemplo: 0991234567.");
+      falla = falla || tel;
+    } else if (telLimpio.length > 13) {
+      marcar(tel, campos[1].error, "Ese número tiene demasiados dígitos. Escribe solo tu celular, así: 0991234567.");
+      falla = falla || tel;
+    }
+
+    var correo = limpiarCorreo(mail.value);
+    if (correo !== mail.value) mail.value = correo;   // que vea lo que se va a guardar
+    if (!correo) {
+      marcar(mail, campos[2].error, "Falta tu correo. Se escribe así: ana@correo.com.");
+      falla = falla || mail;
+    } else if (correo.indexOf("@") === -1) {
+      marcar(mail, campos[2].error, "A tu correo le falta la arroba. Se escribe así: ana@correo.com.");
+      falla = falla || mail;
+    } else if (!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/.test(correo)) {
+      marcar(mail, campos[2].error, "Ese correo está incompleto: después de la arroba va el punto y lo que sigue. Se escribe así: ana@correo.com.");
+      falla = falla || mail;
+    }
+
+    if (!ok.checked) {
+      marcar(null, document.getElementById("e-ok"), "Marca la casilla de autorización para poder revisar tu caso.");
+      if (!falla) {
+        document.querySelector(".consent").scrollIntoView({behavior:"smooth", block:"center"});
+        return;
+      }
+    }
+
+    if (falla) {
+      falla.scrollIntoView({behavior:"smooth", block:"center"});
+      try { falla.focus({preventScroll:true}); } catch(e){ falla.focus(); }
+      return;
+    }
+    if (!ok.checked) return;
+
     respuestas.nombre = nombre.value.trim();
     respuestas.telefono = tel.value.trim();
-    respuestas.correo = mail.value.trim();
+    respuestas.correo = correo;
     respuestas.consentimiento = true;
     guardar();
     pintarResultado();

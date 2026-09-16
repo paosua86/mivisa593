@@ -342,6 +342,25 @@ solo, «Este no aplica» en el segundo. Lo controla `minimo` en la
 definición de la tabla, y sirve para cualquier otra tabla que lo
 necesite.
 
+**Un botón no se deshabilita en silencio: se toca y dice qué falta.**
+En el último paso de `empezar/` el botón estaba apagado hasta que los
+cuatro datos fueran válidos, y la gente se quedaba trancada ahí sin
+saber por qué — un espacio al final del correo, un ".com" que faltaba,
+y el botón simplemente no reaccionaba. Ahora el botón siempre se puede
+tocar; al tocarlo se revisa y el mensaje sale **junto al campo que está
+mal**, con cómo se escribe bien, y la pantalla se desplaza hasta ahí.
+El mensaje desaparece en cuanto la persona vuelve a escribir en ese
+campo. Vale para cualquier formulario que se agregue: **nada de botones
+apagados sin explicación.**
+
+Los descuidos de tecleo que no cambian el dato se arreglan solos:
+espacios (el teclado del celular los mete al autocompletar), mayúsculas
+y el punto o la coma pegada al final del correo. Lo que falta no se
+inventa: si no está el ".com", se le dice.
+
+El nombre pide **dos palabras**: sin apellido, David tiene que llamar
+para pedirlo.
+
 **Siempre con un ejemplo.** Cada pregunta del expediente trae un ejemplo
 concreto: dentro de la casilla vacía ("Ej: ...") y repetido en el
 mensaje de error si la dejan en blanco. Viven en `EJEMPLOS`, en
