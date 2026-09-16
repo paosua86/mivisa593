@@ -226,9 +226,30 @@ var PREGUNTAS = [
     titulo: "¿Ya habías pedido esta visa antes?",
     opciones: [
       {v:"nunca",    t:"No, es mi primera vez", p:0},
-      {v:"aprobada", t:"Sí, y me la dieron",    s:"Sería una renovación", p:3, fuerte:"Ya tuviste la visa antes: es una renovación"},
+      {v:"aprobada", t:"Sí, y me la dieron",    s:"Te preguntamos la fecha enseguida", p:0},
       {v:"negada",   t:"Sí, y me la negaron",   p:0}
     ]
+  },
+  {
+    /* La única pregunta del formulario que no es de botones. La fecha
+       tiene que ser exacta: de ella sale si el trámite es renovación o
+       primera vez, y eso son diez dólares de diferencia. Preguntarlo
+       con botones ("¿hace más de un año?") deja que la persona calcule
+       mal y que David se entere al cobrar. */
+    id: "vence_visa",
+    tipo: "fecha",
+    si: function(r){ return r.aplico_antes === "aprobada"; },
+    titulo: "¿Hasta cuándo está (o estuvo) vigente esa visa?",
+    ayuda: "Búscala en tu pasaporte: en la visa dice «Expiration date». Si ya se venció, pon igual esa fecha. Por ejemplo, 14/03/2026.",
+    escape: {v:"no-se", t:"No la tengo a la mano ahora", s:"Sigues igual y David la confirma contigo"},
+    puntuar: function(v){
+      if (v === "no-se") {
+        return {p:2, bandera:"Falta la fecha de su visa anterior: hay que confirmarla para saber si es renovación"};
+      }
+      return esRenovacion(v)
+        ? {p:3, fuerte:"Tu visa anterior sigue dentro del año: tu trámite entra como renovación"}
+        : {p:2, fuerte:"Ya tuviste esta visa antes, aunque venció hace más de un año"};
+    }
   },
   {
     id: "cuando_negada",
@@ -358,6 +379,44 @@ var PREGUNTAS = [
 
 var NOMBRE_DESTINO = {usa:"Estados Unidos", canada:"Canadá", schengen:"Europa (Schengen)", "no-se":"Todavía sin decidir"};
 
+/* ------------------------------------------------------------
+   LA VENTANA DE RENOVACIÓN — 12 MESES
+
+   Un trámite cuenta como renovación mientras la visa anterior siga
+   vigente o no haya cumplido un año de vencida. Pasado ese año vuelve
+   a ser primera vez, con el precio de primera vez.
+
+   El año, y no menos, porque entre que la persona llama, paga, reúne
+   los papeles y consigue cita se van semanas: una ventana corta
+   dejaría fuera a gente que empezó el trámite a tiempo.
+
+   Es la regla que aplica David, confirmada por él en septiembre de
+   2026, y vale para los tres destinos. Estas ventanas las mueven los
+   consulados cada cierto tiempo: cuando cambie, se cambia aquí, en
+   pago/index.html y en el Apps Script, que tienen la misma constante.
+
+   El tipo de trámite se decide EL DÍA DE LA PRECALIFICACIÓN y se
+   guarda escrito. Si se recalculara cada vez que se abre la página,
+   un caso que empezó como renovación se convertiría solo en primera
+   vez a mitad del trámite, y David estaría cobrando un precio
+   distinto del que la persona ya vio.
+   ------------------------------------------------------------ */
+var MESES_RENOVACION = 12;
+
+function esRenovacion(iso){
+  if (!iso || iso === "no-se") return false;
+  var v = new Date(iso + "T00:00:00");
+  if (isNaN(v.getTime())) return false;
+  var limite = new Date(v.getFullYear(), v.getMonth() + MESES_RENOVACION, v.getDate());
+  return new Date() <= limite;
+}
+
+/** La fecha como la escribe David en sus formatos: DD/MM/AAAA. */
+function fechaLarga(iso){
+  var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso || ""));
+  return m ? m[3] + "/" + m[2] + "/" + m[1] : String(iso || "");
+}
+
 /* ============================================================
    MOTOR
    ============================================================ */
@@ -446,6 +505,9 @@ function pintarPregunta(i){
   var html = '<div class="pregunta activa">';
   html += '<h1>' + esc(q.titulo) + '</h1>';
   if (q.ayuda) html += '<p class="ayuda">' + esc(q.ayuda) + '</p>';
+
+  if (q.tipo === "fecha"){ pintarFecha(q, i, html, prev); return; }
+
   html += '<div class="ops">';
   q.opciones.forEach(function(op){
     var marcada = elegida !== undefined && String(op.v) === String(elegida);
@@ -469,6 +531,50 @@ function pintarPregunta(i){
       guardar();
       setTimeout(avanzar, 160);
     });
+  });
+
+  var atras = document.getElementById("atras");
+  if (atras) atras.addEventListener("click", function(){ pintarPregunta(prev); });
+}
+
+/* La pregunta de fecha: campo de calendario y un botón de salida para
+   quien no tiene el pasaporte delante. Sin esa salida, no acordarse de
+   una fecha dejaría a la persona trancada en mitad del formulario. */
+function pintarFecha(q, i, html, prev){
+  var elegida = respuestas[q.id];
+  var fecha = elegida && elegida !== "no-se" ? elegida : "";
+
+  html += '<label class="campo">Fecha de vencimiento' +
+            '<input type="date" id="f-fecha" min="1990-01-01" max="2040-12-31" value="' + esc(fecha) + '">' +
+            '<small>Día, mes y año, tal como sale en la visa.</small>' +
+          '</label>';
+  html += '<button class="btn" type="button" id="f-ok"' + (fecha ? "" : " disabled") + '>Continuar</button>';
+  if (q.escape){
+    html += '<div class="ops" style="margin-top:14px">' +
+      '<button class="op" type="button" id="f-escape" aria-pressed="' + (elegida === q.escape.v) + '">' +
+        '<span class="marca-op"></span>' +
+        '<span>' + esc(q.escape.t) + '<small>' + esc(q.escape.s) + '</small></span>' +
+      '</button></div>';
+  }
+  if (prev !== -1) html += '<div class="pie-nav"><button class="atras" type="button" id="atras">← Volver a la anterior</button></div>';
+  html += '</div>';
+  app.innerHTML = html;
+  window.scrollTo(0,0);
+
+  var campo = document.getElementById("f-fecha");
+  var ok = document.getElementById("f-ok");
+  campo.addEventListener("input", function(){ ok.disabled = !campo.value; });
+  ok.addEventListener("click", function(){
+    if (!campo.value) return;
+    respuestas[q.id] = campo.value;
+    guardar();
+    avanzar();
+  });
+  var escape = document.getElementById("f-escape");
+  if (escape) escape.addEventListener("click", function(){
+    respuestas[q.id] = q.escape.v;
+    guardar();
+    setTimeout(avanzar, 160);
   });
 
   var atras = document.getElementById("atras");
@@ -507,7 +613,8 @@ function calcular(){
     if (!aplica(q)) return;
     var v = respuestas[q.id];
     if (v === undefined) return;
-    var op = q.opciones.filter(function(o){ return String(o.v) === String(v); })[0];
+    var op = q.puntuar ? q.puntuar(v)
+                       : q.opciones.filter(function(o){ return String(o.v) === String(v); })[0];
     if (!op) return;
     if (typeof op.p === "number") puntos += op.p;
     if (op.bandera) banderas.push(op.bandera);
@@ -625,9 +732,19 @@ function armarFila(r, codigo){
   PREGUNTAS.forEach(function(q){
     var v = respuestas[q.id];
     if (v === undefined) { fila[q.id] = ""; return; }
+    if (!q.opciones) {
+      fila[q.id] = v === "no-se" ? "No la tenía a la mano" : fechaLarga(v);
+      return;
+    }
     var op = q.opciones.filter(function(o){ return String(o.v) === String(v); })[0];
     fila[q.id] = op ? op.t : v;
   });
+
+  /* El tipo de trámite y el servicio se guardan resueltos, no se
+     deducen después: así la hoja, la página del caso y el cobro dicen
+     siempre lo mismo, aunque pasen meses. */
+  fila.tipo_tramite = tipoTramite();
+  fila.servicio = servicioDe(fila);
   return fila;
 }
 
@@ -656,12 +773,19 @@ function conTope(promesa, ms, respaldo){
 
 /* Identifica el servicio igual que lo hace el Apps Script, para que la
    página del caso pueda mostrar el precio sin consultar nada. */
+function tipoTramite(){
+  return (respuestas.aplico_antes === "aprobada" && esRenovacion(respuestas.vence_visa))
+    ? "Renovación" : "Primera vez";
+}
+
 function servicioDe(fila){
   var d = String(fila.destino || "").toLowerCase();
-  var renovacion = String(fila.aplico_antes || "").toLowerCase().indexOf("dieron") !== -1;
+  var renovacion = fila.tipo_tramite === "Renovación";
   if (d.indexOf("estados unidos") !== -1) return renovacion ? "usa-renovacion" : "usa-primera";
   if (d.indexOf("canad") !== -1)          return renovacion ? "canada-renovacion" : "canada-primera";
-  if (d.indexOf("europa") !== -1 || d.indexOf("schengen") !== -1) return "schengen";
+  if (d.indexOf("europa") !== -1 || d.indexOf("schengen") !== -1) {
+    return renovacion ? "schengen-renovacion" : "schengen";
+  }
   return "";
 }
 

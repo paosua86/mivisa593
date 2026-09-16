@@ -103,7 +103,7 @@ function propiedad(clave) {
    implementacion en vivo ya tiene los cambios: al abrir la URL /exec
    sin parametros, la respuesta trae este mismo texto. Subirla cada vez
    que se cambie este archivo. */
-var VERSION = "2026-09-15-ficha-legible";
+var VERSION = "2026-09-16-renovacion-y-grupo";
 
 /* ------------------------------------------------------------
    NO HAY CANDADO
@@ -148,6 +148,11 @@ var COLUMNAS = [
   ["link_expediente", "Link del expediente"],
   ["carpeta",         "Carpeta de documentos"],
   ["personas",        "Personas"],
+  ["tipo_tramite",    "Tipo de trámite"],
+  ["vence_visa",      "Vence su visa anterior"],
+  ["servicio",        "Servicio"],
+  ["grupo_detalle",   "Detalle del cobro"],
+  ["grupo_total",     "Total a cobrar"],
   ["semaforo",        "Semáforo"],
   ["puntos",          "Puntos"],
   ["a_favor",         "A favor"],
@@ -165,7 +170,11 @@ var COLUMNAS = [
   ["bienes",          "Bienes"],
   ["pasaporte",       "Pasaporte"],
   ["cuando",          "Cuándo viaja"],
-  ["consentimiento",  "Consentimiento"]
+  ["consentimiento",  "Consentimiento"],
+  /* El grupo tal cual, para que el formulario largo pueda crear la
+     ficha de cada persona sin volver a preguntar los nombres. No es
+     una columna para leer: lo legible es "Detalle del cobro". */
+  ["grupo_json",      "Solicitantes (datos)"]
 ];
 
 /* ------------------------------------------------------------
@@ -226,6 +235,11 @@ function doPost(e) {
       return declararPago(datos);
     }
 
+    // La persona armó en su página la lista de por quiénes va a pagar.
+    if (datos.tipo === "grupo") {
+      return guardarGrupo(datos);
+    }
+
     for (var i = 0; i < OBLIGATORIOS.length; i++) {
       var c = OBLIGATORIOS[i];
       if (!datos[c] || typeof datos[c] !== "string") {
@@ -264,6 +278,13 @@ function doPost(e) {
     datos.link_expediente = SITIO + "/expediente/?caso=" + datos.codigo;
     datos.link_pago = SITIO + "/pago/?v=" + servicio(datos);
     datos.carpeta = carpetaDelCaso(datos);
+    // El grupo empieza con una persona: ella. Si agrega a alguien desde
+    // su página, entra por doPost tipo "grupo" y reescribe estas tres.
+    datos.grupo_detalle = datos.nombre + " · " +
+      (String(datos.tipo_tramite || "").toLowerCase() || "primera vez") + " · $" +
+      (VALOR_SERVICIO[servicio(datos)] || 0);
+    datos.grupo_total = VALOR_SERVICIO[servicio(datos)] || "";
+    datos.grupo_json = "";
     datos.pagado = "";
     datos.pago_declarado = "";
     datos.expediente = "";
@@ -337,6 +358,46 @@ function declararPago(datos) {
   }
 
   return responder({ ok: true, codigo: codigo });
+}
+
+/**
+ * Guarda quiénes entran en un mismo cobro. Llega de /caso/ cada vez
+ * que la persona agrega o quita a alguien.
+ *
+ * Se escribe el detalle legible (una línea por persona, con su tipo de
+ * trámite y su valor), el total y la lista en crudo para que el
+ * formulario largo pueda crear la ficha de cada uno.
+ *
+ * No toca el pago: si ya se declaró un pago, el total puede cambiar
+ * después y ahí es David quien decide si cobra la diferencia. La
+ * página se lo advierte a la persona.
+ */
+function guardarGrupo(datos) {
+  var codigo = String(datos.codigo || "").toUpperCase();
+  if (!codigo) return responder({ ok: false, error: "Falta el codigo" });
+
+  var lista = datos.solicitantes;
+  if (!lista || !lista.length) return responder({ ok: false, error: "Lista vacia" });
+  if (lista.length > 12) return responder({ ok: false, error: "Demasiadas personas" });
+
+  var fila = filaDelCaso(codigo);
+  if (!fila) return responder({ ok: false, error: "Caso no encontrado" });
+
+  asegurarColumnas(fila.hoja);
+  fila = filaDelCaso(codigo);
+
+  var escribir = {
+    personas:      lista.length === 1 ? "Solo yo" : lista.length + " personas",
+    grupo_detalle: String(datos.detalle || ""),
+    grupo_total:   Number(datos.total) || "",
+    grupo_json:    JSON.stringify(lista)
+  };
+  Object.keys(escribir).forEach(function (k) {
+    var pos = fila.indice[k];
+    if (pos) fila.hoja.getRange(fila.numero, pos).setValue(escribir[k]);
+  });
+
+  return responder({ ok: true, codigo: codigo, total: Number(datos.total) || 0 });
 }
 
 /**
@@ -437,14 +498,63 @@ function indiceColumna(hoja, clave) {
   return columnasDeLaHoja(hoja)[clave] || 0;
 }
 
-/** Devuelve el identificador del servicio, para el link de pago. */
+/* ------------------------------------------------------------
+   EL SERVICIO Y LA VENTANA DE RENOVACIÓN
+
+   Un trámite es renovación mientras la visa anterior siga vigente o no
+   haya cumplido un año de vencida; pasado el año vuelve a ser primera
+   vez. La ventana es de 12 meses porque entre la llamada, el pago, los
+   papeles y la cita se van semanas.
+
+   Ese cálculo NO se hace aquí: lo hace el formulario el día de la
+   precalificación y manda el resultado escrito ("Renovación" /
+   "Primera vez") junto con el servicio. Si se recalculara cada vez que
+   se abre la página, un caso que empezó como renovación se convertiría
+   solo en primera vez a mitad del trámite y David estaría cobrando un
+   precio distinto del que la persona ya vio.
+
+   Lo de abajo es solo el respaldo para los casos viejos, guardados
+   antes de que existiera la columna.
+   ------------------------------------------------------------ */
 function servicio(datos) {
+  var guardado = String(datos.servicio || "").trim();
+  if (guardado) return guardado;
+
   var d = String(datos.destino || "").toLowerCase();
-  var renovacion = String(datos.aplico_antes || "").toLowerCase().indexOf("dieron") !== -1;
+  var renovacion = String(datos.tipo_tramite || "").toLowerCase().indexOf("renov") !== -1 ||
+                   String(datos.aplico_antes || "").toLowerCase().indexOf("dieron") !== -1;
   if (d.indexOf("estados unidos") !== -1) return renovacion ? "usa-renovacion" : "usa-primera";
   if (d.indexOf("canad") !== -1)          return renovacion ? "canada-renovacion" : "canada-primera";
-  if (d.indexOf("europa") !== -1 || d.indexOf("schengen") !== -1) return "schengen";
+  if (d.indexOf("europa") !== -1 || d.indexOf("schengen") !== -1) {
+    return renovacion ? "schengen-renovacion" : "schengen";
+  }
   return "";
+}
+
+/** Lo que vale cada servicio. Schengen cuesta lo mismo se haya tenido
+ *  antes o no: cada solicitud se presenta como nueva. */
+var VALOR_SERVICIO = {
+  "usa-primera": 65,      "usa-renovacion": 55,
+  "canada-primera": 95,   "canada-renovacion": 75,
+  "schengen": 155,        "schengen-renovacion": 155
+};
+
+/** El servicio de una fila que ya está en la hoja. */
+function servicioDeFila(fila) {
+  return servicio({
+    servicio:     fila.valor("servicio"),
+    tipo_tramite: fila.valor("tipo_tramite"),
+    destino:      fila.valor("destino"),
+    aplico_antes: fila.valor("aplico_antes")
+  });
+}
+
+/** El total a cobrar de un caso: la suma del grupo si lo hay, y si no
+ *  el valor del titular solo. */
+function totalDelCaso(fila) {
+  var guardado = Number(String(fila.valor("grupo_total")).replace(/[^0-9.]/g, ""));
+  if (guardado > 0) return guardado;
+  return VALOR_SERVICIO[servicioDeFila(fila)] || 0;
 }
 
 /* ============================================================
@@ -542,7 +652,12 @@ function doGet(e) {
       destino:    fila.valor("destino"),
       personas:   fila.valor("personas"),
       semaforo:   String(fila.valor("semaforo")).toLowerCase(),
-      servicio:   servicio({ destino: fila.valor("destino"), aplico_antes: fila.valor("aplico_antes") }),
+      servicio:     servicioDeFila(fila),
+      tipoTramite:  fila.valor("tipo_tramite"),
+      // La lista de por quiénes se paga. La página del caso la pinta y
+      // el formulario largo crea una ficha por cada una.
+      solicitantes: leerGrupoGuardado(fila),
+      total:        totalDelCaso(fila),
       a_favor:    fila.valor("a_favor"),
       en_contra:  fila.valor("en_contra"),
       // Los dos son informativos: la página los usa para saber qué
@@ -553,6 +668,18 @@ function doGet(e) {
     });
   } catch (err) {
     return responder({ ok: false, error: String(err) });
+  }
+}
+
+/** La lista de solicitantes de un caso, o vacía si nunca se armó. */
+function leerGrupoGuardado(fila) {
+  var crudo = String(fila.valor("grupo_json") || "").trim();
+  if (!crudo) return [];
+  try {
+    var arr = JSON.parse(crudo);
+    return arr && arr.length ? arr : [];
+  } catch (err) {
+    return [];
   }
 }
 
@@ -1403,12 +1530,9 @@ function correoALaPersona(datos) {
  * mensajes: llega con el código, el valor y el link de la fila.
  */
 function avisarPagoDeclarado(fila, codigo) {
-  var srv = servicio({ destino: fila.valor("destino"), aplico_antes: fila.valor("aplico_antes") });
-  var valores = {
-    "usa-primera": 65, "usa-renovacion": 55,
-    "canada-primera": 95, "canada-renovacion": 75, "schengen": 155
-  };
-  var valor = valores[srv] ? "$" + valores[srv] : "por confirmar";
+  var total = totalDelCaso(fila);
+  var valor = total ? "$" + total : "por confirmar";
+  var detalle = String(fila.valor("grupo_detalle") || "").trim();
 
   var cuerpo =
     '<div style="font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;' +
@@ -1417,7 +1541,9 @@ function avisarPagoDeclarado(fila, codigo) {
     tablaCorreo([
       ["Código", codigo],
       ["Destino", fila.valor("destino")],
+      ["Tipo de trámite", fila.valor("tipo_tramite")],
       ["Valor esperado", valor],
+      ["Por quiénes paga", detalle || fila.valor("nombre")],
       ["WhatsApp", fila.valor("telefono")],
       ["Correo", fila.valor("correo")]
     ]) +

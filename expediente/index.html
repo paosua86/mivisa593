@@ -1325,7 +1325,7 @@ function confirmarDestino(){
 
   if (conocido) {
     document.getElementById("si").addEventListener("click", function(){
-      if (!E.personas.length) E.personas = [{ nombre: E.titular, datos: {}, completa: false }];
+      if (!E.personas.length) E.personas = solicitantesDelCaso();
       guardar();
       pantallaPreparate();
     });
@@ -1335,6 +1335,22 @@ function confirmarDestino(){
       encodeURIComponent("Hola David, sobre mi expediente " + CODIGO + ": necesito revisar el país destino antes de llenar la información.");
   });
   document.getElementById("atras").addEventListener("click", confirmarIdentidad);
+}
+
+/* Las fichas arrancan con las personas por las que ya se pagó. Si en
+   su página armó el grupo (ella, su esposa y su hijo), aquí encuentra
+   las tres creadas con su nombre en vez de tener que escribirlas otra
+   vez. Si no armó ningún grupo, es ella sola. */
+function solicitantesDelCaso(){
+  var g = (caso && caso.solicitantes) || [];
+  if (!g.length) return [{ nombre: E.titular, datos: {}, completa: false }];
+  return g.map(function(x, i){
+    return {
+      nombre: (i === 0 ? E.titular : String(x.nombre || "").trim()) || ("Persona " + (i + 1)),
+      datos: {},
+      completa: false
+    };
+  });
 }
 
 /* ============================================================

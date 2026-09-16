@@ -208,7 +208,12 @@ var SERVICIOS = [
   {v:"usa-renovacion",   t:"Visa americana B1/B2 · renovación",  valor:55,  det:"Aparte va el arancel consular de $185, que se paga directo al consulado."},
   {v:"canada-primera",   t:"Visa de Canadá · primera vez",       valor:95,  det:"Aparte van la tasa de la visa (100 CAD) y la biometría (85 CAD por persona)."},
   {v:"canada-renovacion",t:"Visa de Canadá · renovación",        valor:75,  det:"Aparte van la tasa de la visa (100 CAD) y la biometría (85 CAD por persona)."},
-  {v:"schengen",         t:"Visa Schengen · Europa",             valor:155, det:"Aparte van la tasa consular, el fee del centro de visas y el seguro de viaje."}
+  {v:"schengen",         t:"Visa Schengen · Europa",             valor:155, det:"Aparte van la tasa consular, el fee del centro de visas y el seguro de viaje."},
+  /* Schengen no baja de precio para quien ya la tuvo: cada solicitud
+     se presenta como nueva. Existe como servicio aparte solo para que
+     el link que arma /caso/ siempre encuentre su valor; no se lista
+     abajo, porque para la persona es el mismo trámite. */
+  {v:"schengen-renovacion", t:"Visa Schengen · Europa", valor:155, oculto:true, det:"Aparte van la tasa consular, el fee del centro de visas y el seguro de viaje."}
 ];
 
 function esc(s){
@@ -267,7 +272,7 @@ function pintar(){
   }
 
   document.getElementById("otros").innerHTML = SERVICIOS
-    .filter(function(x){ return !s || x.v !== s.v; })
+    .filter(function(x){ return !x.oculto && (!s || x.v !== s.v); })
     .map(function(x){
       return '<a href="?v=' + x.v + '">' + esc(x.t) + ' <b>$' + x.valor + '</b></a>';
     }).join("");

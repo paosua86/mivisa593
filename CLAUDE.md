@@ -69,6 +69,62 @@ visas/
 | Canadá (visitante) | $95 | $75 |
 | Schengen | $155 | — |
 
+**Un trámite es renovación mientras la visa anterior siga vigente o no
+haya cumplido 12 meses de vencida.** Pasado ese año vuelve a ser
+primera vez, con el precio de primera vez. Es la regla de David,
+confirmada en septiembre de 2026, y vale para los tres destinos. La
+ventana es de un año, y no menos, porque entre la llamada, el pago,
+reunir papeles y conseguir cita se van semanas: una ventana corta
+dejaría fuera a gente que empezó a tiempo.
+
+No se le pregunta a la persona si "es una renovación": se le pide la
+**fecha de vencimiento de la visa anterior** y la página lo calcula.
+Preguntarlo como opinión terminaba con David cobrando $55 a alguien que
+no calificaba. Quien no tiene el pasaporte a la mano puede seguir con
+«No la tengo a la mano ahora»: cuenta como primera vez y le queda una
+bandera a David para confirmarlo.
+
+El tipo de trámite y el servicio **se calculan una sola vez, el día de
+la precalificación, y se guardan escritos** en las columnas `Tipo de
+trámite` y `Servicio`. Si se recalcularan al abrir la página, un caso
+que empezó como renovación se volvería primera vez solo a mitad del
+trámite y el precio cambiaría después de que la persona ya lo vio.
+
+La constante `MESES_RENOVACION = 12` existe igual en
+`empezar/index.html` y `caso/index.html`; el Apps Script no recalcula
+nada, solo lee lo guardado. Estas ventanas las mueven los consulados:
+cuando cambie, se cambia en esos dos sitios.
+
+**Schengen no tiene precio de renovación.** Cada solicitud se presenta
+como nueva y el trabajo es el mismo, así que `schengen-renovacion`
+cuesta los mismos $155. Existe como servicio aparte solo para dejar
+registrado que la persona ya tuvo Schengen, que sí pesa en el caso.
+
+**Un pago puede cubrir a varias personas, cada una con su precio.**
+Pasa todo el tiempo: alguien llama por él, su esposa y sus hijos, y
+dentro del grupo unos renuevan y otros van por primera vez. En
+`caso/index.html`, antes del bloque de pago, la persona arma la lista:
+de cada acompañante se piden el nombre, si ya tuvo la visa (con la
+fecha de vencimiento, que decide su precio) y si alguna vez se la
+negaron. El total es la suma y es lo que se muestra en el recuadro de
+PayPhone.
+
+El semáforo sigue siendo solo del titular: doce preguntas por cabeza es
+donde la gente abandona. La pregunta de la negativa anterior sí se le
+hace a cada acompañante porque es lo que puede hundir el trámite de
+todos, cuesta un toque y si no aparece el día de la entrega de
+documentos.
+
+**Un código, un destino.** Si alguien del grupo va a otro país es otro
+trámite y otro código: el formulario largo es distinto por destino.
+
+El grupo se guarda en `Detalle del cobro` (legible), `Total a cobrar` y
+`Solicitantes (datos)` (JSON, para la máquina). El formulario largo lee
+ese JSON y **crea una ficha por persona ya con su nombre**, sin volver
+a preguntarlo. Si el grupo cambia después de declarar el pago, la
+página avisa que ese cobro va aparte: el total no se reescribe por
+debajo de un pago ya hecho.
+
 Arancel consular EE.UU.: $185. Canadá: tasa de visa 100 CAD + biometría
 85 CAD por persona (170 CAD máximo por familia). Todo va directo a la
 autoridad correspondiente, no a David.

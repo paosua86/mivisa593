@@ -131,6 +131,29 @@ ol li{margin-bottom:9px;font-size:.96rem;color:var(--tinta-suave)}
 .monto-num{font-family:var(--display);font-size:2.4rem;font-weight:700;line-height:1;margin:0 0 6px;color:var(--brand-deep)}
 .monto-pie{font-size:.85rem;color:var(--tinta-suave);margin:0}
 
+/* grupo de solicitantes */
+.grupo{display:grid;gap:8px;margin:16px 0 0}
+.gr-fila{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  border:2px solid var(--borde);border-radius:var(--radio);padding:12px 14px;background:#fff}
+.gr-fila small{display:block;font-weight:400;color:var(--tinta-suave);font-size:.84rem;line-height:1.35;margin-top:2px}
+.gr-val{font-weight:700;white-space:nowrap;display:flex;align-items:center;gap:8px}
+.gr-x{background:none;border:0;font:inherit;font-size:1.4rem;line-height:1;color:var(--tinta-suave);cursor:pointer;padding:0 4px}
+.gr-total{display:flex;justify-content:space-between;align-items:baseline;gap:12px;
+  margin:14px 0 18px;padding-top:12px;border-top:2px solid var(--borde);font-size:1.05rem}
+.gr-total b{font-family:var(--display);font-size:1.7rem;color:var(--brand-deep)}
+.gr-p{font-weight:700;font-size:.97rem;margin:14px 0 8px}
+.gr-si-no{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px}
+.op-mini{font:inherit;font-size:1rem;font-weight:700;color:var(--tinta);background:#fff;
+  border:2px solid var(--borde);border-radius:var(--radio);padding:14px 10px;cursor:pointer}
+.op-mini[aria-pressed="true"]{border-color:var(--brand-deep);background:var(--brand-tint);color:var(--brand-deep)}
+/* El campo de código de esta página va en mayúsculas y espaciado; los
+   del grupo son nombres y fechas normales. */
+#gr-nueva .campo input{text-transform:none;letter-spacing:normal;font-size:1.02rem}
+#gr-nueva .campo small{display:block;font-weight:400;color:var(--tinta-suave);font-size:.86rem;margin-top:6px;line-height:1.4}
+.gr-desglose{display:grid;gap:6px;margin:0 0 10px;text-align:left;font-size:.92rem}
+.gr-desglose div{display:flex;justify-content:space-between;gap:12px;color:var(--tinta-suave)}
+.gr-desglose b{color:var(--tinta)}
+
 .campo{display:block;margin:0 0 14px;font-weight:600;font-size:.95rem}
 .campo input{
   display:block;width:100%;margin-top:6px;font:inherit;font-weight:400;
@@ -199,8 +222,46 @@ var SERVICIOS = {
   "usa-renovacion":    {t:"Visa americana B1/B2 · renovación",  valor:55,  det:"Aparte va el arancel consular de $185, que se paga directo al consulado."},
   "canada-primera":    {t:"Visa de Canadá · primera vez",       valor:95,  det:"Aparte van la tasa de la visa (100 CAD) y la biometría (85 CAD por persona)."},
   "canada-renovacion": {t:"Visa de Canadá · renovación",        valor:75,  det:"Aparte van la tasa de la visa (100 CAD) y la biometría (85 CAD por persona)."},
-  "schengen":          {t:"Visa Schengen · Europa",             valor:155, det:"Aparte van la tasa consular, el fee del centro de visas y el seguro de viaje."}
+  "schengen":          {t:"Visa Schengen · Europa",             valor:155, det:"Aparte van la tasa consular, el fee del centro de visas y el seguro de viaje."},
+  /* Schengen no tiene precio de renovación: cada solicitud se presenta
+     como nueva y el trabajo de David es el mismo. La distinción se
+     guarda igual, porque haber tenido Schengen antes sí pesa en el
+     caso; lo que no cambia es el valor. */
+  "schengen-renovacion": {t:"Visa Schengen · Europa", valor:155, det:"Aparte van la tasa consular, el fee del centro de visas y el seguro de viaje."}
 };
+
+/* ------------------------------------------------------------
+   RENOVACIÓN: LA MISMA VENTANA DE 12 MESES QUE EN /empezar/
+
+   Mientras la visa anterior siga vigente o no haya cumplido un año de
+   vencida, el trámite es renovación. Pasado el año vuelve a ser
+   primera vez. Si esto cambia, cambia también en empezar/index.html,
+   pago/index.html y el Apps Script.
+   ------------------------------------------------------------ */
+var MESES_RENOVACION = 12;
+
+function esRenovacion(iso){
+  if (!iso) return false;
+  var v = new Date(iso + "T00:00:00");
+  if (isNaN(v.getTime())) return false;
+  var limite = new Date(v.getFullYear(), v.getMonth() + MESES_RENOVACION, v.getDate());
+  return new Date() <= limite;
+}
+
+function fechaLarga(iso){
+  var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso || ""));
+  return m ? m[3] + "/" + m[2] + "/" + m[1] : String(iso || "");
+}
+
+/** El servicio que le toca a una persona de este caso. El destino es
+ *  el del caso: un código, un país. */
+function servicioPara(destino, renovacion){
+  var k = claveDestino(destino);
+  if (k === "usa")      return renovacion ? "usa-renovacion" : "usa-primera";
+  if (k === "canada")   return renovacion ? "canada-renovacion" : "canada-primera";
+  if (k === "schengen") return renovacion ? "schengen-renovacion" : "schengen";
+  return "";
+}
 
 /* Qué tiene que reunir la persona antes de sentarse a llenar el
    formulario largo. La lista viva de campos está en
@@ -410,6 +471,230 @@ function pintarPedirCodigo(mensaje){
   input.focus();
 }
 
+/* ============================================================
+   EL GRUPO — VARIAS PERSONAS EN UN MISMO COBRO
+
+   Pasa todo el tiempo: una persona llama por ella y por su esposa y
+   sus hijos, y paga todo junto. Y dentro de ese grupo unos renuevan y
+   otros van por primera vez, así que no sirve multiplicar el precio
+   del titular por el número de personas.
+
+   Por eso cada acompañante trae su propio tipo de trámite, calculado
+   con la misma fecha de vencimiento que se le pregunta al titular, y
+   el total es la suma. La precalificación (el semáforo) sigue siendo
+   solo del titular: doce preguntas por cabeza es donde la gente
+   abandona. Lo único que se le pregunta a cada acompañante aparte del
+   nombre son las dos cosas que pueden hundir el trámite: si ya tuvo
+   la visa y si alguna vez se la negaron.
+
+   Un código, un destino. Si alguien del grupo va a otro país es otro
+   trámite y otro código: el formulario largo es distinto para cada
+   destino y mezclarlos complicaría el caso de todos por un caso raro.
+   ============================================================ */
+
+function claveGrupo(codigo){ return "mivisaec_grupo_" + codigo; }
+
+/** El titular siempre es el primero y no se puede quitar: su tipo de
+ *  trámite salió de la precalificación y ya está guardado. */
+function titularDe(d){
+  return {
+    nombre: d.nombre,
+    titular: true,
+    renovacion: String(d.servicio || "").indexOf("renovacion") !== -1,
+    servicio: d.servicio || ""
+  };
+}
+
+function leerGrupo(d){
+  var g = null;
+  try {
+    var crudo = localStorage.getItem(claveGrupo(d.codigo));
+    if (crudo) g = JSON.parse(crudo);
+  } catch(e){}
+  if (!g || !g.length) g = (d.solicitantes && d.solicitantes.length) ? d.solicitantes : null;
+  if (!g || !g.length) g = [titularDe(d)];
+  // El titular se vuelve a armar del caso, no de lo guardado: si David
+  // corrigió el nombre o el tipo en la hoja, manda la hoja.
+  g[0] = titularDe(d);
+  return g;
+}
+
+function guardarGrupo(d, g){
+  d.solicitantes = g;
+  d.personas = g.length === 1 ? "Solo yo" : g.length + " personas";
+  try { localStorage.setItem(claveGrupo(d.codigo), JSON.stringify(g)); } catch(e){}
+  try {
+    fetch(ENDPOINT, {
+      method: "POST",
+      headers: {"Content-Type": "text/plain;charset=utf-8"},
+      body: JSON.stringify({
+        tipo: "grupo",
+        codigo: d.codigo,
+        total: totalDelGrupo(d),
+        detalle: detalleDelGrupo(d).map(function(l){ return l.texto; }).join(" | "),
+        solicitantes: g
+      })
+    })["catch"](function(){});
+  } catch(e){}
+}
+
+/** Una línea por persona, con lo que se le cobra a cada una. */
+function detalleDelGrupo(d){
+  var g = d.solicitantes || [titularDe(d)];
+  return g.map(function(x){
+    var clave = x.servicio || servicioPara(d.destino, x.renovacion);
+    var srv = SERVICIOS[clave];
+    var valor = srv ? srv.valor : 0;
+    var tipo = x.renovacion ? "renovación" : "primera vez";
+    return {
+      nombre: x.nombre || "Sin nombre",
+      tipo: tipo,
+      valor: valor,
+      titular: !!x.titular,
+      negada: !!x.negada,
+      texto: (x.nombre || "Sin nombre") + " · " + tipo + " · $" + valor
+    };
+  });
+}
+
+function totalDelGrupo(d){
+  return detalleDelGrupo(d).reduce(function(a, l){ return a + l.valor; }, 0);
+}
+
+/* La tarjeta donde se arma el grupo. Sale antes del pago, porque de
+   ella sale el valor a pagar. */
+function bloqueGrupo(d){
+  if (!SERVICIOS[d.servicio]) return "";   // sin destino definido no hay qué cobrar
+  var lineas = detalleDelGrupo(d);
+  var g = d.solicitantes;
+
+  var html = '<div class="tarjeta">' +
+    '<p class="paso-rot">Antes de pagar</p>' +
+    '<h2>¿Quiénes van a aplicar?</h2>' +
+    '<p class="nota">Si vas a pagar por más personas, agrégalas aquí y el total se suma solo. Cada una tiene su propio precio: no es lo mismo quien renueva que quien va por primera vez.</p>';
+
+  html += '<div class="grupo">';
+  lineas.forEach(function(l, i){
+    html += '<div class="gr-fila">' +
+      '<div><b>' + esc(l.nombre) + '</b>' +
+        (l.titular ? '<small>Tú · ' + esc(l.tipo) + '</small>' : '<small>' + esc(l.tipo) + '</small>') +
+        (l.negada ? '<small style="color:#a33">Le negaron la visa antes</small>' : '') +
+      '</div>' +
+      '<div class="gr-val">$' + l.valor +
+        (l.titular ? '' : ' <button type="button" class="gr-x" data-i="' + i + '" aria-label="Quitar">×</button>') +
+      '</div>' +
+    '</div>';
+  });
+  html += '</div>';
+
+  html += '<div class="gr-total"><span>Total a pagar</span><b>$' + totalDelGrupo(d) + '</b></div>';
+
+  // El formulario para agregar a otra persona.
+  html += '<div id="gr-nueva" hidden>' +
+    '<label class="campo">Nombre completo de la persona' +
+      '<input type="text" id="gr-nombre" placeholder="Ej: María Fernanda Pérez Loor">' +
+    '</label>' +
+    '<p class="gr-p">¿Ya tuvo esta visa y se la dieron?</p>' +
+    '<div class="gr-si-no">' +
+      '<button type="button" class="op-mini" id="gr-visa-si" aria-pressed="false">Sí</button>' +
+      '<button type="button" class="op-mini" id="gr-visa-no" aria-pressed="false">No</button>' +
+    '</div>' +
+    '<div id="gr-fecha-caja" hidden>' +
+      '<label class="campo">¿Hasta cuándo está (o estuvo) vigente esa visa?' +
+        '<input type="date" id="gr-fecha" min="1990-01-01" max="2040-12-31">' +
+        '<small>Sale en la visa, en su pasaporte, como «Expiration date». Por ejemplo, 14/03/2026. Si venció hace más de un año, su trámite entra como primera vez.</small>' +
+      '</label>' +
+    '</div>' +
+    '<p class="gr-p">¿Alguna vez le negaron esta visa?</p>' +
+    '<div class="gr-si-no">' +
+      '<button type="button" class="op-mini" id="gr-neg-si" aria-pressed="false">Sí</button>' +
+      '<button type="button" class="op-mini" id="gr-neg-no" aria-pressed="false">No</button>' +
+    '</div>' +
+    '<button class="btn" type="button" id="gr-guardar" disabled>Agregar al cobro</button>' +
+    '<button class="btn btn-2" type="button" id="gr-cancelar" style="margin-top:10px">Cancelar</button>' +
+  '</div>';
+
+  html += '<button class="btn btn-2" type="button" id="gr-agregar">+ Agregar otra persona</button>';
+
+  if (lineas.some(function(l){ return l.negada; })){
+    html += '<div class="aviso" style="margin:16px 0 0">' +
+      '<b>Ojo con las negativas anteriores.</b><br>' +
+      'A alguien del grupo ya le negaron esta visa. Eso no impide presentarse, pero cambia cómo hay que armar ese caso. David lo va a revisar aparte antes de la cita.' +
+    '</div>';
+  }
+  if (g && g.length > 1){
+    html += '<p class="micro" style="margin-top:14px">En el formulario largo vas a encontrar una ficha para cada una de estas ' +
+            g.length + ' personas, ya creadas con su nombre.</p>';
+  }
+  return html + '</div>';
+}
+
+function conectarGrupo(d){
+  var caja = document.getElementById("gr-nueva");
+  if (!caja) return;
+  var abrir = document.getElementById("gr-agregar");
+  var nombre = document.getElementById("gr-nombre");
+  var fechaCaja = document.getElementById("gr-fecha-caja");
+  var fecha = document.getElementById("gr-fecha");
+  var guardar = document.getElementById("gr-guardar");
+  var nueva = { visa: null, negada: null };
+
+  function marcar(si, no, valor){
+    si.setAttribute("aria-pressed", valor === true);
+    no.setAttribute("aria-pressed", valor === false);
+  }
+  function revisar(){
+    // Si dijo que ya tuvo la visa, la fecha es obligatoria: sin ella no
+    // se puede saber si es renovación, y eso es el precio.
+    var listo = nombre.value.trim().length > 2 &&
+                nueva.visa !== null && nueva.negada !== null &&
+                (nueva.visa === false || !!fecha.value);
+    guardar.disabled = !listo;
+  }
+
+  abrir.addEventListener("click", function(){
+    caja.hidden = false;
+    abrir.hidden = true;
+    nombre.focus();
+  });
+  document.getElementById("gr-cancelar").addEventListener("click", function(){
+    caja.hidden = true;
+    abrir.hidden = false;
+  });
+
+  var visaSi = document.getElementById("gr-visa-si"), visaNo = document.getElementById("gr-visa-no");
+  var negSi  = document.getElementById("gr-neg-si"),  negNo  = document.getElementById("gr-neg-no");
+
+  visaSi.addEventListener("click", function(){ nueva.visa = true;  marcar(visaSi, visaNo, true);  fechaCaja.hidden = false; revisar(); });
+  visaNo.addEventListener("click", function(){ nueva.visa = false; marcar(visaSi, visaNo, false); fechaCaja.hidden = true;  revisar(); });
+  negSi.addEventListener("click",  function(){ nueva.negada = true;  marcar(negSi, negNo, true);  revisar(); });
+  negNo.addEventListener("click",  function(){ nueva.negada = false; marcar(negSi, negNo, false); revisar(); });
+  nombre.addEventListener("input", revisar);
+  fecha.addEventListener("input", revisar);
+
+  guardar.addEventListener("click", function(){
+    var renovacion = nueva.visa === true && esRenovacion(fecha.value);
+    var g = d.solicitantes.concat([{
+      nombre: nombre.value.trim(),
+      renovacion: renovacion,
+      vence: nueva.visa === true ? fechaLarga(fecha.value) : "",
+      negada: nueva.negada === true,
+      servicio: servicioPara(d.destino, renovacion)
+    }]);
+    guardarGrupo(d, g);
+    pintarCaso(d);
+  });
+
+  [].forEach.call(document.querySelectorAll(".gr-x"), function(b){
+    b.addEventListener("click", function(){
+      var g = d.solicitantes.slice();
+      g.splice(parseInt(b.dataset.i, 10), 1);
+      guardarGrupo(d, g);
+      pintarCaso(d);
+    });
+  });
+}
+
 function bloqueFicha(d){
   return '<div class="ficha">' +
     '<p class="cod">Tu código</p>' +
@@ -495,6 +780,10 @@ function bloquePago(d){
         '">Escribirle a David</a></div>';
   }
 
+  var lineas = detalleDelGrupo(d);
+  var total = totalDelGrupo(d);
+  var varios = lineas.length > 1;
+
   var tarjeta;
   if (LINK_PAYPHONE){
     // El link es abierto: el monto lo teclea la persona. Se lo decimos
@@ -503,27 +792,36 @@ function bloquePago(d){
     tarjeta =
       '<div class="monto">' +
         '<p class="monto-rot">Digita exactamente este valor</p>' +
-        '<p class="monto-num">$' + srv.valor + '</p>' +
-        '<p class="monto-pie">PayPhone no lo pone solo: lo escribes tú al entrar.</p>' +
+        '<p class="monto-num">$' + total + '</p>' +
+        '<p class="monto-pie">' + (varios ? "Es el total de las " + lineas.length + " personas. " : "") +
+          'PayPhone no lo pone solo: lo escribes tú al entrar.</p>' +
       '</div>' +
       '<a class="btn" href="' + esc(LINK_PAYPHONE) + '" target="_blank" rel="noopener">Pagar con tarjeta en PayPhone</a>' +
-      '<p class="micro">Aceptan tarjetas de crédito y de débito. Recuerda: <strong>$' + srv.valor +
+      '<p class="micro">Aceptan tarjetas de crédito y de débito. Recuerda: <strong>$' + total +
         '</strong>, y tu código <strong>' + esc(d.codigo) + '</strong> en la referencia.</p>';
   } else {
-    var pedir = "Hola David, soy " + d.nombre + " (caso " + d.codigo + "). Quiero el link de pago para " + srv.t + " ($" + srv.valor + ").";
+    var pedir = "Hola David, soy " + d.nombre + " (caso " + d.codigo + "). Quiero el link de pago para " +
+      (varios ? lineas.length + " personas" : srv.t) + " ($" + total + ").";
     tarjeta =
       '<a class="btn btn-wa" href="https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent(pedir) + '">Pedir mi link de pago</a>' +
       '<p class="micro">Se abre WhatsApp con el mensaje escrito. David te devuelve el link de PayPhone.</p>';
   }
 
-  var factura = "Hola David, soy " + d.nombre + " (caso " + d.codigo + "). Ya pagué " + srv.t +
-    " ($" + srv.valor + ").\n\nMis datos para la factura:\nNombre completo: \nCédula o RUC: \nCorreo: \n\n(Adjunto el comprobante)";
+  var factura = "Hola David, soy " + d.nombre + " (caso " + d.codigo + "). Ya pagué " +
+    (varios ? lineas.length + " personas" : srv.t) + " ($" + total + ")." +
+    (varios ? "\n\n" + lineas.map(function(l){ return "• " + l.texto; }).join("\n") : "") +
+    "\n\nMis datos para la factura:\nNombre completo: \nCédula o RUC: \nCorreo: \n\n(Adjunto el comprobante)";
   var wa = "https://wa.me/" + WHATSAPP + "?text=" + encodeURIComponent(factura);
 
   return '<div class="destacado">' +
-      '<p class="servicio">' + esc(srv.t) + '</p>' +
-      '<p class="valor">$' + srv.valor + '</p>' +
-      '<p class="detalle">por persona · ' + esc(srv.det) + '</p>' +
+      '<p class="servicio">' + esc(varios ? lineas.length + " personas · " + srv.t.split(" · ")[0] : srv.t) + '</p>' +
+      '<p class="valor">$' + total + '</p>' +
+      (varios
+        ? '<div class="gr-desglose">' + lineas.map(function(l){
+            return '<div><span>' + esc(l.nombre) + ' · ' + esc(l.tipo) + '</span><b>$' + l.valor + '</b></div>';
+          }).join("") + '</div>'
+        : '') +
+      '<p class="detalle">' + esc(srv.det) + '</p>' +
     '</div>' +
 
     '<div class="metodo">' +
@@ -546,6 +844,7 @@ function bloquePago(d){
 
     '<div class="aviso">' +
       'Pagues como pagues, <b>escribe tu código ' + esc(d.codigo) + '</b> en la referencia o la observación del pago. ' +
+      (varios ? 'Es un solo pago de $' + total + ' por las ' + lineas.length + ' personas. ' : '') +
       'Es lo que le permite a David saber que ese cobro es tuyo.' +
     '</div>' +
 
@@ -600,6 +899,7 @@ function bloqueFormulario(d){
 }
 
 function pintarCaso(d){
+  d.solicitantes = leerGrupo(d);
   var html = bloqueFicha(d);
   html += '<p class="nota" style="margin-top:-6px">' +
           (d.reciente
@@ -610,9 +910,16 @@ function pintarCaso(d){
   html += bloqueSemaforo(d);
 
   if (d.pagoDeclarado || d.pagoConfirmado){
+    var lineasPagadas = detalleDelGrupo(d);
     html += '<div class="tarjeta">' +
       '<p class="paso-rot">Paso 2</p>' +
       '<h2>Pago registrado</h2>' +
+      (lineasPagadas.length > 1
+        ? '<div class="gr-desglose" style="margin:0 0 12px">' + lineasPagadas.map(function(l){
+            return '<div><span>' + esc(l.nombre) + ' · ' + esc(l.tipo) + '</span><b>$' + l.valor + '</b></div>';
+          }).join("") + '<div><span><b>Total</b></span><b>$' + totalDelGrupo(d) + '</b></div></div>' +
+          '<p class="nota">Si después de pagar se suma otra persona, escríbele a David: ese cobro va aparte, no se junta con este.</p>'
+        : '') +
       '<p class="nota" style="margin-bottom:0">' +
         (d.pagoConfirmado
           ? 'David verificó tu pago y ya está trabajando tu caso.'
@@ -628,6 +935,7 @@ function pintarCaso(d){
         '<p class="nota" style="margin-bottom:0">Este es el valor de la asesoría de David. Los aranceles y tasas consulares, la biometría cuando aplica y el seguro de viaje van aparte y se pagan directo a esas entidades, no a nosotros.</p>' +
       '</div>';
     }
+    html += bloqueGrupo(d);
     html += bloquePago(d);
   }
 
@@ -644,6 +952,7 @@ function pintarCaso(d){
   app.innerHTML = html;
   window.scrollTo(0, 0);
   conectarCopiar();
+  conectarGrupo(d);
   conectarYaPague(d);
 }
 
