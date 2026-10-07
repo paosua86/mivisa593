@@ -335,6 +335,73 @@ no tienen el botón: son los que siempre aplican. **No volver a marcar
 campos como `opcional`.** La revisión final lleva a la persona a la
 primera sección con huecos antes de dar la ficha por completa.
 
+**La sección del trabajo empieza preguntando a qué se dedica.**
+`laboral` pide primero **«A qué te dedicas?»** y de esa respuesta
+salen los campos que siguen. Los valores son los del campo *Primary
+Occupation* del DS-160 (que incluye `Student` y `Not Employed`), más uno
+propio para el niño pequeño: trabajo con empleador, negocio propio,
+estudio, jubilado, hogar, ahora mismo no trabajo, y todavía no estudio
+ni trabajo. Preguntarlo igual que el formulario oficial hace que lo que
+David transcribe después calce uno a uno.
+
+Antes la sección pedía empresa, cargo, dirección, teléfono, cinco
+funciones y sueldo, todo `req:true` y por tanto **sin botón «No
+aplica»**. Un menor de edad no podía llenar nada — y tampoco un
+estudiante, un jubilado, una ama de casa ni alguien sin trabajo. Lo que
+hacían era **inventarse un empleador** para poder pasar de pantalla, y
+un dato falso en la ficha es peor que un hueco. No volver a poner los
+campos del trabajo como obligatorios para todos.
+
+Quien no genera ingresos responde **«Quién cubre tus gastos?»**, que es
+el campo 33 del formulario Schengen (medios de subsistencia) y lo que el
+consulado pregunta de todo menor. En Schengen, los correos del jefe y de
+Recursos Humanos **solo se piden con empleador**; al que estudia se le
+pide el correo del centro, que cumple la misma función.
+
+**La edad se calcula de `personales__nacimiento`, no se pregunta.**
+`edadDe()` y `esMenor()`. Una pregunta aparte («es menor de edad?»)
+sería un segundo dato que puede contradecir al primero, y el que se
+equivoca siempre es el de la pregunta. Si la fecha falta devuelve `null`
+y se trata como adulto: ante un dato que falta no se esconde nada. Con
+eso, **«Tus trabajos anteriores» no se le muestra a un menor** —
+preguntárselo a un niño de nueve años es de las cosas que hacen
+abandonar un formulario.
+
+**Un campo puede depender de otro: `si` en la definición del campo.**
+Es el mismo mecanismo que ya tenían las secciones (`conyuge` solo si
+está casada), un nivel más abajo. Hace falta porque dentro de una sola
+sección hay casos que no se parecen, y partirlo en tres secciones se
+vería como tres pantallas de las que dos no aplican. El campo que no
+aplica queda en el HTML pero `hidden`, para poder mostrarlo sin repintar
+la sección (repintar salta al inicio de la pantalla); no se valida, no
+se guarda, y **se borra de los datos si quedó escrito antes de cambiar
+la respuesta**, para que David no reciba el empleador de alguien que al
+final dijo que estudia. La pregunta que decide va **primera en el
+arreglo**: el bucle de `recogerCampos` la guarda antes de llegar a los
+campos que dependen de ella.
+
+**Las tasas consulares cambian con la edad, y la asesoría no.** David
+cobra lo mismo por un menor que por un adulto (decisión suya, octubre de
+2026): el precio no depende de la edad. Las tasas de los gobiernos sí, y
+están escritas en `index.html` y en los `det` de `SERVICIOS`
+(`caso/index.html`):
+
+| | Verificado en octubre de 2026 |
+|---|---|
+| EE.UU. | $185 a toda edad, sin rebaja. Los menores de 14 normalmente no van a la entrevista, pero pagan igual. |
+| Canadá | Visa 100 CAD por persona, máximo 500 CAD por familia de 5 o más. Biometría 85 CAD, máximo 170 CAD por familia, y **los menores de 14 no la dan ni la pagan** (tampoco los mayores de 79). |
+| Schengen | 90 € desde los 12 años, 45 € de 6 a 11, **gratis bajo 6**. Es uniforme en todo el espacio Schengen (art. 16 del Código de Visados, vigente desde el 11/06/2024); lo que varía por país es el fee del centro de visas. |
+
+La tasa Schengen no varía por país: la página lo decía y era falso.
+
+**El «Visa Integrity Fee» de $250 de EE.UU. no se escribe en la
+página.** Existe en la ley de julio de 2025, pero no se pudo confirmar
+que se esté cobrando ni desde cuándo: las fuentes se contradicen. Una
+cifra oficial equivocada en la página es exactamente lo que este
+proyecto no hace. Confirmarlo en la plataforma del consulado antes de
+publicarlo; si entra en vigor, son $250 por persona **también para los
+menores** y le cambia el presupuesto a toda familia.
+
 **Trabajos anteriores: mínimo dos, en los tres destinos** (tres con el
 actual). La tabla abre dos espacios de entrada; si no tuvo trabajos,
 «No aplica · no tengo ninguno» para la sección entera; si tuvo uno

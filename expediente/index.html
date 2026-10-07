@@ -244,6 +244,116 @@ var GUIA_REDES =
   (VIDEO_REDES ? '<p><a href="' + VIDEO_REDES + '" target="_blank" rel="noopener">Ver el video paso a paso</a></p>' : '') +
   '</details>';
 
+/* ------------------------------------------------------------
+   A QUE SE DEDICA — Y POR QUE ESTO ES UNA PREGUNTA
+
+   Antes la seccion de trabajo pedia empresa, cargo, direccion,
+   telefono, cinco funciones y sueldo, todo obligatorio y sin boton
+   «No aplica» (los campos `req` no lo llevan). Un menor de edad no
+   puede llenar nada de eso — y tampoco un estudiante, un jubilado,
+   una ama de casa ni alguien que ahora mismo no trabaja. Lo que
+   hacian era inventarse un empleador para poder pasar de pantalla, y
+   eso le llega a David como un dato falso, que es peor que un hueco.
+
+   Los valores salen del campo "Primary Occupation" del DS-160, que
+   tiene esos mismos casos (incluidos `Student` y `Not Employed`). Si
+   se pregunta igual que el formulario oficial, lo que David transcribe
+   despues calza uno a uno.
+
+   El ultimo valor existe para el caso del nino pequeno: "Ahora mismo
+   no trabajo" en la ficha de alguien de tres anos se lee mal, y
+   «No aplica» en todos los campos no dice quien le paga el viaje.
+   ------------------------------------------------------------ */
+var OCUPACIONES = [
+  "Trabajo con empleador",
+  "Negocio propio o trabajo por mi cuenta",
+  "Estudio",
+  "Soy jubilado/a",
+  "Me dedico al hogar",
+  "Ahora mismo no trabajo",
+  "Todavía no estudio ni trabajo (menor de edad)"
+];
+
+function ocupacionDe(d){ return String(d["laboral__ocupacion"] || ""); }
+function trabaja(d){ var o = ocupacionDe(d); return o === OCUPACIONES[0] || o === OCUPACIONES[1]; }
+function conEmpleador(d){ return ocupacionDe(d) === OCUPACIONES[0]; }
+function estudia(d){ return ocupacionDe(d) === OCUPACIONES[2]; }
+function jubilado(d){ return ocupacionDe(d) === OCUPACIONES[3]; }
+function sinTrabajo(d){ var o = ocupacionDe(d); return o === OCUPACIONES[4] || o === OCUPACIONES[5]; }
+function menorSinEstudios(d){ return ocupacionDe(d) === OCUPACIONES[6]; }
+/* Quien no genera ingresos tiene que decir quien le cubre los gastos:
+   es el campo 33 del formulario Schengen ("medios de subsistencia") y
+   lo que el consulado pregunta de todo menor de edad. */
+function loMantienen(d){ return estudia(d) || sinTrabajo(d) || menorSinEstudios(d); }
+
+/* ------------------------------------------------------------
+   LA EDAD NO SE PREGUNTA: SE CALCULA
+
+   `personales__nacimiento` ya es obligatorio en los tres destinos.
+   Preguntar aparte "¿es menor de edad?" seria un dato que puede
+   contradecir al otro, y el que se equivoca siempre es el de la
+   pregunta, no el de la fecha.
+
+   Si la fecha todavia no esta puesta devuelve null y se trata como
+   adulto: ante un dato que falta no se esconde nada.
+   ------------------------------------------------------------ */
+function edadDe(datos){
+  var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(datos["personales__nacimiento"] || ""));
+  if (!m) return null;
+  var hoy = new Date();
+  var e = hoy.getFullYear() - Number(m[1]);
+  var mes = hoy.getMonth() + 1;
+  if (mes < Number(m[2]) || (mes === Number(m[2]) && hoy.getDate() < Number(m[3]))) e--;
+  return (e >= 0 && e < 120) ? e : null;
+}
+
+function esMenor(datos){
+  var e = edadDe(datos);
+  return e !== null && e < 18;
+}
+
+function esAdulto(datos){ return !esMenor(datos); }
+
+var CAMPO_OCUPACION = {
+  id: "ocupacion", t: "¿A qué te dedicas?", tipo: "opcion", req: true,
+  opciones: OCUPACIONES,
+  ayuda: "De esto depende lo que te preguntamos abajo."
+};
+
+/* Los campos del centro de estudios, la pension y el sostenimiento son
+   los mismos en los tres destinos: se escriben una vez. Cada arreglo de
+   destino los inserta donde le corresponde. */
+function camposEstudio(){
+  return [
+    {id:"centro",        t:"Nombre de tu colegio, instituto o universidad", tipo:"texto", req:true, si:estudia},
+    {id:"nivel",         t:"Año o curso que estás haciendo", tipo:"texto", req:true, si:estudia},
+    {id:"inicio_est",    t:"Fecha en que empezaste a estudiar ahí", tipo:"fecha", req:true, si:estudia},
+    {id:"direccion_est", t:"Dirección del colegio, instituto o universidad", tipo:"larga", req:true, si:estudia},
+    {id:"ciudad_est",    t:"Ciudad y país del centro de estudios", tipo:"texto", req:true, si:estudia},
+    {id:"telefono_est",  t:"Teléfono del centro de estudios", tipo:"tel", req:true, si:estudia}
+  ];
+}
+
+function camposJubilado(){
+  return [
+    {id:"pension_de",     t:"¿De dónde viene tu pensión?", tipo:"texto", req:true, si:jubilado},
+    {id:"jubilado_desde", t:"Fecha en que te jubilaste", tipo:"fecha", req:true, si:jubilado},
+    {id:"pension_monto",  t:"Monto de tu pensión mensual (USD)", tipo:"numero", req:true, si:jubilado}
+  ];
+}
+
+function camposSinTrabajo(){
+  return [
+    {id:"sin_desde",      t:"¿Desde cuándo no trabajas?", tipo:"fecha", req:true, si:sinTrabajo},
+    {id:"ultimo_trabajo", t:"Tu último trabajo: empresa y cargo", tipo:"texto", si:sinTrabajo}
+  ];
+}
+
+function campoSostiene(){
+  return {id:"sostiene", t:"¿Quién cubre tus gastos?", tipo:"larga", req:true, si:loMantienen,
+          ayuda:"Nombre y parentesco de quien te mantiene, y a qué se dedica."};
+}
+
 var SECCIONES_USA = [
   {
     id: "personales",
@@ -316,25 +426,28 @@ var SECCIONES_USA = [
   },
   {
     id: "laboral",
-    titulo: "Tu trabajo actual",
-    ayuda: "Si trabajas por tu cuenta, pon el nombre de tu negocio.",
-    campos: [
-      {id:"empresa",  t:"Nombre de la empresa o negocio", tipo:"texto", req:true},
-      {id:"cargo",    t:"Tu cargo", tipo:"texto", req:true},
-      {id:"inicio",   t:"Fecha en que empezaste", tipo:"fecha", req:true},
-      {id:"direccion",t:"Dirección del trabajo", tipo:"larga", req:true},
-      {id:"ciudad",   t:"Ciudad", tipo:"texto", req:true},
-      {id:"telefono", t:"Teléfono del trabajo", tipo:"tel", req:true},
-      {id:"jefe",     t:"Nombre de tu jefe o jefa", tipo:"texto"},
-      {id:"funciones",t:"¿Qué haces en tu trabajo?", tipo:"larga", req:true,
+    titulo: "Tu situación actual",
+    ayuda: "Elige a qué te dedicas y abajo te preguntamos solo lo que corresponde a tu caso.",
+    campos: [CAMPO_OCUPACION].concat([
+      {id:"empresa",  t:"Nombre de la empresa o negocio", tipo:"texto", req:true, si:trabaja},
+      {id:"cargo",    t:"Tu cargo", tipo:"texto", req:true, si:trabaja},
+      {id:"inicio",   t:"Fecha en que empezaste", tipo:"fecha", req:true, si:trabaja},
+      {id:"direccion",t:"Dirección del trabajo", tipo:"larga", req:true, si:trabaja},
+      {id:"ciudad",   t:"Ciudad", tipo:"texto", req:true, si:trabaja},
+      {id:"telefono", t:"Teléfono del trabajo", tipo:"tel", req:true, si:trabaja},
+      {id:"jefe",     t:"Nombre de tu jefe o jefa", tipo:"texto", si:conEmpleador},
+      {id:"funciones",t:"¿Qué haces en tu trabajo?", tipo:"larga", req:true, si:trabaja,
        ayuda:"Al menos cinco tareas, separadas por comas."},
-      {id:"fin",      t:"Fecha de culminación, si ya no trabajas ahí", tipo:"fecha"},
-      {id:"sueldo",   t:"Sueldo mensual aproximado (USD)", tipo:"numero", req:true}
-    ]
+      {id:"fin",      t:"Fecha de culminación, si ya no trabajas ahí", tipo:"fecha", si:trabaja},
+      {id:"sueldo",   t:"Sueldo mensual aproximado (USD)", tipo:"numero", req:true, si:trabaja}
+    ], camposEstudio(), camposJubilado(), camposSinTrabajo(), [campoSostiene()])
   },
   {
     id: "laboral_anterior",
     titulo: "Tus trabajos anteriores",
+    // Preguntarle los trabajos anteriores a un nino de nueve anos es
+    // de las cosas que hacen abandonar un formulario.
+    si: esAdulto,
     ayuda: "Tus dos trabajos anteriores al actual, empezando por el más reciente. Si no tuviste trabajos antes, toca «No aplica · no tengo ninguno». Si solo tuviste uno, en el segundo toca «Este no aplica».",
     repetible: {
       etiqueta: "trabajo",
@@ -591,24 +704,27 @@ var SECCIONES_CANADA = [
   },
   {
     id: "laboral",
-    titulo: "Tu trabajo actual",
-    ayuda: "Si trabajas por tu cuenta, pon el nombre de tu negocio.",
-    campos: [
-      {id:"empresa",  t:"Nombre de la empresa o negocio", tipo:"texto", req:true},
-      {id:"cargo",    t:"Tu cargo u ocupación", tipo:"texto", req:true},
-      {id:"inicio",   t:"Fecha en que empezaste", tipo:"fecha", req:true},
-      {id:"direccion",t:"Dirección del trabajo", tipo:"larga", req:true},
-      {id:"ciudad",   t:"Ciudad y país", tipo:"texto", req:true},
-      {id:"telefono", t:"Teléfono del trabajo", tipo:"tel", req:true},
-      {id:"jefe",     t:"Nombre de tu jefe o jefa", tipo:"texto"},
-      {id:"funciones",t:"¿Qué haces en tu trabajo?", tipo:"larga", req:true,
+    titulo: "Tu situación actual",
+    ayuda: "Elige a qué te dedicas y abajo te preguntamos solo lo que corresponde a tu caso.",
+    campos: [CAMPO_OCUPACION].concat([
+      {id:"empresa",  t:"Nombre de la empresa o negocio", tipo:"texto", req:true, si:trabaja},
+      {id:"cargo",    t:"Tu cargo u ocupación", tipo:"texto", req:true, si:trabaja},
+      {id:"inicio",   t:"Fecha en que empezaste", tipo:"fecha", req:true, si:trabaja},
+      {id:"direccion",t:"Dirección del trabajo", tipo:"larga", req:true, si:trabaja},
+      {id:"ciudad",   t:"Ciudad y país", tipo:"texto", req:true, si:trabaja},
+      {id:"telefono", t:"Teléfono del trabajo", tipo:"tel", req:true, si:trabaja},
+      {id:"jefe",     t:"Nombre de tu jefe o jefa", tipo:"texto", si:conEmpleador},
+      {id:"funciones",t:"¿Qué haces en tu trabajo?", tipo:"larga", req:true, si:trabaja,
        ayuda:"Al menos cinco tareas, separadas por comas."},
-      {id:"sueldo",   t:"Sueldo mensual aproximado (USD)", tipo:"numero", req:true}
-    ]
+      {id:"sueldo",   t:"Sueldo mensual aproximado (USD)", tipo:"numero", req:true, si:trabaja}
+    ], camposEstudio(), camposJubilado(), camposSinTrabajo(), [campoSostiene()])
   },
   {
     id: "laboral_anterior",
     titulo: "Tus trabajos anteriores",
+    // Preguntarle los trabajos anteriores a un nino de nueve anos es
+    // de las cosas que hacen abandonar un formulario.
+    si: esAdulto,
     ayuda: "Canadá pide los últimos diez años. Pon por lo menos los dos anteriores al actual, del más reciente al más antiguo; si hubo más, agrégalos. Incluye estudios o desempleo si hubo. Si no tuviste trabajos antes, toca «No aplica · no tengo ninguno».",
     repetible: {
       etiqueta: "trabajo",
@@ -840,14 +956,18 @@ var SECCIONES_SCHENGEN = [
   },
   {
     id: "laboral",
-    titulo: "Tu trabajo actual",
-    ayuda: "Si eres estudiante, pon el nombre y la dirección de tu centro de estudios. Del trabajo necesitamos un correo por donde se pueda confirmar que trabajas ahí: el de tu jefe directo, el de Recursos Humanos, o los dos.",
+    titulo: "Tu situación actual",
+    ayuda: "Elige a qué te dedicas y abajo te preguntamos solo lo que corresponde a tu caso. Europa confirma el dato escribiendo: por eso pedimos un correo del trabajo o del centro de estudios.",
     /* Al menos uno de los dos correos tiene que ser real. Los consulados
        Schengen verifican el empleo escribiendo a la empresa, y si el
        único contacto que hay es un teléfono que nadie contesta, el caso
        se atrasa o se cae. Si los dos quedan en "No aplica" no hay a
        quién escribir, y eso es una llamada de David preguntándolo. */
     regla: function(datos){
+      // Sin empleador no hay a quien pedirle los correos: el que
+      // estudia deja el del centro, y al que no trabaja se le pregunta
+      // quien lo mantiene.
+      if (!conEmpleador(datos)) return null;
       var j = String(datos["laboral__correo_jefe"] || "").trim();
       var h = String(datos["laboral__correo_rrhh"] || "").trim();
       if (!j && !h) return null;   // los huecos ya los marca cada campo
@@ -858,24 +978,32 @@ var SECCIONES_SCHENGEN = [
         msg: "Hace falta por lo menos uno de los dos correos: el de tu jefe o el de Recursos Humanos. Es por donde se confirma que trabajas ahí. Si trabajas por tu cuenta, pon aquí tu propio correo de negocio."
       };
     },
-    campos: [
-      {id:"ocupacion",t:"Tu ocupación actual", tipo:"texto", req:true},
-      {id:"empresa",  t:"Nombre de la empresa, negocio o centro de estudios", tipo:"texto", req:true},
-      {id:"inicio",   t:"Fecha en que empezaste", tipo:"fecha", req:true},
-      {id:"direccion",t:"Dirección del trabajo o centro de estudios", tipo:"larga", req:true},
-      {id:"ciudad",   t:"Ciudad y país", tipo:"texto", req:true},
-      {id:"telefono", t:"Teléfono del trabajo", tipo:"tel", req:true},
-      {id:"jefe",     t:"Nombre de tu jefe o jefa inmediato", tipo:"texto"},
-      {id:"correo_jefe", t:"Correo de tu jefe o jefa inmediato", tipo:"correo",
+    campos: [CAMPO_OCUPACION].concat([
+      {id:"empresa",  t:"Nombre de la empresa o negocio", tipo:"texto", req:true, si:trabaja},
+      {id:"cargo",    t:"Tu cargo", tipo:"texto", req:true, si:trabaja},
+      {id:"inicio",   t:"Fecha en que empezaste", tipo:"fecha", req:true, si:trabaja},
+      {id:"direccion",t:"Dirección del trabajo", tipo:"larga", req:true, si:trabaja},
+      {id:"ciudad",   t:"Ciudad y país", tipo:"texto", req:true, si:trabaja},
+      {id:"telefono", t:"Teléfono del trabajo", tipo:"tel", req:true, si:trabaja},
+      {id:"jefe",     t:"Nombre de tu jefe o jefa inmediato", tipo:"texto", si:conEmpleador},
+      {id:"correo_jefe", t:"Correo de tu jefe o jefa inmediato", tipo:"correo", si:conEmpleador,
        ayuda:"El correo de la empresa, no uno personal, si lo tienes."},
-      {id:"correo_rrhh", t:"Correo de Recursos Humanos de la empresa", tipo:"correo",
+      {id:"correo_rrhh", t:"Correo de Recursos Humanos de la empresa", tipo:"correo", si:conEmpleador,
        ayuda:"Si la empresa es pequeña y no tiene Recursos Humanos, toca «No aplica» aquí y deja el correo de tu jefe."},
-      {id:"sueldo",   t:"Sueldo mensual aproximado (USD)", tipo:"numero", req:true}
-    ]
+      {id:"sueldo",   t:"Sueldo mensual aproximado (USD)", tipo:"numero", req:true, si:trabaja}
+    ], camposEstudio(), [
+      /* Schengen verifica escribiendo: al que estudia se le pide el
+         correo del centro, que es el equivalente del correo del jefe. */
+      {id:"correo_centro", t:"Correo del colegio, instituto o universidad", tipo:"correo", si:estudia,
+       ayuda:"El de secretaría o rectorado. Si no tienen correo, toca «No aplica»."}
+    ], camposJubilado(), camposSinTrabajo(), [campoSostiene()])
   },
   {
     id: "laboral_anterior",
     titulo: "Tus trabajos anteriores",
+    // Preguntarle los trabajos anteriores a un nino de nueve anos es
+    // de las cosas que hacen abandonar un formulario.
+    si: esAdulto,
     ayuda: "Tus dos trabajos anteriores al actual, empezando por el más reciente. Si no tuviste trabajos antes, toca «No aplica · no tengo ninguno». Si solo tuviste uno, en el segundo toca «Este no aplica».",
     repetible: {
       etiqueta: "trabajo",
@@ -1492,6 +1620,31 @@ function seccionesQueAplican(datos){
 }
 
 /* ------------------------------------------------------------
+   UN CAMPO PUEDE DEPENDER DE OTRO
+
+   Las secciones ya podian tener `si` (los datos del conyuge solo si
+   esta casada, el postgrado solo si lo hizo). Esto es lo mismo un
+   nivel mas abajo: `si` en la definicion de un campo.
+
+   Hace falta porque dentro de una sola seccion hay casos que no se
+   parecen: quien trabaja con empleador tiene jefe y sueldo, quien
+   estudia tiene centro y curso, y el nino de tres anos no tiene
+   ninguno de los dos. Partirlo en tres secciones se veria como tres
+   pantallas vacias de las que dos no aplican.
+
+   Un campo que no aplica no se valida, no se guarda y se borra de los
+   datos si quedo escrito antes de cambiar la respuesta: asi David no
+   recibe el empleador de alguien que al final dijo que estudia.
+   ------------------------------------------------------------ */
+function campoAplica(c, datos){
+  return !c.si || c.si(datos);
+}
+
+function camposQueAplican(s, datos){
+  return (s.campos || []).filter(function(c){ return campoAplica(c, datos); });
+}
+
+/* ------------------------------------------------------------
    NADA ES OPCIONAL
 
    Antes solo se exigían los campos marcados `req`, y 165 de 285 se
@@ -1555,6 +1708,17 @@ var EJEMPLOS = {
   "Teléfono de tu domicilio": "022345678",
   "Teléfono del trabajo": "022345678",
   "Nombre de tu jefe o jefa inmediato": "Carlos Andrade Vera",
+
+  "Nombre de tu colegio, instituto o universidad": "Unidad Educativa Benalcázar",
+  "Año o curso que estás haciendo": "Tercero de bachillerato",
+  "Dirección del colegio, instituto o universidad": "Av. Amazonas N34-120 y Atahualpa, Quito",
+  "Ciudad y país del centro de estudios": "Quito, Ecuador",
+  "Teléfono del centro de estudios": "022345678",
+  "Correo del colegio, instituto o universidad": "secretaria@colegio.edu.ec",
+  "¿Quién cubre tus gastos?": "Mi papá, Luis Alberto Pérez Mora. Es contador y trabaja en Seguros del Pichincha.",
+  "¿De dónde viene tu pensión?": "IESS, jubilación por vejez",
+  "Monto de tu pensión mensual (USD)": "520",
+  "Tu último trabajo: empresa y cargo": "Comercial Andina, vendedora",
   "Correo de tu jefe o jefa inmediato": "carlos.andrade@empresa.com.ec",
   "Correo de Recursos Humanos de la empresa": "talentohumano@empresa.com.ec",
   "Teléfono": "0991234567",
@@ -1763,7 +1927,8 @@ function controlHtml(k, c, v){
 function campoHtml(seccion, c, datos){
   var k = seccion + "__" + c.id;
   var v = datos[k] === undefined ? "" : String(datos[k]);
-  var h = '<div class="campo-wrap" data-k="' + k + '"><label class="campo">' + esc(c.t) + controlHtml(k, c, v);
+  var oculto = campoAplica(c, datos) ? "" : " hidden";
+  var h = '<div class="campo-wrap" data-k="' + k + '"' + oculto + '><label class="campo">' + esc(c.t) + controlHtml(k, c, v);
   if (c.ayuda) h += '<small>' + esc(c.ayuda) + '</small>';
   h += '</label>';
   if (admiteNA(c)) {
@@ -1826,6 +1991,36 @@ function pintarSeccion(){
   });
 }
 
+/* Los datos tal como estan en la pantalla ahora mismo: lo guardado,
+   con lo que la persona acaba de escribir encima. Hace falta porque la
+   respuesta que decide que campos se ven (la ocupacion) se acaba de
+   elegir y todavia no esta guardada. */
+function datosEnPantalla(s, per){
+  var d = {};
+  for (var k in per.datos) if (per.datos.hasOwnProperty(k)) d[k] = per.datos[k];
+  (s.campos || []).forEach(function(c){
+    var el = document.getElementById("c_" + s.id + "__" + c.id);
+    if (el) d[s.id + "__" + c.id] = String(el.value).trim();
+  });
+  return d;
+}
+
+function refrescarCondicionales(s, per){
+  if (!s || s.repetible) return;
+  if (!s.campos.some(function(c){ return c.si; })) return;
+  var d = datosEnPantalla(s, per);
+  s.campos.forEach(function(c){
+    if (!c.si) return;
+    var w = document.querySelector('.campo-wrap[data-k="' + s.id + "__" + c.id + '"]');
+    if (!w) return;
+    var aplica = c.si(d);
+    w.hidden = !aplica;
+    // Si se escondio estando marcado en rojo, el rojo tambien se va:
+    // no se puede corregir lo que ya no se ve.
+    if (!aplica) limpiarFalta(w);
+  });
+}
+
 /* ---------- «No aplica» ---------- */
 
 function conectarNA(s){
@@ -1845,6 +2040,18 @@ function conectarNA(s){
     w.addEventListener("input", function(){ limpiarFalta(w); });
     w.addEventListener("change", function(){ limpiarFalta(w); });
   });
+
+  /* La ocupacion decide que campos se ven mas abajo, y eso se recalcula
+     en cuanto se elige — no al tocar Continuar. Va delegado en la
+     seccion entera para no tener que saber cual campo manda sobre
+     cual: cualquier cambio recalcula, y recalcular es barato. */
+  var per = E.personas[E.actual];
+  var caja = document.querySelector(".seccion");
+  if (caja) {
+    caja.addEventListener("change", function(){ refrescarCondicionales(s, per); });
+    caja.addEventListener("input",  function(){ refrescarCondicionales(s, per); });
+  }
+  refrescarCondicionales(s, per);
 }
 
 /* Cambia un campo entre "lo lleno" y "No aplica" sin volver a pintar
@@ -1884,7 +2091,8 @@ function conectarSeccionNA(s){
   if (!b) return;
 
   function todas(){
-    return s.campos.every(function(c){
+    var vista = camposQueAplican(s, datosEnPantalla(s, E.personas[E.actual]));
+    return vista.length && vista.every(function(c){
       var el = document.getElementById("c_" + s.id + "__" + c.id);
       return el && el.disabled && el.value === NA;
     });
@@ -1898,7 +2106,8 @@ function conectarSeccionNA(s){
 
   b.addEventListener("click", function(){
     var t = todas();
-    s.campos.forEach(function(c){ alternarNA(s.id + "__" + c.id, c, !t); });
+    camposQueAplican(s, datosEnPantalla(s, E.personas[E.actual]))
+      .forEach(function(c){ alternarNA(s.id + "__" + c.id, c, !t); });
     quitarBanner();
     pintar();
   });
@@ -1916,6 +2125,11 @@ function recogerCampos(s, per, silencioso){
     var k = s.id + "__" + c.id;
     var el = document.getElementById("c_" + k);
     if (!el) return;
+    /* No aplica: ni se valida ni se guarda, y se borra lo que hubiera
+       quedado escrito de antes. Funciona porque la pregunta que decide
+       (la ocupacion) es el primer campo del arreglo y en esta misma
+       pasada ya quedo guardada. */
+    if (!campoAplica(c, per.datos)) { delete per.datos[k]; return; }
     var v = el.value.trim();
     if (c.tipo === "url" && v && v !== NA) { v = normalizarUrl(v); el.value = v; }
     if (c.tipo === "correo" && v && v !== NA) { v = limpiarCorreo(v); el.value = v; }
@@ -2000,6 +2214,7 @@ function faltanEn(s, datos){
   }
   var m = 0;
   s.campos.forEach(function(c){
+    if (!campoAplica(c, datos)) return;
     if (errorDeCampo(c, String(datos[s.id + "__" + c.id] || "").trim())) m++;
   });
   if (!m && s.regla && s.regla(datos)) m++;
