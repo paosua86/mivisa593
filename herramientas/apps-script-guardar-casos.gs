@@ -313,6 +313,7 @@ function doPost(e) {
 
     try { avisarCasoNuevo(datos); } catch (err) { /* el caso ya está guardado */ }
     try { correoALaPersona(datos); } catch (err) { /* idem */ }
+    try { avisarCRM("caso", datos); } catch (err) { /* el CRM es un extra: nunca frena el caso */ }
 
     return responder({ ok: true, codigo: datos.codigo });
   } catch (err) {
@@ -355,6 +356,7 @@ function declararPago(datos) {
     fila.hoja.getRange(fila.numero, pos)
         .setValue(Utilities.formatDate(new Date(), "America/Guayaquil", "dd/MM/yyyy HH:mm"));
     try { avisarPagoDeclarado(fila, codigo); } catch (err) { /* queda escrito igual */ }
+    try { avisarCRM("pago-declarado", { codigo: codigo, total: fila.valor("grupo_total") }); } catch (err) { /* idem */ }
   }
 
   return responder({ ok: true, codigo: codigo });
@@ -759,6 +761,7 @@ function guardarExpediente(datos) {
   }
 
   try { avisarExpediente(codigo, datos, archivo, urlDoc); } catch (err) { /* ya está guardado */ }
+  try { avisarCRM("expediente", { codigo: codigo }); } catch (err) { /* idem */ }
   try { marcarExpedienteRecibido(codigo, fecha); } catch (err) { /* idem */ }
 
   return responder({ ok: true, codigo: codigo, documento: urlDoc });
@@ -1701,6 +1704,9 @@ function alEditar(e) {
       return pos ? String(valores[pos - 1] || "") : "";
     }
 
+    // David marcó "Pagado": que también le aparezca en su app (Visas → suma a sus ingresos)
+    try { avisarCRM("pagado", { codigo: val("codigo"), nombre: val("nombre"), total: val("grupo_total") }); } catch (err) { /* idem */ }
+
     var correo = val("correo").trim();
     if (!correo || correo.indexOf("@") === -1) return;
 
@@ -1730,6 +1736,36 @@ function alEditar(e) {
       replyTo: CORREO_DAVID
     });
   } catch (err) { /* nunca romper la edición de la hoja */ }
+}
+
+/* ============================================================
+   APP DE DAVID (app.solvalta.com)
+
+   Cada caso nuevo, cada "Ya pagué", cada "Pagado" que David marca y
+   cada expediente que llega se avisan a su app, para que lo vea en
+   Visas y se sume a sus ingresos sin copiar nada.
+
+   Se configura una vez en Configuración del proyecto → Propiedades
+   de la secuencia de comandos:
+     CRM_URL     = https://app.solvalta.com/api/public/visa
+     CRM_SECRET  = la clave que te da Paola
+   Si faltan, no se avisa y todo lo demás sigue igual.
+   ============================================================ */
+
+function avisarCRM(evento, d) {
+  var url = propiedad("CRM_URL"), clave = propiedad("CRM_SECRET");
+  if (!url || !clave || !d || !d.codigo) return;
+  UrlFetchApp.fetch(url, {
+    method: "post",
+    contentType: "application/json",
+    headers: { Authorization: "Bearer " + clave },
+    payload: JSON.stringify({
+      evento: evento, codigo: d.codigo, nombre: d.nombre || "", telefono: d.telefono || "",
+      correo: d.correo || "", destino: d.destino || "", semaforo: d.semaforo || "",
+      link_caso: d.link_caso || "", total: d.grupo_total || d.total || ""
+    }),
+    muteHttpExceptions: true
+  });
 }
 
 /* ============================================================

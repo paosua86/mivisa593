@@ -1,0 +1,40 @@
+# Agent for requests that arrive from the CRM (app.solvalta.com).
+# The CRM opens an issue that starts with @claude; Claude works on its own branch
+# (claude/issue-N-...) and never merges. Paola approves from the CRM, and the
+# Pages workflow publishes when the change lands on main.
+name: Agente (pedidos del CRM)
+
+on:
+  issues:
+    types: [opened]
+  issue_comment:
+    types: [created]
+
+concurrency:
+  group: agente-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  agente:
+    # Public repo: only Paola's account can wake the agent (the action also requires write access)
+    if: >
+      github.actor == 'paosua86' && (
+        (github.event_name == 'issues' && contains(github.event.issue.body, '@claude')) ||
+        (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude'))
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          claude_args: "--max-turns 40"

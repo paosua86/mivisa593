@@ -503,6 +503,25 @@ compañía sobre el rango entero), no celda por celda, porque cuatro
 personas son miles de celdas y si no se pasa del límite de seis minutos
 de Apps Script.
 
+## Cómo atender pedidos del CRM (agente en GitHub)
+
+Los pedidos llegan desde la app de David (app.solvalta.com → Pedidos) como un issue que empieza con `@claude`.
+Lo que pidió David es un **síntoma**: antes de tocar nada, entiende de dónde viene.
+
+1. **Clasifica** en una línea: error / cambio / pregunta. Urgente solo si el sitio está caído o no deja trabajar a David.
+2. **Si falta información** para hacerlo bien, NO adivines: comenta en el issue las preguntas concretas y termina sin cambiar nada. Paola responde desde el CRM.
+3. **Analiza la causa**: busca en el código por qué pasa y qué más podría estar afectado (otros destinos, formularios, el Apps Script, los correos).
+4. **Haz el cambio mínimo y seguro** en tu rama. Respeta todas las reglas y decisiones de este archivo. Nunca pongas datos personales de clientes en el código ni en los comentarios.
+5. Si el cambio toca `herramientas/apps-script-guardar-casos.gs`, recuerda que ese archivo **no se publica solo**: se pega a mano en el Apps Script de David. Dilo claramente en tu resumen.
+6. **Termina con un comentario** en el issue con estas secciones, en español sencillo:
+   - **Clasificación**
+   - **Causa** (qué estaba pasando de verdad)
+   - **Qué cambié** (archivos y por qué)
+   - **Riesgo** (qué podría romperse)
+   - **Cómo probarlo** (pasos para David o Paola)
+   - **Confianza**: alta / media / baja. Si es baja, explica qué decidiría una persona.
+7. **Nunca hagas merge a main** ni cambies `.github/workflows/`. Paola aprueba desde el CRM y GitHub Pages publica.
+
 ## Idioma
 
 Todo el contenido público en español ecuatoriano, tuteo, frases cortas,
