@@ -538,7 +538,7 @@ function servicio(datos) {
 var VALOR_SERVICIO = {
   "usa-primera": 65,      "usa-renovacion": 55,
   "canada-primera": 95,   "canada-renovacion": 75,
-  "schengen": 155,        "schengen-renovacion": 155
+  "schengen": 170,        "schengen-renovacion": 170
 };
 
 /** El servicio de una fila que ya está en la hoja. */
