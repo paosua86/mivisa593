@@ -222,12 +222,12 @@ var SERVICIOS = {
   "usa-renovacion":    {t:"Visa americana B1/B2 · renovación",  valor:55,  det:"Aparte va el arancel consular de $185 por persona, que se paga directo al consulado. Estados Unidos no tiene rebaja por edad: un menor paga los mismos $185."},
   "canada-primera":    {t:"Visa de Canadá · primera vez",       valor:95,  det:"Aparte van la tasa de la visa (100 CAD por persona, máximo 500 CAD por familia de 5 o más) y la biometría (85 CAD por persona, máximo 170 CAD por familia). Los menores de 14 años no dan biometría y no pagan esa parte."},
   "canada-renovacion": {t:"Visa de Canadá · renovación",        valor:75,  det:"Aparte van la tasa de la visa (100 CAD por persona, máximo 500 CAD por familia de 5 o más) y la biometría (85 CAD por persona, máximo 170 CAD por familia). Los menores de 14 años no dan biometría y no pagan esa parte."},
-  "schengen":          {t:"Visa Schengen · Europa",             valor:155, det:"Aparte van la tasa consular (90 € desde los 12 años, 45 € de 6 a 11, gratis para menores de 6), el fee del centro de visas y el seguro de viaje."},
+  "schengen":          {t:"Visa Schengen · Europa",             valor:170, det:"Aparte van la tasa consular (90 € desde los 12 años, 45 € de 6 a 11, gratis para menores de 6), el fee del centro de visas y el seguro de viaje."},
   /* Schengen no tiene precio de renovación: cada solicitud se presenta
      como nueva y el trabajo de David es el mismo. La distinción se
      guarda igual, porque haber tenido Schengen antes sí pesa en el
      caso; lo que no cambia es el valor. */
-  "schengen-renovacion": {t:"Visa Schengen · Europa", valor:155, det:"Aparte van la tasa consular (90 € desde los 12 años, 45 € de 6 a 11, gratis para menores de 6), el fee del centro de visas y el seguro de viaje."}
+  "schengen-renovacion": {t:"Visa Schengen · Europa", valor:170, det:"Aparte van la tasa consular (90 € desde los 12 años, 45 € de 6 a 11, gratis para menores de 6), el fee del centro de visas y el seguro de viaje."}
 };
 
 /* ------------------------------------------------------------
@@ -851,6 +851,11 @@ function bloquePago(d){
     '<div class="tarjeta">' +
       '<h2>Cuando ya hayas pagado</h2>' +
       '<p class="nota" style="margin-bottom:14px">Mándale a David el comprobante y tus datos de facturación. Es lo que le dice que tu caso ya se puede trabajar.</p>' +
+      '<label class="campo" for="correoPago">Confirma tu correo' +
+        '<input type="email" id="correoPago" inputmode="email" autocomplete="email" autocapitalize="none" value="' + esc(d.correo || "") + '" placeholder="Ej: maria.perez@gmail.com">' +
+        '<small id="correoPagoMsg" style="display:block;font-weight:400;color:var(--tinta-suave);font-size:.86rem;margin-top:6px;line-height:1.4">' +
+          'Ahí te llega el botón para llenar tu formulario. Revisa que esté bien escrito.</small>' +
+      '</label>' +
       '<a class="btn btn-wa" id="yaPague" href="' + wa + '">Ya pagué · enviar mi comprobante</a>' +
       '<p class="micro">Se abre WhatsApp con el mensaje escrito. Adjunta la foto de la transferencia o la captura del pago.</p>' +
     '</div>';
@@ -878,23 +883,26 @@ function bloqueDocumentos(d){
 
 /* ---------- paso 4: el formulario ---------- */
 function bloqueFormulario(d){
-  if (d.expediente){
+  var pago = d.pagoDeclarado || d.pagoConfirmado;
+  if (!pago){
     return '<div class="tarjeta">' +
       '<p class="paso-rot">Paso 4</p>' +
-      '<h2>Tu formulario ya llegó</h2>' +
-      '<p class="nota">David lo recibió completo. Ahora lo revisa, prepara tu solicitud y te escribe para coordinar la cita y los últimos detalles.</p>' +
-      '<p class="nota" style="margin-bottom:0">Si te acordaste de algo que no pusiste, vuelve a abrirlo y envíalo de nuevo.</p>' +
-    '</div>' +
-    '<a class="btn btn-2" href="../expediente/?caso=' + encodeURIComponent(d.codigo) + '">Volver a abrir mi formulario</a>';
+      '<h2>Tu formulario detallado</h2>' +
+      '<p class="nota" style="margin-bottom:0">Se llena después del pago. Cuando toques «Ya pagué», te llega un correo a ' +
+        (d.correo ? '<strong>' + esc(d.correo) + '</strong>' : 'tu correo') +
+        ' con un botón para empezar. Si te pierdes, vuelves a ese correo y sigues donde te quedaste.</p>' +
+    '</div>';
   }
-  var pago = d.pagoDeclarado || d.pagoConfirmado;
   return '<div class="tarjeta">' +
     '<p class="paso-rot">Paso 4</p>' +
-    '<h2>Llena tu formulario detallado</h2>' +
-    '<p class="nota" style="margin-bottom:14px">Es largo, pero se guarda solo: puedes cerrarlo y seguir después desde este mismo link. Si viajan varias personas, hay una ficha para cada una.</p>' +
-    (pago ? ''
-          : '<p class="nota" style="margin-bottom:14px">Está abierto desde ya. Puedes empezar a llenarlo aunque todavía no hayas pagado: David se pone con tu caso cuando vea el pago, y para entonces tu información ya va a estar lista.</p>') +
-    '<a class="btn" href="../expediente/?caso=' + encodeURIComponent(d.codigo) + '">Abrir mi formulario</a>' +
+    '<h2>' + (d.expediente ? 'Tu formulario ya llegó' : 'Revisa tu correo') + '</h2>' +
+    (d.expediente
+      ? '<p class="nota">David lo recibió completo. Ahora lo revisa, prepara tu solicitud y te escribe para coordinar la cita y los últimos detalles.</p>' +
+        '<p class="nota">Si te acordaste de algo que no pusiste, abre otra vez el botón de tu correo y envíalo de nuevo.</p>'
+      : '<p class="nota">Te mandamos un correo a ' + (d.correo ? '<strong>' + esc(d.correo) + '</strong>' : 'tu correo') +
+        ' con el botón <strong>Llenar mi formulario</strong>. Es largo, pero se guarda solo: si te pierdes, vuelve a ese correo y sigue. Si viajan varias personas, hay una ficha para cada una, con su cédula.</p>') +
+    '<button class="btn btn-2" type="button" id="reenviar">No me llegó · reenviar el correo</button>' +
+    '<p class="micro" id="reenviarMsg">Revisa también spam o promociones.</p>' +
   '</div>';
 }
 
@@ -954,6 +962,7 @@ function pintarCaso(d){
   conectarCopiar();
   conectarGrupo(d);
   conectarYaPague(d);
+  conectarReenviar(d);
 }
 
 /* Botones de copiar de los datos bancarios. */
@@ -980,19 +989,61 @@ function conectarCopiar(){
 function conectarYaPague(d){
   var btn = document.getElementById("yaPague");
   if (!btn) return;
-  btn.addEventListener("click", function(){
+  var campo = document.getElementById("correoPago");
+  var msg = document.getElementById("correoPagoMsg");
+  if (campo) campo.addEventListener("input", function(){
+    campo.style.borderColor = "";
+    msg.style.color = "";
+  });
+  btn.addEventListener("click", function(ev){
+    // Los descuidos de tecleo se arreglan solos: espacios, mayúsculas, punto final.
+    var correo = campo ? campo.value.trim().toLowerCase().replace(/[.,;]+$/, "") : "";
+    if (campo && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(correo)){
+      // No se deshabilita en silencio: se explica qué falta junto al campo.
+      ev.preventDefault();
+      campo.style.borderColor = "#b3261e";
+      msg.style.color = "#b3261e";
+      msg.textContent = "Falta algo en tu correo. Se escribe así: maria.perez@gmail.com (con el @ y el .com).";
+      campo.scrollIntoView({behavior: "smooth", block: "center"});
+      campo.focus();
+      return;
+    }
+    if (campo) campo.value = correo;
     try {
       fetch(ENDPOINT, {
         method: "POST",
         headers: {"Content-Type": "text/plain;charset=utf-8"},
-        body: JSON.stringify({ tipo: "pago-declarado", codigo: d.codigo })
+        body: JSON.stringify({ tipo: "pago-declarado", codigo: d.codigo, correo: correo })
       })["catch"](function(){});
     } catch(e){}
     try { sessionStorage.setItem("mivisaec_pago_declarado_" + d.codigo, "1"); } catch(e){}
+    if (correo) d.correo = correo;
     // Al volver de WhatsApp la página sigue viva: que refleje ya que
     // el pago quedó registrado, sin recargar ni consultar de nuevo.
     d.pagoDeclarado = true;
     setTimeout(function(){ pintarCaso(d); }, 1200);
+  });
+}
+
+/* "Reenviar el correo": vuelve a mandar el botón del formulario largo. */
+function conectarReenviar(d){
+  var b = document.getElementById("reenviar");
+  if (!b) return;
+  var m = document.getElementById("reenviarMsg");
+  b.addEventListener("click", function(){
+    b.disabled = true;
+    m.textContent = "Enviando…";
+    fetch(ENDPOINT, {
+      method: "POST",
+      headers: {"Content-Type": "text/plain;charset=utf-8"},
+      body: JSON.stringify({ tipo: "reenviar-formulario", codigo: d.codigo })
+    }).then(function(r){ return r.json(); }).then(function(r){
+      m.textContent = r && r.ok
+        ? "Listo, te lo mandamos de nuevo. Revisa también la carpeta de spam."
+        : ((r && r.error) || "No se pudo enviar. Escríbele a David.");
+    })["catch"](function(){
+      m.textContent = "No se pudo enviar. Revisa tu conexión e inténtalo otra vez.";
+    }).then(function(){ setTimeout(function(){ b.disabled = false; }, 4000); });
   });
 }
 

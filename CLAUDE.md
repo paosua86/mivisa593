@@ -198,13 +198,32 @@ correos y el Excel adjunto se desplegaron sin permiso y no habrían
 funcionado nunca. **Al agregar un servicio nuevo, actualizar también
 este archivo y volver a autorizar.**
 
-**No hay candado en ninguna parte del flujo.** El formulario detallado
-está abierto desde el primer momento para cualquiera con su código.
-David no habilita nada. Lo que ordena el trabajo es que él se pone con
-un caso cuando ve el pago, no un permiso técnico. Las columnas `Pago
-declarado` (la escribe la persona desde su página) y `Pagado` (la
-escribe David al verificar) son registro, no permiso. No volver a
-proponer un desbloqueo por pago.
+**El formulario largo se entra por el correo de después del pago
+(decisión de Paola, noviembre de 2026).** Quedó así: la persona
+precalifica, ve su página `caso/`, paga y toca «Ya pagué». En ese paso
+**confirma su correo** (puede corregirlo; `declararPago` lo reescribe) y
+le llega un correo con el botón «Llenar mi formulario»
+(`correoFormularioLargo`). Si se pierde, vuelve a ese correo. `caso/` ya
+no muestra el link al `expediente/`: dice «revisa tu correo» y tiene un
+botón «Reenviar el correo» (`reenviarFormulario`, con pausa de 2 minutos
+por caso). No es un candado técnico: `expediente/?caso=CODIGO` sigue
+abriendo para quien tenga el código, y David no habilita nada. Las
+columnas `Pago declarado` (la escribe la persona) y `Pagado` (la escribe
+David al verificar) son registro, no permiso. No volver a proponer un
+desbloqueo por pago de David.
+
+**La cédula no es una llave.** Se pide por persona dentro del
+expediente (`personales`) y se guarda como un dato más. Quien abre una
+ficha es quien tiene el código que llegó por correo; escribir una
+cédula ajena no debe mostrar los datos de nadie.
+
+**Un código, un destino, y cada destino paga.** En el paso 2 de
+`expediente/` («¿El destino sigue siendo el mismo?»), si la persona toca
+«No, cambió mi destino» elige el país nuevo y `crearCasoOtroDestino`
+crea otro caso con **código nuevo**, como «Primera vez» al precio de
+primera vez, con su propio pago, y la manda a `caso/?c=NUEVO`. El caso
+viejo no se toca. Queda anotado en `Cuándo viaja` para que David
+confirme si en ese país es renovación.
 
 **Agenda:** Horarios de citas de Google Calendar. No Cal.com.
 **Facturación:** electrónica SRI, pendiente de integrar.
