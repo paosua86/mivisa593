@@ -282,6 +282,18 @@ var PREGUNTAS = [
     ]
   },
   {
+    /* Solo EE.UU. y Canadá: una deportación o expulsión previa pesa
+       mucho en esos dos consulados. En Schengen no se pregunta. */
+    id: "deportado",
+    si: function(r){ return r.destino === "usa" || r.destino === "canada"; },
+    titulo: "¿Alguna vez te han deportado o te han obligado a salir de un país?",
+    ayuda: "De Estados Unidos, Canadá u otro país. Lo preguntamos porque cambia cómo se arma tu caso, y mejor saberlo desde el inicio.",
+    opciones: [
+      {v:"no", t:"No, nunca", p:0},
+      {v:"si", t:"Sí, me deportaron o me hicieron salir", p:-4, bandera:"Antecedente de deportación o salida forzada de un país"}
+    ]
+  },
+  {
     id: "viajes",
     titulo: "¿Has viajado antes a otros países?",
     ayuda: "Considera cualquier viaje al extranjero, aunque haya sido hace años.",
@@ -638,6 +650,9 @@ function calcular(){
   if (respuestas.aplico_antes === "negada" &&
       respuestas.cuando_negada === "menos1" &&
       respuestas.cambio_algo === "no") {
+    semaforo = "rojo";
+  }
+  if (respuestas.deportado === "si") {
     semaforo = "rojo";
   }
   if (respuestas.pasaporte === "no") {
