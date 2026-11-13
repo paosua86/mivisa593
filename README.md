@@ -1,6 +1,6 @@
 # MiVisa EC
 
-Asesoría de visas de turismo en Ecuador · Estados Unidos, Canadá y Schengen.
+Asesoría de visas de turismo en Ecuador · Estados Unidos, Canadá, Schengen y Australia.
 David Ubilluz · Quito · WhatsApp +593 99 896 1214 · `mivisaec.com`
 
 Sitio estático, sin dependencias ni paso de build. Se publica tal cual.

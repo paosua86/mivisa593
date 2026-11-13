@@ -213,7 +213,10 @@ var SERVICIOS = [
      se presenta como nueva. Existe como servicio aparte solo para que
      el link que arma /caso/ siempre encuentre su valor; no se lista
      abajo, porque para la persona es el mismo trámite. */
-  {v:"schengen-renovacion", t:"Visa Schengen · Europa", valor:170, oculto:true, det:"Aparte van la tasa consular, el fee del centro de visas y el seguro de viaje."}
+  {v:"schengen-renovacion", t:"Visa Schengen · Europa", valor:170, oculto:true, det:"Aparte van la tasa consular, el fee del centro de visas y el seguro de viaje."},
+  {v:"australia",        t:"Visa de Australia · visitante",      valor:120, det:"Aparte van la tasa de la visa australiana (se paga directo al gobierno de Australia) y el seguro de viaje."},
+  /* Igual que Schengen: mismo valor para quien ya la tuvo. Oculto. */
+  {v:"australia-renovacion", t:"Visa de Australia · visitante",  valor:120, oculto:true, det:"Aparte van la tasa de la visa australiana (se paga directo al gobierno de Australia) y el seguro de viaje."}
 ];
 
 function esc(s){
