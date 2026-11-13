@@ -1183,6 +1183,316 @@ var DOCUMENTOS_SCHENGEN = [
 ];
 
 /* ------------------------------------------------------------
+   AUSTRALIA — visa de visitante (subclase 600, flujo de turismo).
+   Las secciones salen del formulario 1419 y de lo que pide la
+   solicitud en línea (ImmiAccount): identidad, pasaporte, cédula
+   nacional, viaje, fondos, familia en Australia, salud y carácter.
+   David todavía no validó esta lista contra su propio formato.
+   ------------------------------------------------------------ */
+var SECCIONES_AUSTRALIA = [
+  {
+    id: "personales",
+    titulo: "Tus datos personales",
+    ayuda: "Como aparecen en tu pasaporte, tal cual.",
+    campos: [
+      {id:"apellidos",   t:"Apellidos completos", tipo:"texto", req:true},
+      {id:"nombres",     t:"Nombres completos", tipo:"texto", req:true},
+      {id:"otros_nombres", t:"Otros nombres que hayas usado", tipo:"texto",
+       ayuda:"Apellido de soltera, nombre de casada o cualquier otro."},
+      {id:"sexo",        t:"Sexo", tipo:"opcion", req:true, opciones:["Femenino","Masculino","Otro"]},
+      {id:"nacimiento",  t:"Fecha de nacimiento", tipo:"fecha", req:true},
+      {id:"lugar_nacimiento", t:"Ciudad de nacimiento", tipo:"texto", req:true},
+      {id:"pais_nacimiento",  t:"País de nacimiento", tipo:"texto", req:true},
+      {id:"nacionalidad",     t:"Nacionalidad actual", tipo:"texto", req:true},
+      {id:"otra_ciudadania",  t:"¿Tienes otra ciudadanía además de la ecuatoriana?", tipo:"opcion", req:true,
+       opciones:["No","Sí"]},
+      {id:"otra_ciudadania_pais", t:"País o países de tu ciudadanía", tipo:"texto"},
+      {id:"cedula",      t:"Número de cédula", tipo:"texto", req:true,
+       ayuda:"Australia pide el número de tu documento nacional de identidad."},
+      {id:"direccion",   t:"Dirección de tu domicilio", tipo:"larga", req:true},
+      {id:"codigo_postal", t:"Código postal", tipo:"texto",
+       ayuda:"Si no lo sabes, déjalo en blanco."},
+      {id:"ciudad_residencia", t:"Ciudad de residencia", tipo:"texto", req:true},
+      {id:"celular",     t:"Teléfono celular", tipo:"tel", req:true},
+      {id:"correo",      t:"Correo electrónico", tipo:"correo", req:true,
+       ayuda:"Australia manda aquí las notificaciones de tu solicitud."},
+      {id:"estado_civil",t:"Estado civil", tipo:"opcion", req:true,
+       opciones:["Soltero/a","Casado/a","Unión libre","Separado/a","Divorciado/a","Viudo/a"]}
+    ]
+  },
+  {
+    id: "conyuge",
+    titulo: "Datos de tu cónyuge",
+    ayuda: "Solo si estás casado, en unión libre, separado o divorciado.",
+    si: function(d){ return ["Casado/a","Unión libre","Separado/a","Divorciado/a"].indexOf(d.personales__estado_civil) !== -1; },
+    campos: [
+      {id:"nombre",     t:"Nombre completo de tu cónyuge", tipo:"texto", req:true},
+      {id:"nacimiento", t:"Su fecha de nacimiento", tipo:"fecha"},
+      {id:"lugar",      t:"Su ciudad y país de nacimiento", tipo:"texto"},
+      {id:"nacionalidad",t:"Su nacionalidad", tipo:"texto"},
+      {id:"matrimonio", t:"Fecha de matrimonio o unión", tipo:"fecha"},
+      {id:"acompana",   t:"¿Viaja contigo a Australia?", tipo:"opcion", opciones:["Sí","No"], req:true}
+    ]
+  },
+  {
+    id: "padres",
+    titulo: "Datos de tus padres",
+    ayuda: "Si alguno falleció, escríbelo en el nombre.",
+    campos: [
+      {id:"madre",           t:"Nombre completo de tu madre", tipo:"texto", req:true},
+      {id:"madre_nacimiento",t:"Su fecha de nacimiento", tipo:"fecha"},
+      {id:"madre_pais",      t:"País de nacimiento de tu madre", tipo:"texto"},
+      {id:"padre",           t:"Nombre completo de tu padre", tipo:"texto", req:true},
+      {id:"padre_nacimiento",t:"Su fecha de nacimiento", tipo:"fecha"},
+      {id:"padre_pais",      t:"País de nacimiento de tu padre", tipo:"texto"}
+    ]
+  },
+  {
+    id: "hijos",
+    titulo: "Tus hijos",
+    ayuda: "Todos tus hijos, vivan contigo o no. Si no tienes, toca «No aplica».",
+    repetible: {
+      etiqueta: "hijo o hija",
+      campos: [
+        {id:"nombre",     t:"Nombre completo", tipo:"texto"},
+        {id:"nacimiento", t:"Fecha de nacimiento", tipo:"fecha"},
+        {id:"pais",       t:"País de nacimiento", tipo:"texto"},
+        {id:"viaja",      t:"¿Viaja contigo a Australia?", tipo:"texto", ayuda:"Responde Sí o No."}
+      ]
+    }
+  },
+  {
+    id: "pasaporte",
+    titulo: "Tu pasaporte",
+    campos: [
+      {id:"numero",    t:"Número de pasaporte", tipo:"texto", req:true},
+      {id:"emision",   t:"Fecha de emisión", tipo:"fecha", req:true},
+      {id:"expiracion",t:"Fecha de expiración", tipo:"fecha", req:true},
+      {id:"lugar_emision", t:"Ciudad donde lo emitieron", tipo:"texto", req:true},
+      {id:"emitido_por", t:"País que lo emitió", tipo:"texto", req:true}
+    ]
+  },
+  {
+    id: "residencia",
+    titulo: "Residencia en otro país",
+    ayuda: "Solo si vives en un país distinto al de tu nacionalidad. Si vives en Ecuador y eres ecuatoriano, toca «Esta sección no aplica para mí».",
+    campos: [
+      {id:"otro_pais",   t:"¿Vives en un país distinto al de tu nacionalidad?", tipo:"opcion", req:true,
+       opciones:["No","Sí"]},
+      {id:"pais",        t:"País de esa residencia", tipo:"texto"},
+      {id:"permiso",     t:"Número de tu permiso de residencia", tipo:"texto"},
+      {id:"permiso_hasta", t:"Válido hasta", tipo:"fecha"}
+    ]
+  },
+  {
+    id: "universidad",
+    titulo: "Tus estudios",
+    ayuda: "Tu último nivel de estudios. Si no aplica, toca «Esta sección no aplica para mí».",
+    campos: [
+      {id:"institucion",t:"Nombre de la institución", tipo:"texto"},
+      {id:"ciudad",     t:"Ciudad y país", tipo:"texto"},
+      {id:"fin",        t:"Fecha de culminación", tipo:"fecha"},
+      {id:"titulo",     t:"Título obtenido", tipo:"texto"}
+    ]
+  },
+  {
+    id: "laboral",
+    titulo: "Tu situación actual",
+    ayuda: "Elige a qué te dedicas y abajo te preguntamos solo lo que corresponde a tu caso.",
+    campos: [CAMPO_OCUPACION].concat([
+      {id:"empresa",  t:"Nombre de la empresa o negocio", tipo:"texto", req:true, si:trabaja},
+      {id:"cargo",    t:"Tu cargo", tipo:"texto", req:true, si:trabaja},
+      {id:"inicio",   t:"Fecha en que empezaste", tipo:"fecha", req:true, si:trabaja},
+      {id:"direccion",t:"Dirección del trabajo", tipo:"larga", req:true, si:trabaja},
+      {id:"ciudad",   t:"Ciudad y país", tipo:"texto", req:true, si:trabaja},
+      {id:"telefono", t:"Teléfono del trabajo", tipo:"tel", req:true, si:trabaja},
+      {id:"jefe",     t:"Nombre de tu jefe o jefa inmediato", tipo:"texto", si:conEmpleador},
+      {id:"sueldo",   t:"Sueldo mensual aproximado (USD)", tipo:"numero", req:true, si:trabaja}
+    ], camposEstudio(), camposJubilado(), camposSinTrabajo(), [campoSostiene()])
+  },
+  {
+    id: "viaje",
+    titulo: "Tu viaje a Australia",
+    ayuda: "Si todavía no tienes fechas exactas, pon las que estás planeando.",
+    campos: [
+      {id:"motivo",  t:"Motivo principal del viaje", tipo:"opcion", req:true,
+       opciones:["Turismo","Visita a familiares o amigos","Negocios (reuniones, sin trabajar)","Tratamiento médico","Otro"]},
+      {id:"llegada",  t:"Fecha en que planeas llegar", tipo:"fecha", req:true},
+      {id:"salida",   t:"Fecha en que planeas regresar", tipo:"fecha", req:true},
+      {id:"dias",     t:"Días que vas a estar en total", tipo:"numero", req:true},
+      {id:"estadia",  t:"Tiempo de estadía que pides", tipo:"opcion", req:true,
+       opciones:["Hasta 3 meses","Hasta 6 meses","Hasta 12 meses"]},
+      {id:"entradas", t:"Entradas que necesitas", tipo:"opcion", req:true,
+       opciones:["Una entrada","Múltiples entradas"]},
+      {id:"estudiar",  t:"¿Vas a estudiar o a trabajar en Australia durante el viaje?", tipo:"opcion", req:true,
+       opciones:["No","Sí"],
+       ayuda:"Esta visa no permite trabajar, y estudiar solo hasta tres meses."},
+      {id:"detalle_estudiar", t:"Si respondiste que sí, cuenta qué piensas hacer", tipo:"larga"}
+    ]
+  },
+  {
+    id: "ruta",
+    titulo: "Dónde vas a estar en Australia",
+    ayuda: "Ciudad por ciudad, con las noches que vas a dormir en cada una.",
+    repetible: {
+      etiqueta: "ciudad",
+      campos: [
+        {id:"ciudad", t:"Ciudad", tipo:"texto"},
+        {id:"estado", t:"Estado", tipo:"texto", ayuda:"Ejemplo: Nueva Gales del Sur"},
+        {id:"noches", t:"Noches", tipo:"numero"}
+      ]
+    }
+  },
+  {
+    id: "acompanantes",
+    titulo: "Familiares que viajan contigo",
+    ayuda: "Solo los que viajan en el mismo grupo. Si viajas solo o sola, toca «No aplica».",
+    repetible: {
+      etiqueta: "acompañante",
+      campos: [
+        {id:"nombre",     t:"Nombre completo", tipo:"texto"},
+        {id:"parentesco", t:"Parentesco", tipo:"texto"},
+        {id:"nacimiento", t:"Fecha de nacimiento", tipo:"fecha"}
+      ]
+    }
+  },
+  {
+    id: "alojamiento",
+    titulo: "Dónde te vas a quedar",
+    ayuda: "Si todavía no tienes reserva, pon el lugar donde piensas alojarte.",
+    campos: [
+      {id:"tipo",      t:"Tipo de alojamiento", tipo:"opcion", req:true,
+       opciones:["Hotel","Casa de un familiar o amigo","Departamento alquilado o Airbnb","Otro"]},
+      {id:"nombre",    t:"Nombre del hotel, o de la persona que te recibe", tipo:"texto", req:true},
+      {id:"direccion", t:"Dirección completa", tipo:"larga", req:true},
+      {id:"telefono",  t:"Teléfono", tipo:"tel"},
+      {id:"correo",    t:"Correo electrónico", tipo:"correo"}
+    ]
+  },
+  {
+    id: "contacto_au",
+    titulo: "Familia o amigos en Australia",
+    ayuda: "Si tienes familiares, amigos o alguien que te invita en Australia. Si no tienes a nadie, toca «Esta sección no aplica para mí».",
+    campos: [
+      {id:"nombre",     t:"Nombre completo de esa persona", tipo:"texto"},
+      {id:"parentesco", t:"A quién visitas y qué parentesco tienes", tipo:"texto"},
+      {id:"estatus",    t:"Estatus de esa persona en Australia", tipo:"opcion",
+       opciones:["Ciudadano australiano","Residente permanente","Con otra visa","No lo sé"]},
+      {id:"direccion",  t:"Dirección en Australia", tipo:"larga"},
+      {id:"telefono",   t:"Teléfono de esa persona", tipo:"tel"},
+      {id:"correo",     t:"Correo de esa persona", tipo:"correo"}
+    ]
+  },
+  {
+    id: "costos",
+    titulo: "Quién paga el viaje",
+    ayuda: "Australia revisa que tengas con qué cubrir el viaje y que cuadre con tu trabajo y tus ahorros.",
+    campos: [
+      {id:"quien_paga", t:"¿Quién cubre los gastos del viaje?", tipo:"opcion", req:true,
+       opciones:["Yo mismo/a","Un patrocinador (familiar, amigo o empresa)"]},
+      {id:"medios",     t:"¿Con qué medios?", tipo:"opcion", req:true,
+       opciones:["Ahorros en cuenta bancaria","Tarjeta de crédito","Efectivo","Alojamiento o transporte ya pagado","Varios de los anteriores"]},
+      {id:"dinero",     t:"Dinero disponible para el viaje (USD)", tipo:"numero", req:true},
+      {id:"patrocinador", t:"Si te patrocinan, nombre de esa persona o empresa y su relación contigo", tipo:"texto"}
+    ]
+  },
+  {
+    id: "visas_previas",
+    titulo: "Visas y viajes a Australia",
+    ayuda: "Si nunca has ido ni pedido visa a Australia, responde que no y sigue.",
+    campos: [
+      {id:"visita",   t:"¿Has estado antes en Australia?", tipo:"opcion", req:true, opciones:["No","Sí"]},
+      {id:"visita_detalle", t:"Cuándo fue y cuánto tiempo estuviste", tipo:"texto"},
+      {id:"solicito", t:"¿Has solicitado antes una visa a Australia?", tipo:"opcion", req:true, opciones:["No","Sí"]},
+      {id:"solicito_detalle", t:"Tipo de visa, año y resultado", tipo:"texto"},
+      {id:"actual",   t:"¿Tienes ahora una visa australiana vigente o una solicitud en trámite?", tipo:"opcion", req:true, opciones:["No","Sí"]}
+    ]
+  },
+  {
+    id: "viajes",
+    titulo: "Viajes a otros países",
+    ayuda: "De los últimos cinco años. Si no has viajado, toca «No aplica».",
+    repetible: {
+      etiqueta: "viaje",
+      campos: [
+        {id:"pais",   t:"País visitado", tipo:"texto"},
+        {id:"ingreso",t:"Fecha de ingreso", tipo:"fecha"},
+        {id:"salida", t:"Fecha de salida", tipo:"fecha"},
+        {id:"motivo", t:"Motivo del viaje", tipo:"texto"}
+      ]
+    }
+  },
+  {
+    id: "salud",
+    titulo: "Salud",
+    ayuda: "Australia exige la declaración de salud. Responde con la verdad: si hace falta, te pedirán un examen médico.",
+    campos: [
+      {id:"tuberculosis", t:"¿Has tenido tuberculosis o convivido de cerca con alguien que la tuvo?", tipo:"opcion", req:true, opciones:["No","Sí"]},
+      {id:"enfermedad",   t:"¿Tienes alguna enfermedad o condición que requiera tratamiento médico, hospital o cuidados en Australia?", tipo:"opcion", req:true, opciones:["No","Sí"]},
+      {id:"detalle_salud",t:"Si respondiste que sí, cuenta cuál", tipo:"larga"},
+      {id:"embarazo",     t:"¿Vas a recibir tratamiento médico o a dar a luz en Australia?", tipo:"opcion", req:true, opciones:["No","Sí"]},
+      {id:"seguro",       t:"¿Tienes o vas a tener seguro de viaje con cobertura médica?", tipo:"opcion", req:true, opciones:["Sí","No","Todavía no lo sé"]}
+    ]
+  },
+  {
+    id: "antecedentes",
+    titulo: "Preguntas de carácter",
+    ayuda: "Australia las hace de forma obligatoria. Responde con la verdad: ocultar algo aquí sí causa una negación.",
+    campos: [
+      {id:"visa_negada",   t:"¿Alguna vez te han negado una visa, la entrada a un país o te han cancelado una visa?", tipo:"opcion", req:true,
+       opciones:["No","Sí"]},
+      {id:"detalle_negada",t:"Si respondiste que sí, cuenta qué pasó", tipo:"larga",
+       ayuda:"País, año y motivo que te dieron."},
+      {id:"deportado",     t:"¿Alguna vez te han deportado, expulsado o pedido que salgas de un país?", tipo:"opcion", req:true,
+       opciones:["No","Sí"]},
+      {id:"permanencia",   t:"¿Alguna vez te quedaste más tiempo del permitido en otro país?", tipo:"opcion", req:true,
+       opciones:["No","Sí"]},
+      {id:"penales",       t:"¿Has sido arrestado, acusado o condenado por algún delito, en cualquier país?", tipo:"opcion", req:true,
+       opciones:["No","Sí"]},
+      {id:"detalle_penal", t:"Si respondiste que sí, cuenta qué pasó", tipo:"larga"},
+      {id:"deuda_au",      t:"¿Le debes dinero al gobierno de Australia, por ejemplo por gastos médicos?", tipo:"opcion", req:true,
+       opciones:["No","Sí"]},
+      {id:"militar",       t:"¿Has prestado servicio militar o policial?", tipo:"opcion", req:true,
+       opciones:["No","Sí"]}
+    ]
+  },
+  {
+    id: "redes",
+    titulo: "Tus redes sociales",
+    ayuda: "Pega el enlace completo de cada perfil, no solo tu nombre de usuario. Si no tienes alguna de estas redes, toca «No aplica». Te pedimos que dejes tus perfiles en público mientras dura tu trámite.",
+    guia: GUIA_REDES,
+    campos: [
+      {id:"facebook", t:"Facebook", tipo:"url", ayuda:"Ejemplo: https://www.facebook.com/maria.perez"},
+      {id:"instagram",t:"Instagram", tipo:"url", ayuda:"Ejemplo: https://www.instagram.com/mariaperez"},
+      {id:"tiktok",   t:"TikTok", tipo:"url", ayuda:"Ejemplo: https://www.tiktok.com/@mariaperez"},
+      {id:"x",        t:"X (antes Twitter)", tipo:"url", ayuda:"Ejemplo: https://x.com/mariaperez"}
+    ]
+  }
+];
+
+var DOCUMENTOS_AUSTRALIA = [
+  "Pasaporte vigente (mínimo 6 meses después del regreso)",
+  "Foto de la página de tu pasaporte donde salen tus datos",
+  "Copia de tu cédula",
+  "Foto digital tipo pasaporte, fondo blanco",
+  "Certificado bancario de los últimos 3 a 6 meses",
+  "Movimiento bancario de los últimos 3 a 6 meses",
+  "Certificado laboral con sueldo y antigüedad",
+  "Roles de pago de los últimos 3 meses",
+  "Certificado de estudios, si eres estudiante",
+  "Certificado de pensión o jubilación, si eres jubilado",
+  "Reserva de vuelos y de alojamiento (puede ser provisional)",
+  "Itinerario de viaje",
+  "Carta de invitación y copia del documento de tu contacto en Australia, si aplica",
+  "Carta del patrocinador y sus certificados bancarios, si alguien paga tu viaje",
+  "Seguro de viaje con cobertura médica",
+  "Copia de visas anteriores, si tienes",
+  "Acta de matrimonio y partidas de nacimiento de tus hijos, si viajas en familia",
+  "Copia del impuesto predial o la matrícula vehicular, si tienes",
+  "Permiso de salida firmado por ambos padres, si el viajero es menor de edad"
+];
+
+/* ------------------------------------------------------------
    REGISTRO DE DESTINOS
    El texto de `destino` viene de empezar/index.html y llega tal
    cual desde la hoja: "Estados Unidos", "Canadá" o
@@ -1233,6 +1543,21 @@ var DESTINOS = {
       "Tus estudios: colegio y universidad, con fechas y títulos",
       "Los datos de tus padres, y de tu cónyuge si aplica",
       "Tu reserva de vuelos y de hotel, aunque sea provisional",
+      "El detalle de tus viajes de los últimos cinco años"
+    ]
+  },
+  australia: {
+    nombre: "Australia",
+    formulario: "la solicitud de visa de visitante (subclase 600)",
+    detecta: ["australia", "australiana"],
+    secciones: SECCIONES_AUSTRALIA,
+    documentos: DOCUMENTOS_AUSTRALIA,
+    preparate: [
+      "Tu pasaporte y tu cédula",
+      "Los datos de tu trabajo o de tus estudios",
+      "Los datos de tus padres, hijos y cónyuge si aplica",
+      "Las fechas y el alojamiento de tu viaje a Australia",
+      "Cuánto dinero tienes para el viaje y quién lo paga",
       "El detalle de tus viajes de los últimos cinco años"
     ]
   }
@@ -1362,8 +1687,8 @@ function arrancar(){
   if (!CODIGO) {
     return ir(
       '<div class="seccion"><h1>Entra desde la página de tu caso</h1>' +
-      '<p class="ayuda">Este formulario se abre desde tu página personal. Ahí está tu código, tu estado y este mismo link. ' +
-      'Si no recuerdas tu código, búscalo en el correo que te mandamos.</p>' +
+      '<p class="ayuda">Este formulario se abre desde el botón del correo que te llegó cuando avisaste tu pago. ' +
+      'Búscalo en tu bandeja (o en spam) y toca «Llenar mi formulario». Si no te llegó, pídelo de nuevo en la página de tu caso.</p>' +
       '<a class="btn" href="../caso/">Abrir mi caso con mi código</a></div>'
     );
   }
@@ -1480,10 +1805,68 @@ function confirmarDestino(){
     });
   }
   document.getElementById("no").addEventListener("click", function(){
-    location.href = "https://wa.me/" + WHATSAPP + "?text=" +
-      encodeURIComponent("Hola David, sobre mi expediente " + CODIGO + ": necesito revisar el país destino antes de llenar la información.");
+    if (!conocido){
+      location.href = "https://wa.me/" + WHATSAPP + "?text=" +
+        encodeURIComponent("Hola David, sobre mi expediente " + CODIGO + ": necesito revisar el país destino antes de llenar la información.");
+      return;
+    }
+    elegirOtroDestino();
   });
   document.getElementById("atras").addEventListener("click", confirmarIdentidad);
+}
+
+/* Un código, un destino: si el país cambió, nace un caso nuevo con su
+   propio código y su propio pago. El caso de ahora no se toca. */
+var ALFABETO_CODIGO = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+function codigoNuevoCaso(){
+  var n = new Uint32Array(6);
+  try { crypto.getRandomValues(n); }
+  catch(e){ for (var j=0;j<6;j++) n[j] = Math.floor(Math.random()*4294967296); }
+  var c = "";
+  for (var i=0;i<6;i++) c += ALFABETO_CODIGO.charAt(n[i] % ALFABETO_CODIGO.length);
+  return c;
+}
+
+function elegirOtroDestino(){
+  var actual = claveDestino(caso.destino);
+  var opciones = [
+    {clave:"usa", texto:"Estados Unidos"},
+    {clave:"canada", texto:"Canadá"},
+    {clave:"schengen", texto:"Europa (Schengen)"},
+    {clave:"australia", texto:"Australia"}
+  ].filter(function(o){ return o.clave !== actual; });
+  ir(
+    '<div class="seccion">' +
+      '<h1>¿A qué país vas ahora?</h1>' +
+      '<p class="ayuda">Cada país es un trámite aparte, con su propio código y su propio pago. Tu caso actual (' + esc(caso.destino) + ') se queda como está.</p>' +
+      '<div class="ops">' +
+        opciones.map(function(o, i){
+          return '<button class="op" type="button" data-i="' + i + '"><span class="marca-op"></span><span>' + esc(o.texto) + '</span></button>';
+        }).join("") +
+      '</div>' +
+      '<p class="ayuda" id="otroMsg"></p>' +
+      '<div><button class="atras" type="button" id="atras">← Volver</button></div>' +
+    '</div>'
+  );
+  document.getElementById("atras").addEventListener("click", confirmarDestino);
+  [].forEach.call(document.querySelectorAll("[data-i]"), function(b){
+    b.addEventListener("click", function(){
+      var o = opciones[+b.getAttribute("data-i")];
+      var nuevo = codigoNuevoCaso();
+      var msg = document.getElementById("otroMsg");
+      msg.textContent = "Creando tu nuevo trámite…";
+      fetch(ENDPOINT, {
+        method: "POST",
+        headers: {"Content-Type": "text/plain;charset=utf-8"},
+        body: JSON.stringify({ tipo: "otro-destino", codigo: CODIGO, codigoNuevo: nuevo, destino: o.texto })
+      }).then(function(r){ return r.json(); }).then(function(r){
+        if (!r || !r.ok) throw new Error((r && r.error) || "fallo");
+        location.replace("../caso/?c=" + encodeURIComponent(r.codigo));
+      })["catch"](function(){
+        msg.textContent = "No pudimos crearlo. Inténtalo otra vez o escríbele a David por WhatsApp.";
+      });
+    });
+  });
 }
 
 /* Las fichas arrancan con las personas por las que ya se pagó. Si en
@@ -1797,6 +2180,19 @@ var EJEMPLOS = {
   "Días que vas a estar en total": "15",
   "Noches": "4",
   "Dinero disponible para el viaje (CAD)": "3000",
+  "Dinero disponible para el viaje (USD)": "3000",
+  "País de nacimiento de tu madre": "Ecuador",
+  "País de nacimiento de tu padre": "Ecuador",
+  "Estado":"Nueva Gales del Sur",
+  "Nombre completo de esa persona": "Sofía Pérez Villacís",
+  "Dirección en Australia": "25 George St, Sydney NSW 2000",
+  "Teléfono de esa persona": "+61 412 345 678",
+  "Correo de esa persona": "sofia.perez@gmail.com",
+  "Cuándo fue y cuánto tiempo estuviste": "Marzo de 2019, dos semanas",
+  "Tipo de visa, año y resultado": "Visitante, 2018, aprobada",
+  "Si respondiste que sí, cuenta cuál": "Qué condición tienes, desde cuándo y qué tratamiento llevas",
+  "Si respondiste que sí, cuenta qué piensas hacer": "Un curso de inglés de dos semanas en Sídney",
+  "¿Viaja contigo a Australia?": "Sí",
 
   "Si respondiste que sí, cuenta qué pasó": "Qué pasó, cuándo (mes y año) y cómo terminó. Ej: en marzo de 2019 me negaron la visa de EE.UU."
 };

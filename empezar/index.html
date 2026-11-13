@@ -227,6 +227,7 @@ var PREGUNTAS = [
       {v:"usa",      t:"Estados Unidos",  s:"Visa de turismo B1/B2"},
       {v:"canada",   t:"Canadá",          s:"Visa de visitante"},
       {v:"schengen", t:"Europa",          s:"Visa Schengen"},
+      {v:"australia",t:"Australia",       s:"Visa de visitante"},
       {v:"no-se",    t:"Todavía no lo decido"}
     ]
   },
@@ -279,6 +280,18 @@ var PREGUNTAS = [
       {v:"si", t:"Sí, varias cosas cambiaron",  p:2, fuerte:"Tu situación cambió desde la negación anterior"},
       {v:"algo", t:"Alguna cosa, no mucho",     p:0, flojo:"Cambió poco desde la negación anterior"},
       {v:"no", t:"No, sigo igual",              p:-2, bandera:"Negación reciente sin cambios en el perfil"}
+    ]
+  },
+  {
+    /* Solo EE.UU. y Canadá: una deportación o expulsión previa pesa
+       mucho en esos dos consulados. En Schengen no se pregunta. */
+    id: "deportado",
+    si: function(r){ return r.destino === "usa" || r.destino === "canada"; },
+    titulo: "¿Alguna vez te han deportado o te han obligado a salir de un país?",
+    ayuda: "De Estados Unidos, Canadá u otro país. Lo preguntamos porque cambia cómo se arma tu caso, y mejor saberlo desde el inicio.",
+    opciones: [
+      {v:"no", t:"No, nunca", p:0},
+      {v:"si", t:"Sí, me deportaron o me hicieron salir", p:-4, bandera:"Antecedente de deportación o salida forzada de un país"}
     ]
   },
   {
@@ -386,7 +399,7 @@ var PREGUNTAS = [
    frases; el texto de acompañamiento se busca allá por esa frase. */
 
 
-var NOMBRE_DESTINO = {usa:"Estados Unidos", canada:"Canadá", schengen:"Europa (Schengen)", "no-se":"Todavía sin decidir"};
+var NOMBRE_DESTINO = {usa:"Estados Unidos", canada:"Canadá", schengen:"Europa (Schengen)", australia:"Australia", "no-se":"Todavía sin decidir"};
 
 /* ------------------------------------------------------------
    LA VENTANA DE RENOVACIÓN — 12 MESES
@@ -442,7 +455,7 @@ var indice = 0;
   try {
     var p = new URLSearchParams(location.search);
     var d = p.get("destino");
-    if (d && ["usa","canada","schengen"].indexOf(d) !== -1) respuestas.destino = d;
+    if (d && ["usa","canada","schengen","australia"].indexOf(d) !== -1) respuestas.destino = d;
     var pais = p.get("pais");
     if (pais) respuestas.pais_schengen = pais;
   } catch(e){}
@@ -638,6 +651,9 @@ function calcular(){
   if (respuestas.aplico_antes === "negada" &&
       respuestas.cuando_negada === "menos1" &&
       respuestas.cambio_algo === "no") {
+    semaforo = "rojo";
+  }
+  if (respuestas.deportado === "si") {
     semaforo = "rojo";
   }
   if (respuestas.pasaporte === "no") {
@@ -888,6 +904,7 @@ function servicioDe(fila){
   if (d.indexOf("europa") !== -1 || d.indexOf("schengen") !== -1) {
     return renovacion ? "schengen-renovacion" : "schengen";
   }
+  if (d.indexOf("australia") !== -1) return renovacion ? "australia-renovacion" : "australia";
   return "";
 }
 
