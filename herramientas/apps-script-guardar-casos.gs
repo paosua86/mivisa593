@@ -103,7 +103,7 @@ function propiedad(clave) {
    implementacion en vivo ya tiene los cambios: al abrir la URL /exec
    sin parametros, la respuesta trae este mismo texto. Subirla cada vez
    que se cambie este archivo. */
-var VERSION = "2026-11-13-formulario-por-correo";
+var VERSION = "2026-11-13-combinado";
 
 /* ------------------------------------------------------------
    NO HAY CANDADO
@@ -459,12 +459,14 @@ function crearCasoOtroDestino(datos) {
   var clave = destino.toLowerCase();
   var srv = clave.indexOf("estados unidos") !== -1 ? "usa-primera"
           : clave.indexOf("canad") !== -1 ? "canada-primera"
-          : (clave.indexOf("europa") !== -1 || clave.indexOf("schengen") !== -1) ? "schengen" : "";
+          : (clave.indexOf("europa") !== -1 || clave.indexOf("schengen") !== -1) ? "schengen"
+          : clave.indexOf("australia") !== -1 ? "australia" : "";
   if (!codigoViejo || !srv) return responder({ ok: false, error: "Faltan datos" });
 
   var viejo = filaDelCaso(codigoViejo);
   if (!viejo) return responder({ ok: false, error: "Caso no encontrado" });
-  if (servicioDeFila(viejo) === srv || servicioDeFila(viejo) === srv.replace("primera", "renovacion")) {
+  var srvViejo = servicioDeFila(viejo);
+  if (srvViejo === srv || srvViejo === srv.replace("primera", "renovacion") || srvViejo === srv + "-renovacion") {
     return responder({ ok: false, error: "Es el mismo destino" });
   }
 

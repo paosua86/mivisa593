@@ -67,7 +67,7 @@ visas/
 |---|---|---|
 | Estados Unidos (B1/B2) | $65 | $55 |
 | Canadá (visitante) | $95 | $75 |
-| Schengen | $155 | — |
+| Schengen | $170 | — |
 | Australia (visitante, subclase 600) | $120 | $120 |
 
 **Un trámite es renovación mientras la visa anterior siga vigente o no
@@ -100,7 +100,7 @@ cuando cambie, se cambia en esos dos sitios.
 
 **Schengen no tiene precio de renovación.** Cada solicitud se presenta
 como nueva y el trabajo es el mismo, así que `schengen-renovacion`
-cuesta los mismos $155. Existe como servicio aparte solo para dejar
+cuesta los mismos $170. Existe como servicio aparte solo para dejar
 registrado que la persona ya tuvo Schengen, que sí pesa en el caso.
 
 **Un pago puede cubrir a varias personas, cada una con su precio.**
