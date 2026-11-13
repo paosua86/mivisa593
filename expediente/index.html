@@ -1362,8 +1362,8 @@ function arrancar(){
   if (!CODIGO) {
     return ir(
       '<div class="seccion"><h1>Entra desde la página de tu caso</h1>' +
-      '<p class="ayuda">Este formulario se abre desde tu página personal. Ahí está tu código, tu estado y este mismo link. ' +
-      'Si no recuerdas tu código, búscalo en el correo que te mandamos.</p>' +
+      '<p class="ayuda">Este formulario se abre desde el botón del correo que te llegó cuando avisaste tu pago. ' +
+      'Búscalo en tu bandeja (o en spam) y toca «Llenar mi formulario». Si no te llegó, pídelo de nuevo en la página de tu caso.</p>' +
       '<a class="btn" href="../caso/">Abrir mi caso con mi código</a></div>'
     );
   }
@@ -1480,10 +1480,67 @@ function confirmarDestino(){
     });
   }
   document.getElementById("no").addEventListener("click", function(){
-    location.href = "https://wa.me/" + WHATSAPP + "?text=" +
-      encodeURIComponent("Hola David, sobre mi expediente " + CODIGO + ": necesito revisar el país destino antes de llenar la información.");
+    if (!conocido){
+      location.href = "https://wa.me/" + WHATSAPP + "?text=" +
+        encodeURIComponent("Hola David, sobre mi expediente " + CODIGO + ": necesito revisar el país destino antes de llenar la información.");
+      return;
+    }
+    elegirOtroDestino();
   });
   document.getElementById("atras").addEventListener("click", confirmarIdentidad);
+}
+
+/* Un código, un destino: si el país cambió, nace un caso nuevo con su
+   propio código y su propio pago. El caso de ahora no se toca. */
+var ALFABETO_CODIGO = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+function codigoNuevoCaso(){
+  var n = new Uint32Array(6);
+  try { crypto.getRandomValues(n); }
+  catch(e){ for (var j=0;j<6;j++) n[j] = Math.floor(Math.random()*4294967296); }
+  var c = "";
+  for (var i=0;i<6;i++) c += ALFABETO_CODIGO.charAt(n[i] % ALFABETO_CODIGO.length);
+  return c;
+}
+
+function elegirOtroDestino(){
+  var actual = claveDestino(caso.destino);
+  var opciones = [
+    {clave:"usa", texto:"Estados Unidos"},
+    {clave:"canada", texto:"Canadá"},
+    {clave:"schengen", texto:"Europa (Schengen)"}
+  ].filter(function(o){ return o.clave !== actual; });
+  ir(
+    '<div class="seccion">' +
+      '<h1>¿A qué país vas ahora?</h1>' +
+      '<p class="ayuda">Cada país es un trámite aparte, con su propio código y su propio pago. Tu caso actual (' + esc(caso.destino) + ') se queda como está.</p>' +
+      '<div class="ops">' +
+        opciones.map(function(o, i){
+          return '<button class="op" type="button" data-i="' + i + '"><span class="marca-op"></span><span>' + esc(o.texto) + '</span></button>';
+        }).join("") +
+      '</div>' +
+      '<p class="ayuda" id="otroMsg"></p>' +
+      '<div><button class="atras" type="button" id="atras">← Volver</button></div>' +
+    '</div>'
+  );
+  document.getElementById("atras").addEventListener("click", confirmarDestino);
+  [].forEach.call(document.querySelectorAll("[data-i]"), function(b){
+    b.addEventListener("click", function(){
+      var o = opciones[+b.getAttribute("data-i")];
+      var nuevo = codigoNuevoCaso();
+      var msg = document.getElementById("otroMsg");
+      msg.textContent = "Creando tu nuevo trámite…";
+      fetch(ENDPOINT, {
+        method: "POST",
+        headers: {"Content-Type": "text/plain;charset=utf-8"},
+        body: JSON.stringify({ tipo: "otro-destino", codigo: CODIGO, codigoNuevo: nuevo, destino: o.texto })
+      }).then(function(r){ return r.json(); }).then(function(r){
+        if (!r || !r.ok) throw new Error((r && r.error) || "fallo");
+        location.replace("../caso/?c=" + encodeURIComponent(r.codigo));
+      })["catch"](function(){
+        msg.textContent = "No pudimos crearlo. Inténtalo otra vez o escríbele a David por WhatsApp.";
+      });
+    });
+  });
 }
 
 /* Las fichas arrancan con las personas por las que ya se pagó. Si en

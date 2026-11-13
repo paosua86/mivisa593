@@ -103,13 +103,14 @@ function propiedad(clave) {
    implementacion en vivo ya tiene los cambios: al abrir la URL /exec
    sin parametros, la respuesta trae este mismo texto. Subirla cada vez
    que se cambie este archivo. */
-var VERSION = "2026-09-16-renovacion-y-grupo";
+var VERSION = "2026-11-13-formulario-por-correo";
 
 /* ------------------------------------------------------------
    NO HAY CANDADO
 
-   El formulario detallado está abierto desde el primer momento para
-   cualquiera que tenga su código. No hay nada que David tenga que
+   El formulario detallado se abre con el botón del correo que le llega
+   a la persona al declarar su pago, pero técnicamente sigue abierto
+   para cualquiera que tenga su código. No hay nada que David tenga que
    habilitar y no hay nada que la persona tenga que esperar.
 
    Lo que ordena el trabajo no es un permiso técnico: David se pone a
@@ -235,6 +236,16 @@ function doPost(e) {
       return declararPago(datos);
     }
 
+    // El correo con el botón del formulario largo, otra vez.
+    if (datos.tipo === "reenviar-formulario") {
+      return reenviarFormulario(datos);
+    }
+
+    // Desde el formulario largo: el destino cambió, es otro trámite.
+    if (datos.tipo === "otro-destino") {
+      return crearCasoOtroDestino(datos);
+    }
+
     // La persona armó en su página la lista de por quiénes va a pagar.
     if (datos.tipo === "grupo") {
       return guardarGrupo(datos);
@@ -349,6 +360,16 @@ function declararPago(datos) {
     if (!pos) return responder({ ok: false, error: "La hoja no tiene la columna Pago declarado" });
   }
 
+  // La persona confirma su correo al declarar el pago: es el único
+  // camino al formulario largo, así que si lo escribió mal al empezar
+  // aquí se corrige. Solo se acepta si tiene forma de correo.
+  var correoNuevo = String(datos.correo || "").trim().toLowerCase();
+  if (correoNuevo && /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(correoNuevo) &&
+      fila.indice.correo && correoNuevo !== String(fila.valor("correo")).trim().toLowerCase()) {
+    fila.hoja.getRange(fila.numero, fila.indice.correo).setValue(correoNuevo);
+    fila = filaDelCaso(codigo);
+  }
+
   // Si ya lo había declarado, no se vuelve a avisar: la persona puede
   // tocar el botón varias veces sin llenarle el correo a David.
   var yaEstaba = String(fila.valor("pago_declarado")).trim() !== "";
@@ -356,10 +377,134 @@ function declararPago(datos) {
     fila.hoja.getRange(fila.numero, pos)
         .setValue(Utilities.formatDate(new Date(), "America/Guayaquil", "dd/MM/yyyy HH:mm"));
     try { avisarPagoDeclarado(fila, codigo); } catch (err) { /* queda escrito igual */ }
+    try { correoFormularioLargo(fila, codigo); } catch (err) { /* para eso está "Reenviar" */ }
     try { avisarCRM("pago-declarado", { codigo: codigo, total: fila.valor("grupo_total") }); } catch (err) { /* idem */ }
   }
 
-  return responder({ ok: true, codigo: codigo });
+  return responder({ ok: true, codigo: codigo, correo: String(fila.valor("correo")) });
+}
+
+/**
+ * Reenvía a la persona el correo con el botón del formulario largo.
+ * Solo si ya declaró su pago, y no más de una vez cada dos minutos
+ * por caso, para que nadie use esto para llenar un buzón ajeno.
+ */
+function reenviarFormulario(datos) {
+  var codigo = String(datos.codigo || "").toUpperCase();
+  if (!codigo) return responder({ ok: false, error: "Falta el codigo" });
+  var fila = filaDelCaso(codigo);
+  if (!fila) return responder({ ok: false, error: "Caso no encontrado" });
+  if (String(fila.valor("pago_declarado")).trim() === "") {
+    return responder({ ok: false, error: "Todavia no hay pago declarado" });
+  }
+  var cache = CacheService.getScriptCache();
+  if (cache.get("reenvio_" + codigo)) {
+    return responder({ ok: false, error: "Espera un par de minutos antes de pedirlo otra vez" });
+  }
+  cache.put("reenvio_" + codigo, "1", 120);
+  correoFormularioLargo(fila, codigo);
+  return responder({ ok: true, correo: String(fila.valor("correo")) });
+}
+
+/** El correo de después del pago: trae el botón al formulario largo. */
+function correoFormularioLargo(fila, codigo) {
+  var correo = String(fila.valor("correo") || "").trim();
+  if (!correo || correo.indexOf("@") === -1) return;
+  var link = SITIO + "/expediente/?caso=" + codigo;
+
+  var cuerpo =
+    '<div style="font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;' +
+    'max-width:560px;margin:0 auto;color:#16282c">' +
+    '<h2 style="font-size:20px;margin:0 0 12px">Ahora llena tu formulario</h2>' +
+    '<p style="font-size:15px;line-height:1.6;margin:0 0 16px">' +
+      escaparHtml(String(fila.valor("nombre")).split(" ")[0]) + ', recibimos tu pago. ' +
+      'El siguiente paso es llenar tu información. Es largo, pero se guarda solo: ' +
+      'puedes cerrarlo y volver cuando quieras. <b>Guarda este correo</b>: si te pierdes, ' +
+      'vuelves aquí y tocas el botón para seguir donde te quedaste.</p>' +
+    '<p style="margin:0 0 6px;font-size:13px;color:#5b6b6f">Tu código</p>' +
+    '<p style="margin:0 0 18px;font-size:24px;font-weight:700;letter-spacing:.08em">' +
+      escaparHtml(codigo) + '</p>' +
+    '<p style="margin:0 0 22px"><a href="' + escaparHtml(link) + '" ' +
+      'style="display:inline-block;background:#0b6478;color:#fff;text-decoration:none;' +
+      'padding:14px 22px;border-radius:9px;font-weight:600;font-size:16px">Llenar mi formulario</a></p>' +
+    '<p style="font-size:13px;color:#5b6b6f;line-height:1.6;margin:0">' +
+      'No reenvíes este correo: el botón abre tu información personal.<br>' +
+      'MiVisa EC · David Ubilluz · Quito, Ecuador<br>' +
+      'Si tienes dudas, responde a este correo.</p>' +
+    '</div>';
+
+  MailApp.sendEmail({
+    to: correo,
+    subject: "Llena tu formulario · MiVisa EC · código " + codigo,
+    htmlBody: cuerpo,
+    name: "MiVisa EC",
+    replyTo: CORREO_DAVID
+  });
+}
+
+/**
+ * Un código, un destino. Si al abrir el formulario largo la persona
+ * dice que el país cambió, aquí nace un caso nuevo con su propio código
+ * para ese país. El caso viejo no se toca.
+ *
+ * Nace como "Primera vez" con el precio de primera vez, y así se lo
+ * dice a David: la ventana de renovación depende de la visa de ESE
+ * país y aquí no se tiene la fecha. Tiene su propio pago.
+ * El código lo propone el navegador, igual que en empezar/.
+ */
+function crearCasoOtroDestino(datos) {
+  var codigoViejo = String(datos.codigo || "").toUpperCase();
+  var destino = String(datos.destino || "");
+  var clave = destino.toLowerCase();
+  var srv = clave.indexOf("estados unidos") !== -1 ? "usa-primera"
+          : clave.indexOf("canad") !== -1 ? "canada-primera"
+          : (clave.indexOf("europa") !== -1 || clave.indexOf("schengen") !== -1) ? "schengen" : "";
+  if (!codigoViejo || !srv) return responder({ ok: false, error: "Faltan datos" });
+
+  var viejo = filaDelCaso(codigoViejo);
+  if (!viejo) return responder({ ok: false, error: "Caso no encontrado" });
+  if (servicioDeFila(viejo) === srv || servicioDeFila(viejo) === srv.replace("primera", "renovacion")) {
+    return responder({ ok: false, error: "Es el mismo destino" });
+  }
+
+  var hoja = viejo.hoja;
+  asegurarColumnas(hoja);
+  viejo = filaDelCaso(codigoViejo);
+
+  var nuevo = {};
+  COLUMNAS.forEach(function (c) { nuevo[c[0]] = viejo.valor(c[0]); });
+  nuevo.fecha = Utilities.formatDate(new Date(), "America/Guayaquil", "dd/MM/yyyy HH:mm");
+  nuevo.codigo = codigoValido(hoja, datos.codigoNuevo);
+  nuevo.destino = destino;
+  nuevo.servicio = srv;
+  nuevo.tipo_tramite = "Primera vez";
+  nuevo.vence_visa = "";
+  nuevo.pago_declarado = "";
+  nuevo.pagado = "";
+  nuevo.expediente = "";
+  nuevo.grupo_json = "";
+  nuevo.grupo_detalle = nuevo.nombre + " · primera vez · $" + VALOR_SERVICIO[srv];
+  nuevo.grupo_total = VALOR_SERVICIO[srv];
+  nuevo.pais_schengen = "";
+  nuevo.link_caso = SITIO + "/caso/?c=" + nuevo.codigo;
+  nuevo.link_expediente = SITIO + "/expediente/?caso=" + nuevo.codigo;
+  nuevo.link_pago = SITIO + "/pago/?v=" + srv;
+  nuevo.carpeta = carpetaDelCaso(nuevo);
+  nuevo.cuando = String(nuevo.cuando || "") + " [Cambió de destino desde el caso " + codigoViejo + "; confirmar si es renovación]";
+
+  var indice = columnasDeLaHoja(hoja);
+  var fila = [];
+  for (var k = 0; k < hoja.getLastColumn(); k++) fila.push("");
+  COLUMNAS.forEach(function (c) {
+    var pos = indice[c[0]];
+    if (pos) fila[pos - 1] = nuevo[c[0]] === undefined || nuevo[c[0]] === null ? "" : nuevo[c[0]];
+  });
+  hoja.appendRow(fila);
+
+  try { avisarCasoNuevo(nuevo); } catch (err) { /* el caso ya está guardado */ }
+  try { avisarCRM("caso", nuevo); } catch (err) { /* idem */ }
+
+  return responder({ ok: true, codigo: nuevo.codigo });
 }
 
 /**
@@ -1505,8 +1650,8 @@ function correoALaPersona(datos) {
     '<h2 style="font-size:20px;margin:0 0 12px">Tu caso quedó registrado</h2>' +
     '<p style="font-size:15px;line-height:1.6;margin:0 0 16px">' +
       escaparHtml(String(datos.nombre).split(" ")[0]) + ', guarda este correo. ' +
-      'Desde el link de abajo puedes seguir tu trámite, pagar y llenar tu formulario ' +
-      'cuando quieras. No hace falta que le escribas a nadie para avanzar.</p>' +
+      'Desde el link de abajo puedes seguir tu trámite y pagar. Cuando avises que ya pagaste, ' +
+      'te llega otro correo con el botón para llenar tu formulario.</p>' +
     '<p style="margin:0 0 6px;font-size:13px;color:#5b6b6f">Tu código</p>' +
     '<p style="margin:0 0 18px;font-size:24px;font-weight:700;letter-spacing:.08em">' +
       escaparHtml(datos.codigo) + '</p>' +
