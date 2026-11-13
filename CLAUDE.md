@@ -68,6 +68,7 @@ visas/
 | Estados Unidos (B1/B2) | $65 | $55 |
 | Canadá (visitante) | $95 | $75 |
 | Schengen | $155 | — |
+| Australia (visitante, subclase 600) | $120 | $120 |
 
 **Un trámite es renovación mientras la visa anterior siga vigente o no
 haya cumplido 12 meses de vencida.** Pasado ese año vuelve a ser
@@ -94,6 +95,8 @@ La constante `MESES_RENOVACION = 12` existe igual en
 `empezar/index.html` y `caso/index.html`; el Apps Script no recalcula
 nada, solo lee lo guardado. Estas ventanas las mueven los consulados:
 cuando cambie, se cambia en esos dos sitios.
+
+**Australia: $120 por persona, sin precio de renovación** (pedido de David, noviembre de 2026; David solo dio un precio, así que se trató como Schengen: `australia-renovacion` existe y cuesta lo mismo). La tasa de la visa australiana no está escrita en la página porque no se pudo verificar el valor vigente: confirmarlo antes de publicarlo. El expediente de Australia (`SECCIONES_AUSTRALIA`) sale del formulario 1419 y de la solicitud en línea; David todavía no lo validó.
 
 **Schengen no tiene precio de renovación.** Cada solicitud se presenta
 como nueva y el trabajo es el mismo, así que `schengen-renovacion`

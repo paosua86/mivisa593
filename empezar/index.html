@@ -227,6 +227,7 @@ var PREGUNTAS = [
       {v:"usa",      t:"Estados Unidos",  s:"Visa de turismo B1/B2"},
       {v:"canada",   t:"Canadá",          s:"Visa de visitante"},
       {v:"schengen", t:"Europa",          s:"Visa Schengen"},
+      {v:"australia",t:"Australia",       s:"Visa de visitante"},
       {v:"no-se",    t:"Todavía no lo decido"}
     ]
   },
@@ -386,7 +387,7 @@ var PREGUNTAS = [
    frases; el texto de acompañamiento se busca allá por esa frase. */
 
 
-var NOMBRE_DESTINO = {usa:"Estados Unidos", canada:"Canadá", schengen:"Europa (Schengen)", "no-se":"Todavía sin decidir"};
+var NOMBRE_DESTINO = {usa:"Estados Unidos", canada:"Canadá", schengen:"Europa (Schengen)", australia:"Australia", "no-se":"Todavía sin decidir"};
 
 /* ------------------------------------------------------------
    LA VENTANA DE RENOVACIÓN — 12 MESES
@@ -442,7 +443,7 @@ var indice = 0;
   try {
     var p = new URLSearchParams(location.search);
     var d = p.get("destino");
-    if (d && ["usa","canada","schengen"].indexOf(d) !== -1) respuestas.destino = d;
+    if (d && ["usa","canada","schengen","australia"].indexOf(d) !== -1) respuestas.destino = d;
     var pais = p.get("pais");
     if (pais) respuestas.pais_schengen = pais;
   } catch(e){}
@@ -888,6 +889,7 @@ function servicioDe(fila){
   if (d.indexOf("europa") !== -1 || d.indexOf("schengen") !== -1) {
     return renovacion ? "schengen-renovacion" : "schengen";
   }
+  if (d.indexOf("australia") !== -1) return renovacion ? "australia-renovacion" : "australia";
   return "";
 }
 

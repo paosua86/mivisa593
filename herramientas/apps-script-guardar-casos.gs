@@ -530,6 +530,7 @@ function servicio(datos) {
   if (d.indexOf("europa") !== -1 || d.indexOf("schengen") !== -1) {
     return renovacion ? "schengen-renovacion" : "schengen";
   }
+  if (d.indexOf("australia") !== -1) return renovacion ? "australia-renovacion" : "australia";
   return "";
 }
 
@@ -538,7 +539,9 @@ function servicio(datos) {
 var VALOR_SERVICIO = {
   "usa-primera": 65,      "usa-renovacion": 55,
   "canada-primera": 95,   "canada-renovacion": 75,
-  "schengen": 155,        "schengen-renovacion": 155
+  "schengen": 155,        "schengen-renovacion": 155,
+  // Australia: $120 por persona, igual para quien ya tuvo la visa
+  "australia": 120,       "australia-renovacion": 120
 };
 
 /** El servicio de una fila que ya está en la hoja. */
@@ -865,7 +868,8 @@ var ORDEN_DAVID = {
 var TITULO_ARCHIVO = {
   usa: "INFORMACIÓN PARA VISA AMERICANA",
   canada: "INFORMACIÓN PARA VISA CANADIENSE",
-  schengen: "INFORMACIÓN PARA VISA SCHENGEN"
+  schengen: "INFORMACIÓN PARA VISA SCHENGEN",
+  australia: "INFORMACIÓN PARA VISA AUSTRALIANA"
 };
 
 var TITULO_EXTRAS = "DATOS ADICIONALES DEL FORMULARIO OFICIAL";
