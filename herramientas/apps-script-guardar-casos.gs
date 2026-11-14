@@ -103,7 +103,7 @@ function propiedad(clave) {
    implementacion en vivo ya tiene los cambios: al abrir la URL /exec
    sin parametros, la respuesta trae este mismo texto. Subirla cada vez
    que se cambie este archivo. */
-var VERSION = "2026-11-13-combinado";
+var VERSION = "2026-11-13-deportacion-todos";
 
 /* ------------------------------------------------------------
    NO HAY CANDADO
@@ -163,6 +163,8 @@ var COLUMNAS = [
   ["cuando_negada",   "¿Hace cuánto la negaron?"],
   ["cambio_algo",     "¿Cambió algo?"],
   ["deportado",       "¿Deportado alguna vez?"],
+  ["deportado_pais",  "¿Deportado de dónde?"],
+  ["deportado_cuando","¿Hace cuánto la deportación?"],
   ["viajes",         "Viajes previos"],
   ["trabajo",         "Situación laboral"],
   ["antiguedad",      "Antigüedad"],
@@ -1540,6 +1542,8 @@ function avisarCasoNuevo(datos) {
     ["¿Hace cuánto la negaron?", datos.cuando_negada],
     ["¿Cambió algo?", datos.cambio_algo],
     ["¿Deportado alguna vez?", datos.deportado],
+    ["¿Deportado de dónde?", datos.deportado_pais],
+    ["¿Hace cuánto la deportación?", datos.deportado_cuando],
     ["Viajes previos", datos.viajes],
     ["Situación laboral", datos.trabajo],
     ["Antigüedad", datos.antiguedad],

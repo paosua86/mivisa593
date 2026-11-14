@@ -283,15 +283,41 @@ var PREGUNTAS = [
     ]
   },
   {
-    /* Solo EE.UU. y Canadá: una deportación o expulsión previa pesa
-       mucho en esos dos consulados. En Schengen no se pregunta. */
+    /* Para todos los destinos: los cuatro formularios oficiales
+       (DS-160, IMM 5257, solicitud Schengen y formulario 1419 de
+       Australia) preguntan por deportaciones, y mentir ahí es peor
+       que la deportación misma. Cuánto pesa depende de DE DÓNDE fue
+       y de HACE CUÁNTO (ver deportado_pais y deportado_cuando). */
     id: "deportado",
-    si: function(r){ return r.destino === "usa" || r.destino === "canada"; },
     titulo: "¿Alguna vez te han deportado o te han obligado a salir de un país?",
-    ayuda: "De Estados Unidos, Canadá u otro país. Lo preguntamos porque cambia cómo se arma tu caso, y mejor saberlo desde el inicio.",
+    ayuda: "De cualquier país. Lo preguntamos porque cambia cómo se arma tu caso, y mejor saberlo desde el inicio.",
     opciones: [
       {v:"no", t:"No, nunca", p:0},
-      {v:"si", t:"Sí, me deportaron o me hicieron salir", p:-4, bandera:"Antecedente de deportación o salida forzada de un país"}
+      {v:"si", t:"Sí, me deportaron o me hicieron salir", p:0}
+    ]
+  },
+  {
+    /* Deportado del mismo país (o de la zona Schengen) al que quiere ir:
+       casi siempre trae una prohibición de reingreso y un permiso
+       especial. Semáforo rojo siempre: David lo revisa antes de cobrar. */
+    id: "deportado_pais",
+    si: function(r){ return r.deportado === "si"; },
+    titulo: "¿De qué país te deportaron o te hicieron salir?",
+    ayuda: "Si fue de varios, elige la primera opción si alguno es el país al que quieres viajar ahora.",
+    opciones: [
+      {v:"destino", t:"Del país al que quiero viajar ahora", s:"En Europa: de cualquier país del espacio Schengen", p:-4,
+        bandera:"Deportación del mismo país al que quiere viajar"},
+      {v:"otro", t:"De otro país", p:0}
+    ]
+  },
+  {
+    id: "deportado_cuando",
+    si: function(r){ return r.deportado === "si"; },
+    titulo: "¿Hace cuánto fue?",
+    opciones: [
+      {v:"menos5", t:"Hace menos de 5 años", p:-3},
+      {v:"5a10",   t:"Entre 5 y 10 años",    p:-2},
+      {v:"mas10",  t:"Hace más de 10 años",  p:-1}
     ]
   },
   {
@@ -653,8 +679,13 @@ function calcular(){
       respuestas.cambio_algo === "no") {
     semaforo = "rojo";
   }
+  /* Deportación: del mismo destino, rojo siempre. De otro país, nunca
+     verde (hay que declararla y explicarla), y rojo si fue hace menos
+     de 5 años y el resto del caso no la compensa (lo decide el puntaje). */
   if (respuestas.deportado === "si") {
-    semaforo = "rojo";
+    if (respuestas.deportado_pais === "destino") semaforo = "rojo";
+    else if (semaforo === "verde") semaforo = "ambar";
+    if (respuestas.deportado_pais !== "destino") banderas.push("Deportación o salida forzada de otro país");
   }
   if (respuestas.pasaporte === "no") {
     semaforo = semaforo === "verde" ? "ambar" : semaforo;
