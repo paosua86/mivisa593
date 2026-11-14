@@ -103,7 +103,7 @@ function propiedad(clave) {
    implementacion en vivo ya tiene los cambios: al abrir la URL /exec
    sin parametros, la respuesta trae este mismo texto. Subirla cada vez
    que se cambie este archivo. */
-var VERSION = "2026-11-13-deportacion-todos";
+var VERSION = "2026-11-13-whatsapp-con-cero";
 
 /* ------------------------------------------------------------
    NO HAY CANDADO
@@ -314,6 +314,8 @@ function doPost(e) {
       var pos = indice[c[0]];
       if (!pos) return;
       var v = datos[c[0]];
+      // El WhatsApp va como texto: si no, la hoja lo vuelve número y se come el 0 inicial
+      if (c[0] === "telefono" && v) v = "'" + String(v);
       fila[pos - 1] = v === undefined || v === null ? "" : v;
     });
     hoja.appendRow(fila);
@@ -495,6 +497,9 @@ function crearCasoOtroDestino(datos) {
   nuevo.link_expediente = SITIO + "/expediente/?caso=" + nuevo.codigo;
   nuevo.link_pago = SITIO + "/pago/?v=" + srv;
   nuevo.carpeta = carpetaDelCaso(nuevo);
+  // La hoja pudo guardar el WhatsApp como número (sin el 0): se repone y se escribe como texto
+  nuevo.telefono = String(nuevo.telefono || "");
+  if (/^9\d{8}$/.test(nuevo.telefono)) nuevo.telefono = "0" + nuevo.telefono;
   nuevo.cuando = String(nuevo.cuando || "") + " [Cambió de destino desde el caso " + codigoViejo + "; confirmar si es renovación]";
 
   var indice = columnasDeLaHoja(hoja);
@@ -502,7 +507,7 @@ function crearCasoOtroDestino(datos) {
   for (var k = 0; k < hoja.getLastColumn(); k++) fila.push("");
   COLUMNAS.forEach(function (c) {
     var pos = indice[c[0]];
-    if (pos) fila[pos - 1] = nuevo[c[0]] === undefined || nuevo[c[0]] === null ? "" : nuevo[c[0]];
+    if (pos) fila[pos - 1] = nuevo[c[0]] === undefined || nuevo[c[0]] === null ? "" : (c[0] === "telefono" && nuevo.telefono ? "'" + nuevo.telefono : nuevo[c[0]]);
   });
   hoja.appendRow(fila);
 
