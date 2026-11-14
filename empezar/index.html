@@ -97,6 +97,9 @@ label.campo small{display:block;font-weight:400;color:var(--tinta-suave);font-si
 }
 .error-campo.se-ve{display:block}
 label.campo input.mal{border-color:var(--rojo)}
+.tel-fila{display:flex;gap:8px}
+.tel-fila .tel-pre{flex:0 0 5.2em;text-align:center}
+.tel-fila #c-tel{flex:1 1 auto;min-width:0}
 .consent{display:flex;gap:12px;align-items:flex-start;font-size:.9rem;color:var(--tinta-suave);line-height:1.45;margin:6px 0 20px;font-weight:400}
 .consent input{flex:0 0 22px;width:22px;height:22px;margin:2px 0 0;accent-color:var(--brand-deep)}
 
@@ -228,6 +231,7 @@ var PREGUNTAS = [
       {v:"canada",   t:"Canadá",          s:"Visa de visitante"},
       {v:"schengen", t:"Europa",          s:"Visa Schengen"},
       {v:"australia",t:"Australia",       s:"Visa de visitante"},
+      {v:"nueva-zelanda",t:"Nueva Zelanda", s:"Visa de visitante"},
       {v:"no-se",    t:"Todavía no lo decido"}
     ]
   },
@@ -425,7 +429,7 @@ var PREGUNTAS = [
    frases; el texto de acompañamiento se busca allá por esa frase. */
 
 
-var NOMBRE_DESTINO = {usa:"Estados Unidos", canada:"Canadá", schengen:"Europa (Schengen)", australia:"Australia", "no-se":"Todavía sin decidir"};
+var NOMBRE_DESTINO = {usa:"Estados Unidos", canada:"Canadá", schengen:"Europa (Schengen)", australia:"Australia", "nueva-zelanda":"Nueva Zelanda", "no-se":"Todavía sin decidir"};
 
 /* ------------------------------------------------------------
    LA VENTANA DE RENOVACIÓN — 12 MESES
@@ -481,7 +485,7 @@ var indice = 0;
   try {
     var p = new URLSearchParams(location.search);
     var d = p.get("destino");
-    if (d && ["usa","canada","schengen","australia"].indexOf(d) !== -1) respuestas.destino = d;
+    if (d && ["usa","canada","schengen","australia","nueva-zelanda"].indexOf(d) !== -1) respuestas.destino = d;
     var pais = p.get("pais");
     if (pais) respuestas.pais_schengen = pais;
   } catch(e){}
@@ -710,8 +714,11 @@ function pintarContacto(){
         '<p class="error-campo" id="e-nombre" role="alert"></p>' +
       '</label>' +
       '<label class="campo">Tu WhatsApp' +
-        '<input type="tel" id="c-tel" autocomplete="tel" inputmode="numeric" placeholder="09 9999 9999">' +
-        '<small>Con el 09 al inicio, como lo marcas normalmente.</small>' +
+        '<span class="tel-fila">' +
+          '<input type="tel" id="c-pre" value="+593" autocomplete="tel-country-code" inputmode="tel" aria-label="Código de país" class="tel-pre">' +
+          '<input type="tel" id="c-tel" autocomplete="tel-national" inputmode="numeric" placeholder="99 123 4567">' +
+        '</span>' +
+        '<small>Ecuador ya está puesto (+593). Si tu número es de otro país, cambia el código.</small>' +
         '<p class="error-campo" id="e-tel" role="alert"></p>' +
       '</label>' +
       '<label class="campo">Tu correo' +
@@ -730,6 +737,7 @@ function pintarContacto(){
 
   var nombre = document.getElementById("c-nombre");
   var tel = document.getElementById("c-tel");
+  var pre = document.getElementById("c-pre");
   var mail = document.getElementById("c-mail");
   var ok = document.getElementById("c-ok");
   var ver = document.getElementById("ver");
@@ -799,14 +807,25 @@ function pintarContacto(){
       falla = falla || nombre;
     }
 
+    /* Se guarda siempre con código de país (+593991234567), listo para
+       WhatsApp. Ecuador viene puesto; quien escribe el 0 de siempre
+       (0991234567) no se equivoca: ese 0 se quita solo. */
+    var codPais = pre.value.replace(/\D/g, "") || "593";
     var telLimpio = tel.value.replace(/\D/g, "");
-    if (telLimpio.length < 9) {
-      marcar(tel, campos[1].error, "Falta tu número. Son 10 dígitos y empieza con 09. Por ejemplo: 0991234567.");
+    if (codPais === "593" && telLimpio.indexOf("593") === 0 && telLimpio.length === 12) telLimpio = telLimpio.slice(3);
+    if (codPais === "593") telLimpio = telLimpio.replace(/^0+/, "");
+    var telFinal = "";
+    if (codPais === "593") {
+      if (!/^9\d{8}$/.test(telLimpio)) {
+        marcar(tel, campos[1].error, telLimpio.length < 9
+          ? "Falta tu número. Es tu celular, por ejemplo 99 123 4567 (o 099 123 4567, como lo marcas siempre)."
+          : "Revisa tu número: el celular de Ecuador empieza con 9 y tiene 9 dígitos después del +593. Por ejemplo: 99 123 4567.");
+        falla = falla || tel;
+      } else telFinal = "+593" + telLimpio;
+    } else if (codPais.length > 4 || telLimpio.length < 6 || telLimpio.length > 12) {
+      marcar(tel, campos[1].error, "Revisa tu número: el código de país va en la casilla de la izquierda (por ejemplo +1 o +34) y tu número completo a la derecha.");
       falla = falla || tel;
-    } else if (telLimpio.length > 13) {
-      marcar(tel, campos[1].error, "Ese número tiene demasiados dígitos. Escribe solo tu celular, así: 0991234567.");
-      falla = falla || tel;
-    }
+    } else telFinal = "+" + codPais + telLimpio;
 
     var correo = limpiarCorreo(mail.value);
     if (correo !== mail.value) mail.value = correo;   // que vea lo que se va a guardar
@@ -837,7 +856,7 @@ function pintarContacto(){
     if (!ok.checked) return;
 
     respuestas.nombre = nombre.value.trim();
-    respuestas.telefono = tel.value.trim();
+    respuestas.telefono = telFinal;
     respuestas.correo = correo;
     respuestas.consentimiento = true;
     guardar();
@@ -936,6 +955,7 @@ function servicioDe(fila){
     return renovacion ? "schengen-renovacion" : "schengen";
   }
   if (d.indexOf("australia") !== -1) return renovacion ? "australia-renovacion" : "australia";
+  if (d.indexOf("zelanda") !== -1) return renovacion ? "nueva-zelanda-renovacion" : "nueva-zelanda";
   return "";
 }
 

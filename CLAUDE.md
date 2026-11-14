@@ -69,6 +69,7 @@ visas/
 | Canadá (visitante) | $95 | $75 |
 | Schengen | $170 | — |
 | Australia (visitante, subclase 600) | $120 | $120 |
+| Nueva Zelanda (visitante) | $155 | $155 |
 
 **Un trámite es renovación mientras la visa anterior siga vigente o no
 haya cumplido 12 meses de vencida.** Pasado ese año vuelve a ser
@@ -95,6 +96,8 @@ La constante `MESES_RENOVACION = 12` existe igual en
 `empezar/index.html` y `caso/index.html`; el Apps Script no recalcula
 nada, solo lee lo guardado. Estas ventanas las mueven los consulados:
 cuando cambie, se cambia en esos dos sitios.
+
+**Nueva Zelanda: $155 por persona, igual para renovación** (pedido de David, 13-nov-2026). Van aparte la tasa de la visa y el cargo al visitante (IVL); no se escriben montos porque cambian. El expediente (`SECCIONES_NUEVA_ZELANDA`) se armó desde el de Australia y la solicitud en línea de Immigration New Zealand; David todavía no lo validó.
 
 **Australia: $120 por persona, sin precio de renovación** (pedido de David, noviembre de 2026; David solo dio un precio, así que se trató como Schengen: `australia-renovacion` existe y cuesta lo mismo). La tasa de la visa australiana no está escrita en la página porque no se pudo verificar el valor vigente: confirmarlo antes de publicarlo. El expediente de Australia (`SECCIONES_AUSTRALIA`) sale del formulario 1419 y de la solicitud en línea; David todavía no lo validó.
 

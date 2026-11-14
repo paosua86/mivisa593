@@ -103,7 +103,7 @@ function propiedad(clave) {
    implementacion en vivo ya tiene los cambios: al abrir la URL /exec
    sin parametros, la respuesta trae este mismo texto. Subirla cada vez
    que se cambie este archivo. */
-var VERSION = "2026-11-13-whatsapp-con-cero";
+var VERSION = "2026-11-13-nueva-zelanda";
 
 /* ------------------------------------------------------------
    NO HAY CANDADO
@@ -165,6 +165,7 @@ var COLUMNAS = [
   ["deportado",       "¿Deportado alguna vez?"],
   ["deportado_pais",  "¿Deportado de dónde?"],
   ["deportado_cuando","¿Hace cuánto la deportación?"],
+  ["consentimiento_exp", "Autorizó datos sensibles"],
   ["viajes",         "Viajes previos"],
   ["trabajo",         "Situación laboral"],
   ["antiguedad",      "Antigüedad"],
@@ -464,7 +465,8 @@ function crearCasoOtroDestino(datos) {
   var srv = clave.indexOf("estados unidos") !== -1 ? "usa-primera"
           : clave.indexOf("canad") !== -1 ? "canada-primera"
           : (clave.indexOf("europa") !== -1 || clave.indexOf("schengen") !== -1) ? "schengen"
-          : clave.indexOf("australia") !== -1 ? "australia" : "";
+          : clave.indexOf("australia") !== -1 ? "australia"
+          : clave.indexOf("zelanda") !== -1 ? "nueva-zelanda" : "";
   if (!codigoViejo || !srv) return responder({ ok: false, error: "Faltan datos" });
 
   var viejo = filaDelCaso(codigoViejo);
@@ -686,6 +688,7 @@ function servicio(datos) {
     return renovacion ? "schengen-renovacion" : "schengen";
   }
   if (d.indexOf("australia") !== -1) return renovacion ? "australia-renovacion" : "australia";
+  if (d.indexOf("zelanda") !== -1) return renovacion ? "nueva-zelanda-renovacion" : "nueva-zelanda";
   return "";
 }
 
@@ -696,7 +699,9 @@ var VALOR_SERVICIO = {
   "canada-primera": 95,   "canada-renovacion": 75,
   "schengen": 170,        "schengen-renovacion": 170,
   // Australia: $120 por persona, igual para quien ya tuvo la visa
-  "australia": 120,       "australia-renovacion": 120
+  "australia": 120,       "australia-renovacion": 120,
+  // Nueva Zelanda: $155 por persona, igual para quien ya tuvo la visa
+  "nueva-zelanda": 155,   "nueva-zelanda-renovacion": 155
 };
 
 /** El servicio de una fila que ya está en la hoja. */
@@ -920,7 +925,7 @@ function guardarExpediente(datos) {
 
   try { avisarExpediente(codigo, datos, archivo, urlDoc); } catch (err) { /* ya está guardado */ }
   try { avisarCRM("expediente", { codigo: codigo }); } catch (err) { /* idem */ }
-  try { marcarExpedienteRecibido(codigo, fecha); } catch (err) { /* idem */ }
+  try { marcarExpedienteRecibido(codigo, fecha, datos.consentimiento); } catch (err) { /* idem */ }
 
   return responder({ ok: true, codigo: codigo, documento: urlDoc });
 }
@@ -951,10 +956,16 @@ function hojaDePersona(libro, codigo, per, n) {
 }
 
 /** Deja constancia en la hoja de casos de que el expediente llegó. */
-function marcarExpedienteRecibido(codigo, fecha) {
+function marcarExpedienteRecibido(codigo, fecha, consentimiento) {
   var fila = filaDelCaso(codigo);
-  if (!fila || !fila.indice.expediente) return;
-  fila.hoja.getRange(fila.numero, fila.indice.expediente).setValue(fecha);
+  if (!fila) return;
+  if (!fila.indice.consentimiento_exp) { asegurarColumnas(fila.hoja); fila = filaDelCaso(codigo); }
+  if (fila.indice.expediente) fila.hoja.getRange(fila.numero, fila.indice.expediente).setValue(fecha);
+  // Prueba de la autorización expresa (LOPDP) para los datos sensibles del expediente
+  if (fila.indice.consentimiento_exp) {
+    var cuando = consentimiento ? Utilities.formatDate(new Date(consentimiento), "America/Guayaquil", "dd/MM/yyyy HH:mm") : "";
+    fila.hoja.getRange(fila.numero, fila.indice.consentimiento_exp).setValue(cuando ? "Sí · " + cuando : "No consta");
+  }
 }
 
 
@@ -1024,7 +1035,8 @@ var TITULO_ARCHIVO = {
   usa: "INFORMACIÓN PARA VISA AMERICANA",
   canada: "INFORMACIÓN PARA VISA CANADIENSE",
   schengen: "INFORMACIÓN PARA VISA SCHENGEN",
-  australia: "INFORMACIÓN PARA VISA AUSTRALIANA"
+  australia: "INFORMACIÓN PARA VISA AUSTRALIANA",
+  "nueva-zelanda": "INFORMACIÓN PARA VISA DE NUEVA ZELANDA"
 };
 
 var TITULO_EXTRAS = "DATOS ADICIONALES DEL FORMULARIO OFICIAL";

@@ -232,7 +232,10 @@ var SERVICIOS = {
      distinguir renovación. Igual que Schengen, existe el servicio
      aparte solo para dejar registrado que ya tuvo la visa. */
   "australia":          {t:"Visa de Australia · visitante", valor:120, det:"Aparte van la tasa de la visa australiana, que se paga directo al gobierno de Australia, y el seguro de viaje. El valor vigente de la tasa te lo confirmamos al empezar."},
-  "australia-renovacion": {t:"Visa de Australia · visitante", valor:120, det:"Aparte van la tasa de la visa australiana, que se paga directo al gobierno de Australia, y el seguro de viaje. El valor vigente de la tasa te lo confirmamos al empezar."}
+  "australia-renovacion": {t:"Visa de Australia · visitante", valor:120, det:"Aparte van la tasa de la visa australiana, que se paga directo al gobierno de Australia, y el seguro de viaje. El valor vigente de la tasa te lo confirmamos al empezar."},
+  /* Nueva Zelanda: David fijó $155 por persona (noviembre de 2026), igual para renovación. */
+  "nueva-zelanda":            {t:"Visa de Nueva Zelanda · visitante", valor:155, det:"Aparte van la tasa de la visa y el cargo al visitante (IVL), que se pagan directo al gobierno de Nueva Zelanda, y el seguro de viaje. El valor vigente te lo confirmamos al empezar."},
+  "nueva-zelanda-renovacion": {t:"Visa de Nueva Zelanda · visitante", valor:155, det:"Aparte van la tasa de la visa y el cargo al visitante (IVL), que se pagan directo al gobierno de Nueva Zelanda, y el seguro de viaje. El valor vigente te lo confirmamos al empezar."}
 };
 
 /* ------------------------------------------------------------
@@ -266,6 +269,7 @@ function servicioPara(destino, renovacion){
   if (k === "canada")   return renovacion ? "canada-renovacion" : "canada-primera";
   if (k === "schengen") return renovacion ? "schengen-renovacion" : "schengen";
   if (k === "australia") return renovacion ? "australia-renovacion" : "australia";
+  if (k === "nueva-zelanda") return renovacion ? "nueva-zelanda-renovacion" : "nueva-zelanda";
   return "";
 }
 
@@ -337,6 +341,23 @@ var QUE_REUNIR = {
       "Quién paga el viaje y cuánto dinero tienes para él",
       "El detalle de tus viajes de los últimos cinco años",
       "Las fechas de tu viaje y si tienes familia o amigos en Australia"
+    ]
+  },
+  "nueva-zelanda": {
+    documentos: [
+      "Tu pasaporte vigente y los anteriores, si los conservas",
+      "Tu cédula",
+      "Una foto digital reciente con fondo claro",
+      "Tus certificados bancarios y movimientos de los últimos meses",
+      "Tu reserva de vuelos y de alojamiento, aunque sea provisional",
+      "Tu seguro de viaje, si ya lo contrataste"
+    ],
+    datos: [
+      "Los datos de tu trabajo o de tus estudios",
+      "Los datos de tus padres, hijos y cónyuge si aplica",
+      "Quién paga el viaje y cuánto dinero tienes para él",
+      "El detalle de tus viajes de los últimos cinco años",
+      "Las fechas de tu viaje y si tienes familia o amigos en Nueva Zelanda"
     ]
   }
 };
@@ -434,6 +455,7 @@ function claveDestino(texto){
   if (t.indexOf("canad") !== -1) return "canada";
   if (t.indexOf("europa") !== -1 || t.indexOf("schengen") !== -1) return "schengen";
   if (t.indexOf("australia") !== -1) return "australia";
+  if (t.indexOf("zelanda") !== -1) return "nueva-zelanda";
   return null;
 }
 

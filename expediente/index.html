@@ -70,6 +70,9 @@ label.campo input:focus,label.campo select:focus,label.campo textarea:focus{outl
 label.campo small{display:block;font-weight:400;color:var(--tinta-suave);font-size:.85rem;margin-top:5px}
 /* «No aplica» y datos que faltan */
 .campo-wrap{margin-bottom:18px}
+.consent{display:flex;gap:12px;align-items:flex-start;font-size:.9rem;line-height:1.45;margin:6px 0 14px;font-weight:400}
+.consent input{flex:0 0 22px;width:22px;height:22px;margin:2px 0 0}
+#e-datos{color:#8a2f2f;font-size:.9rem;margin:0 0 12px}
 .campo-wrap label.campo{margin-bottom:0}
 label.campo input.na{color:var(--tinta-suave);font-style:italic;background:#f1f3f1}
 .na-btn{
@@ -1493,6 +1496,316 @@ var DOCUMENTOS_AUSTRALIA = [
 ];
 
 /* ------------------------------------------------------------
+   NUEVA ZELANDA — visa de visitante (Visitor Visa, turismo).
+   Armado sobre el de Australia y lo que pide la solicitud en
+   línea de Immigration New Zealand: identidad, pasaporte, cédula
+   nacional, viaje, fondos, familia en Nueva Zelanda, salud y carácter.
+   David todavía no validó esta lista contra su propio formato.
+   ------------------------------------------------------------ */
+var SECCIONES_NUEVA_ZELANDA = [
+  {
+    id: "personales",
+    titulo: "Tus datos personales",
+    ayuda: "Como aparecen en tu pasaporte, tal cual.",
+    campos: [
+      {id:"apellidos",   t:"Apellidos completos", tipo:"texto", req:true},
+      {id:"nombres",     t:"Nombres completos", tipo:"texto", req:true},
+      {id:"otros_nombres", t:"Otros nombres que hayas usado", tipo:"texto",
+       ayuda:"Apellido de soltera, nombre de casada o cualquier otro."},
+      {id:"sexo",        t:"Sexo", tipo:"opcion", req:true, opciones:["Femenino","Masculino","Otro"]},
+      {id:"nacimiento",  t:"Fecha de nacimiento", tipo:"fecha", req:true},
+      {id:"lugar_nacimiento", t:"Ciudad de nacimiento", tipo:"texto", req:true},
+      {id:"pais_nacimiento",  t:"País de nacimiento", tipo:"texto", req:true},
+      {id:"nacionalidad",     t:"Nacionalidad actual", tipo:"texto", req:true},
+      {id:"otra_ciudadania",  t:"¿Tienes otra ciudadanía además de la ecuatoriana?", tipo:"opcion", req:true,
+       opciones:["No","Sí"]},
+      {id:"otra_ciudadania_pais", t:"País o países de tu ciudadanía", tipo:"texto"},
+      {id:"cedula",      t:"Número de cédula", tipo:"texto", req:true,
+       ayuda:"Nueva Zelanda pide el número de tu documento nacional de identidad."},
+      {id:"direccion",   t:"Dirección de tu domicilio", tipo:"larga", req:true},
+      {id:"codigo_postal", t:"Código postal", tipo:"texto",
+       ayuda:"Si no lo sabes, déjalo en blanco."},
+      {id:"ciudad_residencia", t:"Ciudad de residencia", tipo:"texto", req:true},
+      {id:"celular",     t:"Teléfono celular", tipo:"tel", req:true},
+      {id:"correo",      t:"Correo electrónico", tipo:"correo", req:true,
+       ayuda:"Nueva Zelanda manda aquí las notificaciones de tu solicitud."},
+      {id:"estado_civil",t:"Estado civil", tipo:"opcion", req:true,
+       opciones:["Soltero/a","Casado/a","Unión libre","Separado/a","Divorciado/a","Viudo/a"]}
+    ]
+  },
+  {
+    id: "conyuge",
+    titulo: "Datos de tu cónyuge",
+    ayuda: "Solo si estás casado, en unión libre, separado o divorciado.",
+    si: function(d){ return ["Casado/a","Unión libre","Separado/a","Divorciado/a"].indexOf(d.personales__estado_civil) !== -1; },
+    campos: [
+      {id:"nombre",     t:"Nombre completo de tu cónyuge", tipo:"texto", req:true},
+      {id:"nacimiento", t:"Su fecha de nacimiento", tipo:"fecha"},
+      {id:"lugar",      t:"Su ciudad y país de nacimiento", tipo:"texto"},
+      {id:"nacionalidad",t:"Su nacionalidad", tipo:"texto"},
+      {id:"matrimonio", t:"Fecha de matrimonio o unión", tipo:"fecha"},
+      {id:"acompana",   t:"¿Viaja contigo a Nueva Zelanda?", tipo:"opcion", opciones:["Sí","No"], req:true}
+    ]
+  },
+  {
+    id: "padres",
+    titulo: "Datos de tus padres",
+    ayuda: "Si alguno falleció, escríbelo en el nombre.",
+    campos: [
+      {id:"madre",           t:"Nombre completo de tu madre", tipo:"texto", req:true},
+      {id:"madre_nacimiento",t:"Su fecha de nacimiento", tipo:"fecha"},
+      {id:"madre_pais",      t:"País de nacimiento de tu madre", tipo:"texto"},
+      {id:"padre",           t:"Nombre completo de tu padre", tipo:"texto", req:true},
+      {id:"padre_nacimiento",t:"Su fecha de nacimiento", tipo:"fecha"},
+      {id:"padre_pais",      t:"País de nacimiento de tu padre", tipo:"texto"}
+    ]
+  },
+  {
+    id: "hijos",
+    titulo: "Tus hijos",
+    ayuda: "Todos tus hijos, vivan contigo o no. Si no tienes, toca «No aplica».",
+    repetible: {
+      etiqueta: "hijo o hija",
+      campos: [
+        {id:"nombre",     t:"Nombre completo", tipo:"texto"},
+        {id:"nacimiento", t:"Fecha de nacimiento", tipo:"fecha"},
+        {id:"pais",       t:"País de nacimiento", tipo:"texto"},
+        {id:"viaja",      t:"¿Viaja contigo a Nueva Zelanda?", tipo:"texto", ayuda:"Responde Sí o No."}
+      ]
+    }
+  },
+  {
+    id: "pasaporte",
+    titulo: "Tu pasaporte",
+    campos: [
+      {id:"numero",    t:"Número de pasaporte", tipo:"texto", req:true},
+      {id:"emision",   t:"Fecha de emisión", tipo:"fecha", req:true},
+      {id:"expiracion",t:"Fecha de expiración", tipo:"fecha", req:true},
+      {id:"lugar_emision", t:"Ciudad donde lo emitieron", tipo:"texto", req:true},
+      {id:"emitido_por", t:"País que lo emitió", tipo:"texto", req:true}
+    ]
+  },
+  {
+    id: "residencia",
+    titulo: "Residencia en otro país",
+    ayuda: "Solo si vives en un país distinto al de tu nacionalidad. Si vives en Ecuador y eres ecuatoriano, toca «Esta sección no aplica para mí».",
+    campos: [
+      {id:"otro_pais",   t:"¿Vives en un país distinto al de tu nacionalidad?", tipo:"opcion", req:true,
+       opciones:["No","Sí"]},
+      {id:"pais",        t:"País de esa residencia", tipo:"texto"},
+      {id:"permiso",     t:"Número de tu permiso de residencia", tipo:"texto"},
+      {id:"permiso_hasta", t:"Válido hasta", tipo:"fecha"}
+    ]
+  },
+  {
+    id: "universidad",
+    titulo: "Tus estudios",
+    ayuda: "Tu último nivel de estudios. Si no aplica, toca «Esta sección no aplica para mí».",
+    campos: [
+      {id:"institucion",t:"Nombre de la institución", tipo:"texto"},
+      {id:"ciudad",     t:"Ciudad y país", tipo:"texto"},
+      {id:"fin",        t:"Fecha de culminación", tipo:"fecha"},
+      {id:"titulo",     t:"Título obtenido", tipo:"texto"}
+    ]
+  },
+  {
+    id: "laboral",
+    titulo: "Tu situación actual",
+    ayuda: "Elige a qué te dedicas y abajo te preguntamos solo lo que corresponde a tu caso.",
+    campos: [CAMPO_OCUPACION].concat([
+      {id:"empresa",  t:"Nombre de la empresa o negocio", tipo:"texto", req:true, si:trabaja},
+      {id:"cargo",    t:"Tu cargo", tipo:"texto", req:true, si:trabaja},
+      {id:"inicio",   t:"Fecha en que empezaste", tipo:"fecha", req:true, si:trabaja},
+      {id:"direccion",t:"Dirección del trabajo", tipo:"larga", req:true, si:trabaja},
+      {id:"ciudad",   t:"Ciudad y país", tipo:"texto", req:true, si:trabaja},
+      {id:"telefono", t:"Teléfono del trabajo", tipo:"tel", req:true, si:trabaja},
+      {id:"jefe",     t:"Nombre de tu jefe o jefa inmediato", tipo:"texto", si:conEmpleador},
+      {id:"sueldo",   t:"Sueldo mensual aproximado (USD)", tipo:"numero", req:true, si:trabaja}
+    ], camposEstudio(), camposJubilado(), camposSinTrabajo(), [campoSostiene()])
+  },
+  {
+    id: "viaje",
+    titulo: "Tu viaje a Nueva Zelanda",
+    ayuda: "Si todavía no tienes fechas exactas, pon las que estás planeando.",
+    campos: [
+      {id:"motivo",  t:"Motivo principal del viaje", tipo:"opcion", req:true,
+       opciones:["Turismo","Visita a familiares o amigos","Negocios (reuniones, sin trabajar)","Tratamiento médico","Otro"]},
+      {id:"llegada",  t:"Fecha en que planeas llegar", tipo:"fecha", req:true},
+      {id:"salida",   t:"Fecha en que planeas regresar", tipo:"fecha", req:true},
+      {id:"dias",     t:"Días que vas a estar en total", tipo:"numero", req:true},
+      {id:"estadia",  t:"Tiempo de estadía que pides", tipo:"opcion", req:true,
+       opciones:["Hasta 3 meses","Hasta 6 meses","Hasta 9 meses"]},
+      {id:"entradas", t:"Entradas que necesitas", tipo:"opcion", req:true,
+       opciones:["Una entrada","Múltiples entradas"]},
+      {id:"estudiar",  t:"¿Vas a estudiar o a trabajar en Nueva Zelanda durante el viaje?", tipo:"opcion", req:true,
+       opciones:["No","Sí"],
+       ayuda:"Esta visa no permite trabajar, y estudiar solo hasta tres meses."},
+      {id:"detalle_estudiar", t:"Si respondiste que sí, cuenta qué piensas hacer", tipo:"larga"}
+    ]
+  },
+  {
+    id: "ruta",
+    titulo: "Dónde vas a estar en Nueva Zelanda",
+    ayuda: "Ciudad por ciudad, con las noches que vas a dormir en cada una.",
+    repetible: {
+      etiqueta: "ciudad",
+      campos: [
+        {id:"ciudad", t:"Ciudad", tipo:"texto"},
+        {id:"estado", t:"Región", tipo:"texto", ayuda:"Ejemplo: Auckland"},
+        {id:"noches", t:"Noches", tipo:"numero"}
+      ]
+    }
+  },
+  {
+    id: "acompanantes",
+    titulo: "Familiares que viajan contigo",
+    ayuda: "Solo los que viajan en el mismo grupo. Si viajas solo o sola, toca «No aplica».",
+    repetible: {
+      etiqueta: "acompañante",
+      campos: [
+        {id:"nombre",     t:"Nombre completo", tipo:"texto"},
+        {id:"parentesco", t:"Parentesco", tipo:"texto"},
+        {id:"nacimiento", t:"Fecha de nacimiento", tipo:"fecha"}
+      ]
+    }
+  },
+  {
+    id: "alojamiento",
+    titulo: "Dónde te vas a quedar",
+    ayuda: "Si todavía no tienes reserva, pon el lugar donde piensas alojarte.",
+    campos: [
+      {id:"tipo",      t:"Tipo de alojamiento", tipo:"opcion", req:true,
+       opciones:["Hotel","Casa de un familiar o amigo","Departamento alquilado o Airbnb","Otro"]},
+      {id:"nombre",    t:"Nombre del hotel, o de la persona que te recibe", tipo:"texto", req:true},
+      {id:"direccion", t:"Dirección completa", tipo:"larga", req:true},
+      {id:"telefono",  t:"Teléfono", tipo:"tel"},
+      {id:"correo",    t:"Correo electrónico", tipo:"correo"}
+    ]
+  },
+  {
+    id: "contacto_au",
+    titulo: "Familia o amigos en Nueva Zelanda",
+    ayuda: "Si tienes familiares, amigos o alguien que te invita en Nueva Zelanda. Si no tienes a nadie, toca «Esta sección no aplica para mí».",
+    campos: [
+      {id:"nombre",     t:"Nombre completo de esa persona", tipo:"texto"},
+      {id:"parentesco", t:"A quién visitas y qué parentesco tienes", tipo:"texto"},
+      {id:"estatus",    t:"Estatus de esa persona en Nueva Zelanda", tipo:"opcion",
+       opciones:["Ciudadano neozelandés","Residente permanente","Con otra visa","No lo sé"]},
+      {id:"direccion",  t:"Dirección en Nueva Zelanda", tipo:"larga"},
+      {id:"telefono",   t:"Teléfono de esa persona", tipo:"tel"},
+      {id:"correo",     t:"Correo de esa persona", tipo:"correo"}
+    ]
+  },
+  {
+    id: "costos",
+    titulo: "Quién paga el viaje",
+    ayuda: "Nueva Zelanda revisa que tengas con qué cubrir el viaje y que cuadre con tu trabajo y tus ahorros.",
+    campos: [
+      {id:"quien_paga", t:"¿Quién cubre los gastos del viaje?", tipo:"opcion", req:true,
+       opciones:["Yo mismo/a","Un patrocinador (familiar, amigo o empresa)"]},
+      {id:"medios",     t:"¿Con qué medios?", tipo:"opcion", req:true,
+       opciones:["Ahorros en cuenta bancaria","Tarjeta de crédito","Efectivo","Alojamiento o transporte ya pagado","Varios de los anteriores"]},
+      {id:"dinero",     t:"Dinero disponible para el viaje (USD)", tipo:"numero", req:true},
+      {id:"patrocinador", t:"Si te patrocinan, nombre de esa persona o empresa y su relación contigo", tipo:"texto"}
+    ]
+  },
+  {
+    id: "visas_previas",
+    titulo: "Visas y viajes a Nueva Zelanda",
+    ayuda: "Si nunca has ido ni pedido visa a Nueva Zelanda, responde que no y sigue.",
+    campos: [
+      {id:"visita",   t:"¿Has estado antes en Nueva Zelanda?", tipo:"opcion", req:true, opciones:["No","Sí"]},
+      {id:"visita_detalle", t:"Cuándo fue y cuánto tiempo estuviste", tipo:"texto"},
+      {id:"solicito", t:"¿Has solicitado antes una visa a Nueva Zelanda?", tipo:"opcion", req:true, opciones:["No","Sí"]},
+      {id:"solicito_detalle", t:"Tipo de visa, año y resultado", tipo:"texto"},
+      {id:"actual",   t:"¿Tienes ahora una visa de Nueva Zelanda vigente o una solicitud en trámite?", tipo:"opcion", req:true, opciones:["No","Sí"]}
+    ]
+  },
+  {
+    id: "viajes",
+    titulo: "Viajes a otros países",
+    ayuda: "De los últimos cinco años. Si no has viajado, toca «No aplica».",
+    repetible: {
+      etiqueta: "viaje",
+      campos: [
+        {id:"pais",   t:"País visitado", tipo:"texto"},
+        {id:"ingreso",t:"Fecha de ingreso", tipo:"fecha"},
+        {id:"salida", t:"Fecha de salida", tipo:"fecha"},
+        {id:"motivo", t:"Motivo del viaje", tipo:"texto"}
+      ]
+    }
+  },
+  {
+    id: "salud",
+    titulo: "Salud",
+    ayuda: "Nueva Zelanda exige la declaración de salud. Responde con la verdad: si hace falta, te pedirán un examen médico.",
+    campos: [
+      {id:"tuberculosis", t:"¿Has tenido tuberculosis o convivido de cerca con alguien que la tuvo?", tipo:"opcion", req:true, opciones:["No","Sí"]},
+      {id:"enfermedad",   t:"¿Tienes alguna enfermedad o condición que requiera tratamiento médico, hospital o cuidados en Nueva Zelanda?", tipo:"opcion", req:true, opciones:["No","Sí"]},
+      {id:"detalle_salud",t:"Si respondiste que sí, cuenta cuál", tipo:"larga"},
+      {id:"embarazo",     t:"¿Vas a recibir tratamiento médico o a dar a luz en Nueva Zelanda?", tipo:"opcion", req:true, opciones:["No","Sí"]},
+      {id:"seguro",       t:"¿Tienes o vas a tener seguro de viaje con cobertura médica?", tipo:"opcion", req:true, opciones:["Sí","No","Todavía no lo sé"]}
+    ]
+  },
+  {
+    id: "antecedentes",
+    titulo: "Preguntas de carácter",
+    ayuda: "Nueva Zelanda las hace de forma obligatoria. Responde con la verdad: ocultar algo aquí sí causa una negación.",
+    campos: [
+      {id:"visa_negada",   t:"¿Alguna vez te han negado una visa, la entrada a un país o te han cancelado una visa?", tipo:"opcion", req:true,
+       opciones:["No","Sí"]},
+      {id:"detalle_negada",t:"Si respondiste que sí, cuenta qué pasó", tipo:"larga",
+       ayuda:"País, año y motivo que te dieron."},
+      {id:"deportado",     t:"¿Alguna vez te han deportado, expulsado o pedido que salgas de un país?", tipo:"opcion", req:true,
+       opciones:["No","Sí"]},
+      {id:"permanencia",   t:"¿Alguna vez te quedaste más tiempo del permitido en otro país?", tipo:"opcion", req:true,
+       opciones:["No","Sí"]},
+      {id:"penales",       t:"¿Has sido arrestado, acusado o condenado por algún delito, en cualquier país?", tipo:"opcion", req:true,
+       opciones:["No","Sí"]},
+      {id:"detalle_penal", t:"Si respondiste que sí, cuenta qué pasó", tipo:"larga"},
+      {id:"deuda_nz",      t:"¿Le debes dinero al gobierno de Nueva Zelanda, por ejemplo por gastos médicos?", tipo:"opcion", req:true,
+       opciones:["No","Sí"]},
+      {id:"militar",       t:"¿Has prestado servicio militar o policial?", tipo:"opcion", req:true,
+       opciones:["No","Sí"]}
+    ]
+  },
+  {
+    id: "redes",
+    titulo: "Tus redes sociales",
+    ayuda: "Pega el enlace completo de cada perfil, no solo tu nombre de usuario. Si no tienes alguna de estas redes, toca «No aplica». Te pedimos que dejes tus perfiles en público mientras dura tu trámite.",
+    guia: GUIA_REDES,
+    campos: [
+      {id:"facebook", t:"Facebook", tipo:"url", ayuda:"Ejemplo: https://www.facebook.com/maria.perez"},
+      {id:"instagram",t:"Instagram", tipo:"url", ayuda:"Ejemplo: https://www.instagram.com/mariaperez"},
+      {id:"tiktok",   t:"TikTok", tipo:"url", ayuda:"Ejemplo: https://www.tiktok.com/@mariaperez"},
+      {id:"x",        t:"X (antes Twitter)", tipo:"url", ayuda:"Ejemplo: https://x.com/mariaperez"}
+    ]
+  }
+];
+
+var DOCUMENTOS_NUEVA_ZELANDA = [
+  "Pasaporte vigente (mínimo 6 meses después del regreso)",
+  "Foto de la página de tu pasaporte donde salen tus datos",
+  "Copia de tu cédula",
+  "Foto digital tipo pasaporte, fondo blanco",
+  "Certificado bancario de los últimos 3 a 6 meses",
+  "Movimiento bancario de los últimos 3 a 6 meses",
+  "Certificado laboral con sueldo y antigüedad",
+  "Roles de pago de los últimos 3 meses",
+  "Certificado de estudios, si eres estudiante",
+  "Certificado de pensión o jubilación, si eres jubilado",
+  "Reserva de vuelos y de alojamiento (puede ser provisional)",
+  "Itinerario de viaje",
+  "Carta de invitación y copia del documento de tu contacto en Nueva Zelanda, si aplica",
+  "Carta del patrocinador y sus certificados bancarios, si alguien paga tu viaje",
+  "Seguro de viaje con cobertura médica",
+  "Copia de visas anteriores, si tienes",
+  "Acta de matrimonio y partidas de nacimiento de tus hijos, si viajas en familia",
+  "Copia del impuesto predial o la matrícula vehicular, si tienes",
+  "Permiso de salida firmado por ambos padres, si el viajero es menor de edad"
+];
+
+/* ------------------------------------------------------------
    REGISTRO DE DESTINOS
    El texto de `destino` viene de empezar/index.html y llega tal
    cual desde la hoja: "Estados Unidos", "Canadá" o
@@ -1557,6 +1870,21 @@ var DESTINOS = {
       "Los datos de tu trabajo o de tus estudios",
       "Los datos de tus padres, hijos y cónyuge si aplica",
       "Las fechas y el alojamiento de tu viaje a Australia",
+      "Cuánto dinero tienes para el viaje y quién lo paga",
+      "El detalle de tus viajes de los últimos cinco años"
+    ]
+  },
+  "nueva-zelanda": {
+    nombre: "Nueva Zelanda",
+    formulario: "la solicitud de visa de visitante (Visitor Visa)",
+    detecta: ["zelanda", "neozeland"],
+    secciones: SECCIONES_NUEVA_ZELANDA,
+    documentos: DOCUMENTOS_NUEVA_ZELANDA,
+    preparate: [
+      "Tu pasaporte y tu cédula",
+      "Los datos de tu trabajo o de tus estudios",
+      "Los datos de tus padres, hijos y cónyuge si aplica",
+      "Las fechas y el alojamiento de tu viaje a Nueva Zelanda",
       "Cuánto dinero tienes para el viaje y quién lo paga",
       "El detalle de tus viajes de los últimos cinco años"
     ]
@@ -1833,7 +2161,8 @@ function elegirOtroDestino(){
     {clave:"usa", texto:"Estados Unidos"},
     {clave:"canada", texto:"Canadá"},
     {clave:"schengen", texto:"Europa (Schengen)"},
-    {clave:"australia", texto:"Australia"}
+    {clave:"australia", texto:"Australia"},
+    {clave:"nueva-zelanda", texto:"Nueva Zelanda"}
   ].filter(function(o){ return o.clave !== actual; });
   ir(
     '<div class="seccion">' +
@@ -1914,11 +2243,28 @@ function pantallaPreparate(){
 
       '<p class="ayuda">Si algo no aplica a ti — por ejemplo no tienes cónyuge, o nunca has viajado — simplemente lo saltas.</p>' +
 
+      /* LOPDP: aquí se piden datos sensibles (salud, antecedentes, deportaciones)
+         y datos de otras personas (familia, menores). Necesitan autorización
+         expresa y aparte de la del formulario inicial. */
+      '<label class="consent"><input type="checkbox" id="ok-datos"' + (E.consentimiento ? " checked" : "") + '>' +
+        '<span>Autorizo a MiVisa EC a usar la información de este formulario, incluidos los <strong>datos sensibles</strong> (salud, antecedentes penales, deportaciones o negaciones de visa), solo para preparar y revisar mi solicitud de visa. Si incluyo a familiares o a menores de edad, declaro que tengo su autorización o que soy su representante legal. Puedo pedir que los borren cuando quiera. <a href="../privacidad.html" target="_blank">Política de privacidad</a>.</span>' +
+      '</label>' +
+      '<p class="error-campo" id="e-datos" role="alert"></p>' +
+
       '<button class="btn" type="button" id="empezar">Empezar</button>' +
       '<div><button class="atras" type="button" id="atras">← Volver</button></div>' +
     '</div>'
   );
-  document.getElementById("empezar").addEventListener("click", pantallaPersonas);
+  document.getElementById("empezar").addEventListener("click", function(){
+    if (!document.getElementById("ok-datos").checked) {
+      var er = document.getElementById("e-datos");
+      er.textContent = "Marca la casilla de autorización para poder llenar tu formulario.";
+      er.className = "error-campo se-ve";
+      return;
+    }
+    if (!E.consentimiento) { E.consentimiento = new Date().toISOString(); guardar(); }
+    pantallaPersonas();
+  });
   document.getElementById("atras").addEventListener("click", confirmarDestino);
 }
 
@@ -2186,6 +2532,7 @@ var EJEMPLOS = {
   "Estado":"Nueva Gales del Sur",
   "Nombre completo de esa persona": "Sofía Pérez Villacís",
   "Dirección en Australia": "25 George St, Sydney NSW 2000",
+  "Dirección en Nueva Zelanda": "12 Queen St, Auckland 1010",
   "Teléfono de esa persona": "+61 412 345 678",
   "Correo de esa persona": "sofia.perez@gmail.com",
   "Cuándo fue y cuánto tiempo estuviste": "Marzo de 2019, dos semanas",
@@ -2193,6 +2540,7 @@ var EJEMPLOS = {
   "Si respondiste que sí, cuenta cuál": "Qué condición tienes, desde cuándo y qué tratamiento llevas",
   "Si respondiste que sí, cuenta qué piensas hacer": "Un curso de inglés de dos semanas en Sídney",
   "¿Viaja contigo a Australia?": "Sí",
+  "¿Viaja contigo a Nueva Zelanda?": "Sí",
 
   "Si respondiste que sí, cuenta qué pasó": "Qué pasó, cuándo (mes y año) y cómo terminó. Ej: en marzo de 2019 me negaron la visa de EE.UU."
 };
@@ -2317,8 +2665,27 @@ function controlHtml(k, c, v){
     : c.tipo === "correo"
       ? ' inputmode="email" autocapitalize="off" autocorrect="off" spellcheck="false"' + placeholderDe(c)
       : (t === "date" ? "" : placeholderDe(c));
+  if (t === "tel") extra += ' inputmode="tel" data-pre="+593 "';
   return '<input type="' + t + '" id="c_' + k + '" value="' + esc(v) + '"' + extra + '>';
 }
+
+/* Teléfonos: al entrar a un campo vacío ya aparece "+593 ", editable
+   para números de otro país. Si sale sin escribir nada más, se borra
+   solo, para que el campo no cuente como respondido. */
+document.addEventListener("focusin", function(e){
+  var el = e.target;
+  if (el && el.getAttribute && el.getAttribute("data-pre") && !el.value) {
+    el.value = el.getAttribute("data-pre");
+    try { el.setSelectionRange(el.value.length, el.value.length); } catch(er){}
+  }
+});
+document.addEventListener("focusout", function(e){
+  var el = e.target;
+  if (el && el.getAttribute && el.getAttribute("data-pre") && /^\+?\d{0,4}\s*$/.test(el.value) && el.value.replace(/\D/g, "").length <= 3) {
+    el.value = "";
+    el.dispatchEvent(new Event("input", {bubbles:true}));
+  }
+}, true);
 
 function campoHtml(seccion, c, datos){
   var k = seccion + "__" + c.id;
@@ -2902,6 +3269,7 @@ function enviar(){
     titular: E.titular,
     destinoNombre: caso.destino,
     destinoClave: claveDestino(caso.destino) || "",
+    consentimiento: E.consentimiento || "",
     personas: E.personas.map(function(p){
       var o = { nombre_ficha: p.nombre };
       Object.keys(p.datos).forEach(function(k){
